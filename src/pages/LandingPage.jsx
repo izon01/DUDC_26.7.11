@@ -42,7 +42,7 @@ export default function LandingPage() {
           {/* Left: Hero copy */}
           <div>
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-fixed text-primary text-[13px] font-bold mb-6">
-              DUDC Onboard Hub · 베타 프리뷰
+              DUDC Onboard Hub
             </span>
             <h1 className="text-[44px] lg:text-[52px] leading-[1.2] font-extrabold text-on-surface mb-6">
               신입의 첫 출근을
@@ -54,14 +54,8 @@ export default function LandingPage() {
             </p>
             <div className="flex items-center gap-6">
               <button
-                onClick={() => setAuthMode("signup")}
-                className="px-6 py-3 rounded-full bg-primary text-white font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
-              >
-                목업 둘러보기
-              </button>
-              <button
                 onClick={() => setAuthMode("login")}
-                className="text-on-surface font-bold text-[15px] hover:text-primary transition-colors"
+                className="px-6 py-3 rounded-full bg-primary text-white font-bold text-[15px] hover:opacity-90 active:scale-95 transition-all shadow-lg shadow-primary/20"
               >
                 로그인
               </button>
