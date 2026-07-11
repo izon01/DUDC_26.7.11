@@ -3,6 +3,12 @@ import { useAuth } from "../context/AuthContext";
 
 const initialFields = { email: "", password: "", name: "", affiliation: "" };
 
+// 개발 중 빠른 테스트용 — 프로덕션 빌드에는 포함되지 않습니다.
+const DEV_TEST_ACCOUNTS = [
+  { label: "관리자 테스트", email: "admin@dudc.local", password: "Admin1234!" },
+  { label: "일반 유저 테스트", email: "user@dudc.local", password: "User1234!" },
+];
+
 export default function AuthModal({ onClose }) {
   const { login, signup } = useAuth();
   const [mode, setMode] = useState("login");
@@ -13,6 +19,12 @@ export default function AuthModal({ onClose }) {
 
   function updateField(key, value) {
     setFields((prev) => ({ ...prev, [key]: value }));
+  }
+
+  function fillTestAccount(account) {
+    setError("");
+    setInfoMessage("");
+    setFields((prev) => ({ ...prev, email: account.email, password: account.password }));
   }
 
   function switchMode(nextMode) {
@@ -88,6 +100,28 @@ export default function AuthModal({ onClose }) {
             회원가입
           </button>
         </div>
+
+        {import.meta.env.DEV && mode === "login" && (
+          <div className="mx-8 mt-4 px-4 py-3 rounded-xl bg-secondary-container/30 border-2 border-dashed border-secondary/40">
+            <p className="text-label-sm font-bold text-secondary mb-2 flex items-center gap-1.5">
+              <span className="material-symbols-outlined text-[16px]">construction</span>
+              개발용 테스트 계정 (배포 시 자동으로 사라짐)
+            </p>
+            <div className="flex flex-col gap-1.5">
+              {DEV_TEST_ACCOUNTS.map((account) => (
+                <button
+                  key={account.email}
+                  type="button"
+                  onClick={() => fillTestAccount(account)}
+                  className="text-left px-3 py-2 rounded-lg bg-white border border-dashed border-outline-variant hover:border-primary transition-colors text-[12px]"
+                >
+                  <span className="font-bold text-on-surface">{account.label}</span>
+                  <span className="text-on-surface-variant"> — {account.email} / {account.password}</span>
+                </button>
+              ))}
+            </div>
+          </div>
+        )}
 
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4">
           {infoMessage && (
