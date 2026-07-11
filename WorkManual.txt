@@ -1,0 +1,299 @@
+<!DOCTYPE html>
+
+<html class="light" lang="ko"><head><meta charset="utf-8"/><meta content="width=device-width, initial-scale=1.0" name="viewport"/><link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet"/><link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=block" rel="stylesheet"/><script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script><script id="tailwind-config">try{
+        try {
+            tailwind.config = {
+                darkMode: "class",
+                theme: {
+                    extend: {
+                        "colors": {
+                            "on-surface": "#191c1d",
+                            "primary-fixed-dim": "#a0c9ff",
+                            "tertiary-fixed-dim": "#ffb86d",
+                            "tertiary": "#864e00",
+                            "on-error-container": "#93000a",
+                            "primary-container": "#2f77bd",
+                            "surface-container-highest": "#e1e3e4",
+                            "background": "#f8f9fa",
+                            "surface-bright": "#f8f9fa",
+                            "on-secondary-fixed": "#2d1505",
+                            "error": "#ba1a1a",
+                            "surface": "#f8f9fa",
+                            "on-primary-fixed": "#001c37",
+                            "tertiary-container": "#a86400",
+                            "surface-dim": "#d9dadb",
+                            "on-tertiary-container": "#fffaff",
+                            "on-primary": "#ffffff",
+                            "tertiary-fixed": "#ffdcbd",
+                            "surface-container": "#edeeef",
+                            "on-tertiary-fixed": "#2c1600",
+                            "surface-container-lowest": "#ffffff",
+                            "secondary-fixed": "#ffdbc7",
+                            "on-secondary-container": "#7a5742",
+                            "secondary": "#795741",
+                            "surface-variant": "#e1e3e4",
+                            "inverse-primary": "#a0c9ff",
+                            "primary-fixed": "#d2e4ff",
+                            "outline-variant": "#c1c7d2",
+                            "error-container": "#ffdad6",
+                            "on-secondary-fixed-variant": "#5f402b",
+                            "on-error": "#ffffff",
+                            "on-background": "#191c1d",
+                            "outline": "#717782",
+                            "on-tertiary": "#ffffff",
+                            "inverse-on-surface": "#f0f1f2",
+                            "secondary-container": "#ffd1b5",
+                            "surface-tint": "#0461a5",
+                            "surface-container-low": "#f3f4f5",
+                            "on-primary-container": "#fcfbff",
+                            "secondary-fixed-dim": "#eabda2",
+                            "primary": "#005ea1",
+                            "on-tertiary-fixed-variant": "#693c00",
+                            "on-surface-variant": "#414751",
+                            "surface-container-high": "#e7e8e9",
+                            "on-primary-fixed-variant": "#00497f",
+                            "inverse-surface": "#2e3132",
+                            "on-secondary": "#ffffff"
+                        },
+                        "borderRadius": {
+                            "DEFAULT": "0.25rem",
+                            "lg": "0.5rem",
+                            "xl": "0.75rem",
+                            "full": "9999px"
+                        },
+                        "spacing": {
+                            "stitch_gap": "4px",
+                            "gutter": "24px",
+                            "container_max_width": "1200px",
+                            "header_height": "60px",
+                            "margin_page": "40px",
+                            "content_height": "calc(100vh - 60px)"
+                        },
+                        "fontFamily": {
+                            "body-lg": ["Noto Sans KR"],
+                            "headline-xl-mobile": ["Noto Sans KR"],
+                            "body-md": ["Noto Sans KR"],
+                            "label-sm": ["Noto Sans KR"],
+                            "headline-lg": ["Noto Sans KR"],
+                            "headline-xl": ["Noto Sans KR"],
+                            "headline-md": ["Noto Sans KR"]
+                        },
+                        "fontSize": {
+                            "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                            "headline-xl-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                            "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                            "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                            "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                            "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                            "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}]
+                        }
+                    },
+                },
+            }
+        } catch (_e) {}
+    }catch(_e){}</script></head><body class="font-body-md text-on-surface flex flex-col h-screen bg-background">
+<!-- TopNavBar -->
+<nav class="shrink-0 w-full z-50 flex justify-between items-center px-margin_page max-w-container_max_width mx-auto bg-surface-container-lowest h-[60px] border-b border-dashed border-outline-variant">
+<div class="font-headline-md text-headline-md font-bold text-primary">DUDC 로고</div>
+<div class="hidden md:flex items-center space-x-10">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">홈</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">DUDC 소개</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-sm text-label-sm" href="#">업무첫걸음</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">DUDC 문화</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">첫출근 미션</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">커뮤니티</a>
+</div>
+<div class="flex items-center">
+<button class="px-4 py-1.5 rounded-full border border-primary text-primary font-label-sm text-label-sm hover:bg-primary-fixed transition-colors">로그인</button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<div class="flex flex-grow overflow-hidden">
+<!-- Sidebar -->
+<aside class="w-64 flex-shrink-0 border-r border-dashed border-outline-variant bg-surface-container-low flex flex-col">
+<div class="p-6 border-b border-dashed border-outline-variant">
+<h2 class="font-headline-md text-[18px] font-bold text-on-surface flex items-center gap-2">
+<span class="material-symbols-outlined text-secondary">menu_book</span>
+                업무 매뉴얼 리스트
+            </h2>
+</div>
+<div class="flex-grow overflow-y-auto custom-scrollbar p-4 space-y-1">
+<div class="mb-6 px-1">
+<div class="flex items-center gap-2 mb-2">
+<span class="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+<span class="text-label-sm font-label-sm text-secondary">매뉴얼 검색</span>
+</div>
+<div class="relative flex items-center">
+<input class="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md pl-3 pr-10 py-2 transition-all" id="manual-search-input" placeholder="검색어를 입력하세요..." type="text"/>
+<button class="absolute right-2 flex items-center justify-center w-8 h-8 bg-primary text-on-primary rounded-md hover:opacity-90 transition-all">
+<span class="material-symbols-outlined text-[20px]">search</span>
+</button>
+</div>
+</div>
+<button class="w-full text-left p-3 rounded-xl bg-primary text-on-primary font-bold transition-all shadow-sm">신규 입사자 가이드 v1.2</button>
+<button class="w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all">사내 인트라넷 활용법</button>
+<button class="w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all">근태 및 휴가 규정</button>
+<button class="w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all">보안 및 자산 관리 수칙</button>
+<button class="w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all">부서별 협업 프로세스</button>
+<button class="w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all">복리후생 프로그램 안내</button>
+</div>
+<!-- Mascot Tip Area -->
+<div class="p-6">
+<div class="p-4 bg-tertiary-fixed rounded-2xl border border-dashed border-tertiary-container relative">
+<p class="text-label-sm text-on-tertiary-fixed leading-tight">궁금한 점은 사내 메신저 '두닥챗'을 이용해주세요!</p>
+<div class="mt-2 flex justify-end">
+<span class="material-symbols-outlined text-tertiary text-[24px]">pest_control_rodent</span>
+</div>
+</div>
+</div>
+</aside>
+<!-- Main Stage -->
+<main class="flex-grow flex flex-col relative bg-[#f1f4f9] overflow-hidden">
+<!-- Admin Button -->
+<div class="absolute top-6 right-8 z-20">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md">
+<span class="material-symbols-outlined">add_circle</span>
+<span class="text-body-md">신규 매뉴얼 등록</span>
+</button>
+</div>
+<!-- Page Title & Navigation -->
+<div class="px-10 pt-8 pb-4 z-10">
+<div class="flex items-center gap-3">
+<h1 class="font-headline-lg text-headline-lg text-on-surface">신규 입사자 가이드 v1.2</h1>
+<span class="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-bold">필독 매뉴얼</span>
+</div>
+<div class="w-full border-b border-dashed border-outline-variant mt-4"></div>
+</div>
+<!-- Book Stage -->
+<div class="flex-grow flex items-center justify-center p-8 relative">
+<!-- Navigation Arrows -->
+<button class="absolute left-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30">
+<span class="material-symbols-outlined text-[32px]">chevron_left</span>
+</button>
+<button class="absolute right-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30">
+<span class="material-symbols-outlined text-[32px]">chevron_right</span>
+</button>
+<!-- 2-Page Book Spread -->
+<div class="book-container relative">
+<!-- 3D Stacked Pages Effect (Left) -->
+<div class="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0"></div>
+<div class="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0"></div>
+<!-- 3D Stacked Pages Effect (Right) -->
+<div class="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0"></div>
+<div class="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0"></div>
+<div class="book relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest">
+<!-- Refined Central Spine -->
+<div class="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10"></div>
+<!-- Left Page -->
+<div class="book-page left-page w-1/2 p-10 border-r border-outline-variant/20 relative">
+<div class="flex justify-between items-start mb-10">
+<div class="space-y-1">
+<div class="text-primary font-bold text-[24px] tracking-widest">DUDC</div>
+<div class="text-[12px] text-outline uppercase tracking-tighter">Digital User Design Center</div>
+</div>
+<span class="material-symbols-outlined text-primary/20 text-[32px]">verified</span>
+</div>
+<div class="space-y-8">
+<div class="text-right text-[12px] text-outline">No. 2024-012</div>
+<h2 class="text-center text-headline-md font-bold text-on-surface pb-4 border-b-2 border-primary/10">I. 근태 및 기초 복무 가이드</h2>
+<div class="space-y-6">
+<div class="group">
+<h3 class="font-bold text-primary flex items-center gap-3 mb-2">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                            1. 근무 시간 안내
+                        </h3>
+<p class="pl-5 text-body-md leading-relaxed text-on-surface-variant">
+                            표준 근무 시간은 <span class="text-on-surface font-bold">09:00 ~ 18:00</span> 이며, 유연근무제 신청 시 08:00 ~ 10:00 사이 자율 출근이 가능합니다.
+                        </p>
+</div>
+<div class="group">
+<h3 class="font-bold text-primary flex items-center gap-3 mb-2">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                            2. 근태 체크 방식
+                        </h3>
+<p class="pl-5 text-body-md leading-relaxed text-on-surface-variant">
+                            사내 인트라넷 <span class="italic">'DUDC Space'</span>를 통한 모바일 체크인을 원칙으로 합니다. 건물 진입 시 보안 카드를 반드시 태그해 주세요.
+                        </p>
+</div>
+<div class="group">
+<h3 class="font-bold text-primary flex items-center gap-3 mb-2">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                            3. 휴가 신청 절차
+                        </h3>
+<p class="pl-5 text-body-md leading-relaxed text-on-surface-variant">
+                            연차 및 반차는 사용일 <span class="text-error font-bold">최소 3일 전</span>까지 팀장 전결을 통해 신청을 완료해야 합니다.
+                        </p>
+</div>
+</div>
+</div>
+<div class="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">— 3 —</div>
+</div>
+<!-- Right Page -->
+<div class="book-page right-page w-1/2 p-10 relative">
+<div class="space-y-8">
+<h2 class="text-center text-headline-md font-bold text-on-surface pb-4 border-b-2 border-primary/10">II. 사내 인프라 및 시스템</h2>
+<div class="space-y-6">
+<div class="group">
+<h3 class="font-bold text-primary flex items-center gap-3 mb-2">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                            1. 업무 장비 지급
+                        </h3>
+<p class="pl-5 text-body-md leading-relaxed text-on-surface-variant">
+                            MacBook Pro 16인치 또는 Windows Workstation 중 선택 가능하며, 듀얼 모니터와 주변기기가 기본 제공됩니다.
+                        </p>
+</div>
+<div class="group">
+<h3 class="font-bold text-primary flex items-center gap-3 mb-2">
+<span class="w-1.5 h-6 bg-primary rounded-full"></span>
+                            2. 보안 수칙
+                        </h3>
+<ul class="pl-5 space-y-2">
+<li class="flex items-start gap-2 text-body-md text-on-surface-variant">
+<span class="text-primary mt-1.5">●</span>
+<span>퇴근 시 장비 잠금 확인 필수</span>
+</li>
+<li class="flex items-start gap-2 text-body-md text-on-surface-variant">
+<span class="text-primary mt-1.5">●</span>
+<span>USB 등 외부 저장 매체 사용 금지</span>
+</li>
+</ul>
+</div>
+</div>
+<div class="p-5 bg-primary/5 border border-dashed border-primary/20 rounded-xl">
+<div class="flex items-center gap-2 text-primary font-bold mb-1">
+<span class="material-symbols-outlined text-[18px]">info</span>
+<span class="text-label-sm">[신규 입사자 참고]</span>
+</div>
+<p class="text-body-md text-on-surface-variant leading-snug">
+                        시스템 계정은 입사 당일 오전 중 생성됩니다. 문제 발생 시 7층 IT지원센터(내선 104)로 문의 바랍니다.
+                    </p>
+</div>
+<div class="pt-8 text-center border-t border-dashed border-outline-variant/30">
+<p class="text-label-sm text-outline mb-1">2024년 05월 20일 개정</p>
+<p class="text-[18px] font-bold text-on-surface tracking-[0.2em]">DUDC 운영본부</p>
+</div>
+</div>
+<div class="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">— 4 —</div>
+</div>
+</div>
+</div>
+</div>
+<!-- Progress Bar -->
+<div class="px-10 pb-8 flex flex-col items-center z-10">
+<div class="w-2/3 relative h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+<div class="absolute left-0 top-0 h-full bg-primary w-2/6"></div>
+</div>
+<div class="w-2/3 flex justify-between mt-2 text-label-sm text-outline">
+<span class="">시작</span>
+<span class="text-primary font-bold">4 / 12 페이지</span>
+<span class="">완료</span>
+</div>
+</div>
+</main>
+</div>
+<!-- Footer -->
+<footer class="flex-shrink-0 flex justify-between items-center px-10 py-3 bg-surface-container-low border-t border-dashed border-outline-variant">
+<span class="font-label-sm text-label-sm font-bold text-on-surface">© 2024 DUDC Onboarding Portal. All rights reserved.</span>
+<div class="flex gap-6">
+<a class="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">Contact Us</a>
+</div></footer></body></html>

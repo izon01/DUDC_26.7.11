@@ -1,0 +1,478 @@
+import { useMemo, useState } from "react";
+import ReactQuill from "react-quill";
+import "react-quill/dist/quill.snow.css";
+import Header from "../components/Header";
+
+const QUILL_MODULES = {
+  toolbar: [
+    [{ size: ["small", false, "large", "huge"] }],
+    ["bold", "underline"],
+    [{ color: [] }],
+    [{ list: "ordered" }, { list: "bullet" }],
+    [{ align: [] }],
+  ],
+};
+
+const QUILL_FORMATS = ["size", "bold", "underline", "color", "list", "align"];
+
+function placeholderSpread(title) {
+  return {
+    left: {
+      heading: title,
+      placeholder: true,
+      pageNum: 1,
+    },
+    right: {
+      heading: "준비 중",
+      placeholder: true,
+      pageNum: 2,
+    },
+  };
+}
+
+const INITIAL_MANUALS = [
+  {
+    id: "guide-v1",
+    title: "신규 입사자 가이드 v1.2",
+    badge: "필독 매뉴얼",
+    spreads: [
+      {
+        left: {
+          docNo: "No. 2024-011",
+          heading: "0. 온보딩 첫걸음",
+          sections: [
+            {
+              title: "환영합니다",
+              body: "DUDC의 새 가족이 되신 것을 진심으로 환영합니다. 이 매뉴얼은 여러분의 성공적인 적응을 돕기 위해 제작되었습니다.",
+            },
+            {
+              title: "매뉴얼 구성",
+              body: "근태, 인프라, 복지 등 핵심 정보를 안내합니다. 좌측 목록에서 다른 매뉴얼로 이동할 수 있어요.",
+            },
+          ],
+          pageNum: 1,
+        },
+        right: {
+          heading: "I. 목차",
+          list: [
+            "1. 근태 및 기초 복무 가이드",
+            "2. 사내 인프라 및 시스템",
+            "3. 복리후생 프로그램 안내",
+            "4. 자주 묻는 질문",
+          ],
+          pageNum: 2,
+        },
+      },
+      {
+        left: {
+          docNo: "No. 2024-012",
+          heading: "I. 근태 및 기초 복무 가이드",
+          sections: [
+            {
+              title: "1. 근무 시간 안내",
+              body: "표준 근무 시간은 09:00 ~ 18:00 이며, 유연근무제 신청 시 08:00 ~ 10:00 사이 자율 출근이 가능합니다.",
+            },
+            {
+              title: "2. 근태 체크 방식",
+              body: "사내 인트라넷 'DUDC Space'를 통한 모바일 체크인을 원칙으로 합니다. 건물 진입 시 보안 카드를 반드시 태그해 주세요.",
+            },
+            {
+              title: "3. 휴가 신청 절차",
+              body: "연차 및 반차는 사용일 최소 3일 전까지 팀장 전결을 통해 신청을 완료해야 합니다.",
+            },
+          ],
+          pageNum: 3,
+        },
+        right: {
+          heading: "II. 사내 인프라 및 시스템",
+          sections: [
+            {
+              title: "1. 업무 장비 지급",
+              body: "MacBook Pro 16인치 또는 Windows Workstation 중 선택 가능하며, 듀얼 모니터와 주변기기가 기본 제공됩니다.",
+            },
+          ],
+          bullets: ["퇴근 시 장비 잠금 확인 필수", "USB 등 외부 저장 매체 사용 금지"],
+          note: "시스템 계정은 입사 당일 오전 중 생성됩니다. 문제 발생 시 7층 IT지원센터(내선 104)로 문의 바랍니다.",
+          pageNum: 4,
+        },
+      },
+    ],
+  },
+  { id: "intranet", title: "사내 인트라넷 활용법", spreads: [placeholderSpread("사내 인트라넷 활용법")] },
+  { id: "attendance", title: "근태 및 휴가 규정", spreads: [placeholderSpread("근태 및 휴가 규정")] },
+  { id: "security", title: "보안 및 자산 관리 수칙", spreads: [placeholderSpread("보안 및 자산 관리 수칙")] },
+  { id: "collab", title: "부서별 협업 프로세스", spreads: [placeholderSpread("부서별 협업 프로세스")] },
+  { id: "benefits", title: "복리후생 프로그램 안내", spreads: [placeholderSpread("복리후생 프로그램 안내")] },
+];
+
+function BookPage({ page }) {
+  if (page.placeholder) {
+    return (
+      <div className="w-full px-8 py-10 flex flex-col items-center justify-center text-center gap-3 relative break-keep">
+        <span className="material-symbols-outlined text-primary/20 text-[48px]">construction</span>
+        <h2 className="text-headline-md font-bold text-on-surface">{page.heading}</h2>
+        <p className="text-body-md text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
+        <div className="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">
+          — {page.pageNum} —
+        </div>
+      </div>
+    );
+  }
+
+  if (page.html) {
+    return (
+      <div className="w-full px-8 py-10 relative break-keep">
+        <div className="space-y-6">
+          <span className="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-bold">
+            새로 작성된 글
+          </span>
+          <h2 className="text-center text-headline-md font-bold text-on-surface pb-4 border-b-2 border-primary/10">
+            {page.heading}
+          </h2>
+          <div className="ql-editor !p-0 break-keep text-on-surface-variant" dangerouslySetInnerHTML={{ __html: page.html }} />
+        </div>
+        <div className="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">
+          — {page.pageNum} —
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="w-full px-8 py-10 relative break-keep">
+      <div className="space-y-8">
+        {page.docNo && <div className="text-right text-[12px] text-outline">{page.docNo}</div>}
+        <h2 className="text-center text-headline-md font-bold text-on-surface pb-4 border-b-2 border-primary/10">
+          {page.heading}
+        </h2>
+
+        {page.sections && (
+          <div className="space-y-6">
+            {page.sections.map((section) => (
+              <div key={section.title}>
+                <h3 className="font-bold text-primary flex items-center gap-3 mb-2">
+                  <span className="w-1.5 h-6 bg-primary rounded-full" />
+                  {section.title}
+                </h3>
+                <p className="pl-5 text-body-md leading-relaxed text-on-surface-variant break-keep">{section.body}</p>
+              </div>
+            ))}
+          </div>
+        )}
+
+        {page.list && (
+          <ul className="space-y-3 pl-2">
+            {page.list.map((item) => (
+              <li key={item} className="flex items-center gap-2 text-body-md text-on-surface-variant">
+                <span className="text-primary">●</span>
+                <span>{item}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {page.bullets && (
+          <ul className="pl-5 space-y-2">
+            {page.bullets.map((bullet) => (
+              <li key={bullet} className="flex items-start gap-2 text-body-md text-on-surface-variant">
+                <span className="text-primary mt-1.5">●</span>
+                <span>{bullet}</span>
+              </li>
+            ))}
+          </ul>
+        )}
+
+        {page.note && (
+          <div className="p-5 bg-primary/5 border border-dashed border-primary/20 rounded-xl">
+            <div className="flex items-center gap-2 text-primary font-bold mb-1">
+              <span className="material-symbols-outlined text-[18px]">info</span>
+              <span className="text-label-sm">[신규 입사자 참고]</span>
+            </div>
+            <p className="text-body-md text-on-surface-variant leading-snug break-keep">{page.note}</p>
+          </div>
+        )}
+      </div>
+      <div className="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">
+        — {page.pageNum} —
+      </div>
+    </div>
+  );
+}
+
+export default function WorkManual() {
+  const [manuals, setManuals] = useState(INITIAL_MANUALS);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedManualId, setSelectedManualId] = useState(INITIAL_MANUALS[0].id);
+  const [spreadIndex, setSpreadIndex] = useState(0);
+
+  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [newTitle, setNewTitle] = useState("");
+  const [newContent, setNewContent] = useState("");
+
+  const filteredManuals = useMemo(
+    () => manuals.filter((m) => m.title.toLowerCase().includes(searchTerm.toLowerCase())),
+    [manuals, searchTerm]
+  );
+
+  const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? manuals[0];
+  const currentSpread = selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0];
+  const totalPages = selectedManual.spreads.length * 2;
+  const progressPercent = Math.round(((spreadIndex + 1) * 2 * 100) / totalPages);
+
+  function handleSelectManual(id) {
+    setSelectedManualId(id);
+    setSpreadIndex(0);
+  }
+
+  function goPrev() {
+    setSpreadIndex((idx) => Math.max(0, idx - 1));
+  }
+
+  function goNext() {
+    setSpreadIndex((idx) => Math.min(selectedManual.spreads.length - 1, idx + 1));
+  }
+
+  function openRegisterModal() {
+    setNewTitle("");
+    setNewContent("");
+    setIsRegisterOpen(true);
+  }
+
+  function closeRegisterModal() {
+    setIsRegisterOpen(false);
+  }
+
+  function handleSaveNewManual() {
+    const title = newTitle.trim();
+    const isContentEmpty = newContent.replace(/<(.|\n)*?>/g, "").trim().length === 0;
+    if (!title || isContentEmpty) return;
+
+    const newManual = {
+      id: `custom-${Date.now()}`,
+      title,
+      badge: "새 글",
+      spreads: [
+        {
+          left: { heading: title, html: newContent, pageNum: 1 },
+          right: { heading: "다음 페이지를 기다리는 중", placeholder: true, pageNum: 2 },
+        },
+      ],
+    };
+
+    setManuals((prev) => [...prev, newManual]);
+    setSelectedManualId(newManual.id);
+    setSpreadIndex(0);
+    setIsRegisterOpen(false);
+  }
+
+  return (
+    <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
+      <Header />
+
+      <div className="flex flex-1 overflow-hidden">
+        {/* Sidebar */}
+        <aside className="w-64 shrink-0 border-r border-dashed border-outline-variant bg-surface-container-low flex flex-col">
+          <div className="p-6 border-b border-dashed border-outline-variant">
+            <h2 className="font-headline-md text-[18px] font-bold text-on-surface flex items-center gap-2">
+              <span className="material-symbols-outlined text-secondary">menu_book</span>
+              업무 매뉴얼 리스트
+            </h2>
+          </div>
+          <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
+            <div className="mb-6 px-1">
+              <div className="flex items-center gap-2 mb-2">
+                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
+                <span className="text-label-sm font-label-sm text-secondary">매뉴얼 검색</span>
+              </div>
+              <div className="relative flex items-center">
+                <input
+                  className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md pl-3 pr-10 py-2 transition-all"
+                  placeholder="검색어를 입력하세요..."
+                  type="text"
+                  value={searchTerm}
+                  onChange={(e) => setSearchTerm(e.target.value)}
+                />
+                <span className="absolute right-2 flex items-center justify-center w-8 h-8 bg-primary text-on-primary rounded-md">
+                  <span className="material-symbols-outlined text-[20px]">search</span>
+                </span>
+              </div>
+            </div>
+
+            {filteredManuals.map((manual) => (
+              <button
+                key={manual.id}
+                onClick={() => handleSelectManual(manual.id)}
+                className={
+                  manual.id === selectedManualId
+                    ? "w-full text-left p-3 rounded-xl bg-primary text-on-primary font-bold transition-all shadow-sm"
+                    : "w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all"
+                }
+              >
+                {manual.title}
+              </button>
+            ))}
+          </div>
+
+          <div className="p-6">
+            <div className="p-4 bg-tertiary-fixed rounded-2xl border border-dashed border-tertiary-container relative">
+              <p className="text-label-sm text-on-tertiary-fixed leading-tight">
+                궁금한 점은 사내 메신저 '두닥챗'을 이용해주세요!
+              </p>
+              <div className="mt-2 flex justify-end">
+                <span className="material-symbols-outlined text-tertiary text-[24px]">pest_control_rodent</span>
+              </div>
+            </div>
+          </div>
+        </aside>
+
+        {/* Main Stage */}
+        <main className="flex-1 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
+          <button
+            onClick={openRegisterModal}
+            className="absolute top-6 right-8 z-20 flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
+          >
+            <span className="material-symbols-outlined">add_circle</span>
+            <span className="text-body-md">신규 매뉴얼 등록</span>
+          </button>
+
+          <div className="px-10 pt-8 pb-4 z-10">
+            <div className="flex items-center gap-3">
+              <h1 className="font-headline-lg text-headline-lg text-on-surface">{selectedManual.title}</h1>
+              {selectedManual.badge && (
+                <span className="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-bold">
+                  {selectedManual.badge}
+                </span>
+              )}
+            </div>
+            <div className="w-full border-b border-dashed border-outline-variant mt-4" />
+          </div>
+
+          <div className="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
+            <button
+              onClick={goPrev}
+              disabled={spreadIndex === 0}
+              className="absolute left-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[32px]">chevron_left</span>
+            </button>
+            <button
+              onClick={goNext}
+              disabled={spreadIndex === selectedManual.spreads.length - 1}
+              className="absolute right-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
+            >
+              <span className="material-symbols-outlined text-[32px]">chevron_right</span>
+            </button>
+
+            <div className="relative max-w-[900px] w-full h-full max-h-[560px]">
+              <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
+              <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
+              <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
+              <div className="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0" />
+
+              <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest h-full">
+                <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
+                <div className="w-1/2 border-r border-outline-variant/20 relative overflow-y-auto custom-scrollbar">
+                  <BookPage page={currentSpread.left} />
+                </div>
+                <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
+                  <BookPage page={currentSpread.right} />
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <div className="px-10 pb-8 flex flex-col items-center z-10">
+            <div className="w-2/3 relative h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
+              <div
+                className="absolute left-0 top-0 h-full bg-primary transition-all duration-500"
+                style={{ width: `${progressPercent}%` }}
+              />
+            </div>
+            <div className="w-2/3 flex justify-between mt-2 text-label-sm text-outline">
+              <span>시작</span>
+              <span className="text-primary font-bold">
+                {(spreadIndex + 1) * 2} / {totalPages} 페이지
+              </span>
+              <span>완료</span>
+            </div>
+          </div>
+        </main>
+      </div>
+
+      <footer className="shrink-0 flex justify-between items-center px-10 py-3 bg-surface-container-low border-t border-dashed border-outline-variant">
+        <span className="font-label-sm text-label-sm font-bold text-on-surface">
+          © 2024 DUDC Onboarding Portal. All rights reserved.
+        </span>
+        <div className="flex gap-6">
+          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">
+            Contact Us
+          </a>
+        </div>
+      </footer>
+
+      {isRegisterOpen && (
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
+          <div className="w-full max-w-2xl bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-xl overflow-hidden">
+            <div className="px-8 py-6 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30">
+              <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
+                <span className="material-symbols-outlined text-primary">add_circle</span>
+                신규 매뉴얼 등록
+              </h2>
+              <button
+                onClick={closeRegisterModal}
+                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+              >
+                <span className="material-symbols-outlined text-on-surface-variant">close</span>
+              </button>
+            </div>
+
+            <div className="px-8 py-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
+              <div>
+                <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="manual-title">
+                  매뉴얼 제목
+                </label>
+                <input
+                  id="manual-title"
+                  type="text"
+                  value={newTitle}
+                  onChange={(e) => setNewTitle(e.target.value)}
+                  placeholder="매뉴얼 제목을 입력하세요"
+                  className="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
+                />
+              </div>
+
+              <div>
+                <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block">본문 내용</label>
+                <div className="dudc-quill rounded-xl overflow-hidden">
+                  <ReactQuill
+                    theme="snow"
+                    value={newContent}
+                    onChange={setNewContent}
+                    modules={QUILL_MODULES}
+                    formats={QUILL_FORMATS}
+                    placeholder="매뉴얼 본문을 작성하세요..."
+                  />
+                </div>
+              </div>
+            </div>
+
+            <div className="px-8 py-6 border-t-2 border-dashed border-outline-variant flex justify-end gap-3 bg-surface-container-low">
+              <button
+                onClick={closeRegisterModal}
+                className="px-6 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-lowest transition-colors"
+              >
+                취소
+              </button>
+              <button
+                onClick={handleSaveNewManual}
+                className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all"
+              >
+                저장
+              </button>
+            </div>
+          </div>
+        </div>
+      )}
+    </div>
+  );
+}

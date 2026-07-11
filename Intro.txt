@@ -1,0 +1,249 @@
+<!DOCTYPE html><html class="light" lang="ko"><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>DUDC Onboarding Portal</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700;900&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+      tailwind.config = {
+        darkMode: "class",
+        theme: {
+          extend: {
+            "colors": {
+                    "on-surface": "#191c1d",
+                    "primary-fixed-dim": "#a0c9ff",
+                    "tertiary-fixed-dim": "#ffb86d",
+                    "tertiary": "#864e00",
+                    "on-error-container": "#93000a",
+                    "primary-container": "#2f77bd",
+                    "surface-container-highest": "#e1e3e4",
+                    "background": "#f8f9fa",
+                    "surface-bright": "#f8f9fa",
+                    "on-secondary-fixed": "#2d1505",
+                    "error": "#ba1a1a",
+                    "surface": "#f8f9fa",
+                    "on-primary-fixed": "#001c37",
+                    "tertiary-container": "#a86400",
+                    "surface-dim": "#d9dadb",
+                    "on-tertiary-container": "#fffaff",
+                    "on-primary": "#ffffff",
+                    "tertiary-fixed": "#ffdcbd",
+                    "surface-container": "#edeeef",
+                    "on-tertiary-fixed": "#2c1600",
+                    "surface-container-lowest": "#ffffff",
+                    "secondary-fixed": "#ffdbc7",
+                    "on-secondary-container": "#7a5742",
+                    "secondary": "#795741",
+                    "surface-variant": "#e1e3e4",
+                    "inverse-primary": "#a0c9ff",
+                    "primary-fixed": "#d2e4ff",
+                    "outline-variant": "#c1c7d2",
+                    "error-container": "#ffdad6",
+                    "on-secondary-fixed-variant": "#5f402b",
+                    "on-error": "#ffffff",
+                    "on-background": "#191c1d",
+                    "outline": "#717782",
+                    "on-tertiary": "#ffffff",
+                    "inverse-on-surface": "#f0f1f2",
+                    "secondary-container": "#ffd1b5",
+                    "surface-tint": "#0461a5",
+                    "surface-container-low": "#f3f4f5",
+                    "on-primary-container": "#fcfbff",
+                    "secondary-fixed-dim": "#eabda2",
+                    "primary": "#005ea1",
+                    "on-tertiary-fixed-variant": "#693c00",
+                    "on-surface-variant": "#414751",
+                    "surface-container-high": "#e7e8e9",
+                    "on-primary-fixed-variant": "#00497f",
+                    "inverse-surface": "#2e3132",
+                    "on-secondary": "#ffffff"
+            },
+            "borderRadius": {
+                    "DEFAULT": "0.25rem",
+                    "lg": "0.5rem",
+                    "xl": "0.75rem",
+                    "full": "9999px"
+            },
+            "spacing": {
+                    "stitch_gap": "4px",
+                    "gutter": "24px",
+                    "container_max_width": "1200px",
+                    "header_height": "60px",
+                    "footer_height": "56px",
+                    "margin_page": "40px",
+                    "content_height": "calc(100vh - 60px - 56px)"
+            },
+            "fontFamily": {
+                    "body-lg": ["Noto Sans KR"],
+                    "headline-xl-mobile": ["Noto Sans KR"],
+                    "body-md": ["Noto Sans KR"],
+                    "label-sm": ["Noto Sans KR"],
+                    "headline-lg": ["Noto Sans KR"],
+                    "headline-xl": ["Noto Sans KR"],
+                    "headline-md": ["Noto Sans KR"]
+            },
+            "fontSize": {
+                    "body-lg": ["18px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "headline-xl-mobile": ["32px", {"lineHeight": "1.2", "fontWeight": "700"}],
+                    "body-md": ["16px", {"lineHeight": "1.6", "fontWeight": "400"}],
+                    "label-sm": ["14px", {"lineHeight": "1.2", "letterSpacing": "0.01em", "fontWeight": "500"}],
+                    "headline-lg": ["32px", {"lineHeight": "1.3", "fontWeight": "700"}],
+                    "headline-xl": ["48px", {"lineHeight": "1.2", "letterSpacing": "-0.02em", "fontWeight": "700"}],
+                    "headline-md": ["24px", {"lineHeight": "1.4", "fontWeight": "600"}]
+            }
+          },
+        },
+      }
+    </script>
+<style>
+        body {
+            background-color: #f8f9fa;
+            overflow: hidden;
+            height: 100vh;
+            font-family: 'Noto Sans KR', sans-serif;
+        }
+        .stitch-border {
+            border: 2px dashed #c1c7d2;
+        }
+        .stitch-line-v {
+            width: 1px;
+            height: 100%;
+            background-image: linear-gradient(to bottom, #c1c7d2 50%, rgba(255,255,255,0) 0%);
+            background-position: right;
+            background-size: 1px 12px;
+            background-repeat: repeat-y;
+        }
+        .main-stage {
+            height: calc(100vh - 60px - 56px);
+            max-width: 1200px;
+            margin: 0 auto;
+            padding: 0 40px;
+        }
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+    </style>
+</head>
+<body class="bg-background text-on-surface flex flex-col">
+<!-- Top Navigation Bar -->
+<nav class="shrink-0 w-full z-50 flex justify-between items-center px-margin_page max-w-container_max_width mx-auto bg-surface-container-lowest h-[60px] border-b border-dashed border-outline-variant">
+<div class="font-headline-md text-headline-md font-bold text-primary">DUDC 로고</div>
+<div class="hidden md:flex items-center space-x-10">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#"><span style="color: rgb(31, 31, 31); font-family: &quot;Google Sans Flex&quot;, &quot;Google Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 17px; font-variant-ligatures: none; letter-spacing: normal; background-color: rgb(242, 240, 240);" class="">홈</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#"><span style="color: rgb(31, 31, 31); font-family: &quot;Google Sans Flex&quot;, &quot;Google Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 17px; font-variant-ligatures: none; letter-spacing: normal; background-color: rgb(242, 240, 240);" class="">DUDC 소개</span></a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 font-label-sm text-label-sm" href="#"><span style="color: rgb(31, 31, 31); font-family: &quot;Google Sans Flex&quot;, &quot;Google Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 17px; font-variant-ligatures: none; font-weight: 400; letter-spacing: normal; background-color: rgb(242, 240, 240);" class="">업무첫걸음</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#"><span style="color: rgb(31, 31, 31); font-family: &quot;Google Sans Flex&quot;, &quot;Google Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 17px; font-variant-ligatures: none; letter-spacing: normal; background-color: rgb(242, 240, 240);" class="">DUDC 문화</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#"><span style="color: rgb(31, 31, 31); font-family: &quot;Google Sans Flex&quot;, &quot;Google Sans&quot;, &quot;Helvetica Neue&quot;, sans-serif; font-size: 17px; font-variant-ligatures: none; letter-spacing: normal; background-color: rgb(242, 240, 240);" class="">첫출근 미션</span></a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">커뮤니티</a>
+</div>
+<div class="flex items-center">
+<button class="px-4 py-1.5 rounded-full border border-primary text-primary font-label-sm text-label-sm hover:bg-primary-fixed transition-colors">로그인</button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 overflow-hidden">
+<div class="main-stage flex items-center relative">
+<!-- Left Half: Welcome Message -->
+<div class="w-1/2 flex flex-col justify-center pr-12 h-full">
+<div class="mb-4 inline-flex">
+<span class="bg-secondary-container px-3 py-1 rounded-full font-label-sm text-label-sm text-on-secondary-container">CEO Welcome Message</span>
+</div>
+<h1 class="font-headline-xl text-headline-xl text-on-surface mb-8 leading-tight">
+<span class="text-primary">DUDC</span>의 새로운 가족이<br>되신 것을 환영합니다
+            </h1>
+<div class="relative p-8 bg-white rounded-2xl border-2 border-dashed border-outline-variant/40">
+<p class="font-body-lg text-body-lg text-on-surface-variant mb-6 italic leading-relaxed">
+                    "우리는 매일 세상을 더 연결하는 꿈을 꿉니다. 당신의 열정과 창의력이 우리와 만나 더 큰 결실을 맺기를 기대합니다."
+                </p>
+<div class="flex items-center gap-4">
+<div class="w-16 h-16 rounded-full overflow-hidden border-2 border-dashed border-primary p-0.5">
+<img alt="CEO Portrait" class="w-full h-full object-cover rounded-full" src="https://lh3.googleusercontent.com/aida-public/AB6AXuDEifMLrtanSkNyQ3Qx5IOY-37UjLIeFmAIAV8fQMYz9W0aIuZdNZu_0Re1IJDqMku4zDWcmnLNQd9YLhda5y57WU2bSmpgL2krjJ-ltyQ2yrIIm4VMWctoM0JKuCiyOHLynT5NIYGHPjfHd3UC-58mbV_Aea1LPIBzKCPW-QpeB5t9AHShre5gklZiYe9wQn0CHrMryZpDgGXfrf_Z60HWMACxCNi6Z6peueb6k1boZ5SXcmK1cj1p">
+</div>
+<div>
+<p class="font-label-sm text-label-sm font-bold text-on-surface">김다정 대표이사</p>
+<p class="font-label-sm text-label-sm text-outline">DUDC CEO &amp; Founder</p>
+</div>
+</div>
+</div>
+<div class="mt-8 flex gap-4">
+<button class="bg-primary text-on-primary px-8 py-3 rounded-xl font-body-md text-body-md hover:shadow-lg transition-all">온보딩 시작하기</button>
+</div>
+</div>
+<!-- Vertical Divider -->
+<div class="stitch-line-v absolute left-1/2 -translate-x-1/2 h-4/5 top-1/2 -translate-y-1/2 opacity-30"></div>
+<!-- Right Half: Core Values -->
+<div class="w-1/2 flex flex-col justify-center gap-6 pl-12 h-full">
+<div>
+<h2 class="font-headline-md text-headline-md text-on-surface">우리의 핵심 가치</h2>
+<p class="font-label-sm text-label-sm text-on-surface-variant mt-1">DUDC가 일하는 방식과 지향하는 미래입니다.</p>
+</div>
+<!-- Value Block 1 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 hover:border-primary/50 transition-colors">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-primary-fixed rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-primary" style="font-variation-settings: 'FILL' 1;">verified_user</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-on-surface">신뢰 (Trust)</h3>
+<p class="text-sm text-on-surface-variant mt-1">서로를 믿고 투명하게 소통하며 약속을 지키는 정직한 문화</p>
+</div>
+</div>
+</div>
+<!-- Value Block 2 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 hover:border-secondary/50 transition-colors">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-secondary-fixed rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-secondary" style="font-variation-settings: 'FILL' 1;">lightbulb</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-on-surface">혁신 (Innovation)</h3>
+<p class="text-sm text-on-surface-variant mt-1">도전을 두려워하지 않고 끊임없이 변화하며 새로운 가치 창출</p>
+</div>
+</div>
+</div>
+<!-- Value Block 3 -->
+<div class="bg-surface-container-lowest p-6 rounded-2xl border border-outline-variant/30 hover:border-tertiary/50 transition-colors">
+<div class="flex items-center gap-5">
+<div class="w-12 h-12 bg-tertiary-fixed rounded-xl flex items-center justify-center shrink-0">
+<span class="material-symbols-outlined text-tertiary" style="font-variation-settings: 'FILL' 1;">forum</span>
+</div>
+<div class="flex-1">
+<h3 class="font-bold text-on-surface">소통 (Communication)</h3>
+<p class="text-sm text-on-surface-variant mt-1">다양성을 존중하고 열린 마음으로 더 나은 해답을 찾아가는 소통</p>
+</div>
+</div>
+</div>
+</div>
+</div>
+</main>
+<!-- Footer -->
+<footer class="h-[56px] w-full bg-surface-container-low border-t border-dashed border-outline-variant shrink-0 flex items-center">
+<div class="w-full max-w-container_max_width mx-auto px-margin_page flex justify-between items-center text-outline text-xs">
+<div>
+<span class="">© 2024 DUDC Onboarding Portal. All rights reserved.</span>
+</div>
+<div class="flex gap-6">
+<a class="hover:text-primary transition-colors" href="#">Privacy Policy</a>
+<a class="hover:text-primary transition-colors" href="#">Contact Us</a>
+<a class="hover:text-primary transition-colors" href="#">Help Desk</a>
+</div>
+</div>
+</footer>
+<script>
+    // Navigation link highlighting
+    const navLinks = document.querySelectorAll('nav a');
+    navLinks.forEach(link => {
+        link.addEventListener('click', (e) => {
+            navLinks.forEach(l => {
+                l.classList.remove('text-primary', 'border-b-2', 'border-primary', 'pb-1', 'font-bold');
+                l.classList.add('text-on-surface-variant');
+            });
+            link.classList.add('text-primary', 'border-b-2', 'border-primary', 'pb-1', 'font-bold');
+            link.classList.remove('text-on-surface-variant');
+        });
+    });
+</script>
+
+
+</body></html>

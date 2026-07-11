@@ -1,0 +1,158 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+html,
+body,
+#root {
+  height: 100%;
+}
+
+body {
+  font-family: "Noto Sans KR", sans-serif;
+  background-color: #f8f9fa;
+  overflow: hidden;
+  height: 100vh;
+  margin: 0;
+}
+
+.material-symbols-outlined {
+  font-variation-settings: "FILL" 0, "wght" 400, "GRAD" 0, "opsz" 24;
+  vertical-align: middle;
+}
+
+/* Stitch (dashed/dotted) decorative borders shared across pages */
+.stitch-border-b {
+  border-bottom: 2px dotted #c1c7d2;
+}
+
+.stitch-border-all {
+  border: 2px dotted #c1c7d2;
+}
+
+.stitch-border {
+  border: 1px dashed #c1c7d2;
+}
+
+.stitch-border-r {
+  border-right: 1px dashed #c1c7d2;
+}
+
+.stitch-border-t {
+  border-top: 1px dashed #c1c7d2;
+}
+
+.stitch-line-v {
+  width: 1px;
+  height: 100%;
+  background-image: linear-gradient(to bottom, #c1c7d2 50%, rgba(255, 255, 255, 0) 0%);
+  background-position: right;
+  background-size: 1px 12px;
+  background-repeat: repeat-y;
+}
+
+.stitch-border-v {
+  background-image: radial-gradient(#e1e3e4 20%, transparent 20%);
+  background-position: center;
+  background-size: 1px 8px;
+  background-repeat: repeat-y;
+}
+
+.stitch-border-h {
+  background-image: radial-gradient(#e1e3e4 20%, transparent 20%);
+  background-position: bottom;
+  background-size: 8px 1px;
+  background-repeat: repeat-x;
+}
+
+/* Scrollbars */
+.custom-scroll::-webkit-scrollbar,
+.custom-scrollbar::-webkit-scrollbar {
+  width: 4px;
+}
+
+.custom-scroll::-webkit-scrollbar-track,
+.custom-scrollbar::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+.custom-scroll::-webkit-scrollbar-thumb,
+.custom-scrollbar::-webkit-scrollbar-thumb {
+  background: #e1e3e4;
+  border-radius: 10px;
+}
+
+/* Book reader */
+.book-page-shadow {
+  box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05);
+}
+
+.card-shadow {
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.03);
+}
+
+/* Checklist tabs / checkbox */
+.active-tab {
+  position: relative;
+}
+
+.active-tab::after {
+  content: "";
+  position: absolute;
+  bottom: -1px;
+  left: 0;
+  right: 0;
+  height: 2px;
+  background-color: #005ea1;
+}
+
+.checkbox-stitch:checked {
+  background-color: #005ea1;
+  border-color: #005ea1;
+}
+
+/* React-Quill: Stitch theme (pastel / dashed / rounded) */
+.dudc-quill .ql-toolbar.ql-snow {
+  border: 2px dashed #c1c7d2;
+  border-bottom: none;
+  border-radius: 0.75rem 0.75rem 0 0;
+  background-color: #f3f4f5;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+.dudc-quill .ql-container.ql-snow {
+  border: 2px dashed #c1c7d2;
+  border-radius: 0 0 0.75rem 0.75rem;
+  background-color: #ffffff;
+  font-family: "Noto Sans KR", sans-serif;
+  font-size: 15px;
+}
+
+.dudc-quill .ql-editor {
+  min-height: 160px;
+  line-height: 1.7;
+  word-break: keep-all;
+}
+
+.dudc-quill .ql-editor.ql-blank::before {
+  color: #717782;
+  font-style: normal;
+}
+
+.dudc-quill .ql-snow .ql-picker {
+  color: #414751;
+}
+
+.dudc-quill .ql-snow.ql-toolbar button:hover,
+.dudc-quill .ql-snow .ql-toolbar button:hover,
+.dudc-quill .ql-snow.ql-toolbar button.ql-active,
+.dudc-quill .ql-snow .ql-toolbar button.ql-active {
+  color: #005ea1;
+}
+
+.dudc-quill .ql-snow.ql-toolbar button:hover .ql-stroke,
+.dudc-quill .ql-snow .ql-toolbar button:hover .ql-stroke,
+.dudc-quill .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.dudc-quill .ql-snow .ql-toolbar button.ql-active .ql-stroke {
+  stroke: #005ea1;
+}

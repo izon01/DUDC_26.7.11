@@ -1,0 +1,248 @@
+<!DOCTYPE html><html class="light" lang="ko" style=""><head>
+<meta charset="utf-8">
+<meta content="width=device-width, initial-scale=1.0" name="viewport">
+<title>DUDC Onboarding - 업무첫걸음</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Noto+Sans+KR:wght@400;500;700&amp;display=swap" rel="stylesheet">
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet">
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    "colors": {
+                        "surface-bright": "#f8f9fa",
+                        "on-secondary-fixed": "#2d1505",
+                        "on-background": "#191c1d",
+                        "on-primary": "#ffffff",
+                        "tertiary-fixed": "#ffdcbd",
+                        "secondary-fixed": "#ffdbc7",
+                        "on-surface": "#191c1d",
+                        "surface-dim": "#d9dadb",
+                        "error": "#ba1a1a",
+                        "primary": "#005ea1",
+                        "secondary": "#795741",
+                        "on-error": "#ffffff",
+                        "surface-tint": "#0461a5",
+                        "secondary-container": "#ffd1b5",
+                        "on-tertiary-fixed-variant": "#693c00",
+                        "on-primary-container": "#fcfbff",
+                        "surface-variant": "#e1e3e4",
+                        "outline": "#717782",
+                        "on-primary-fixed-variant": "#00497f",
+                        "inverse-on-surface": "#f0f1f2",
+                        "surface-container-low": "#f3f4f5",
+                        "on-tertiary": "#ffffff",
+                        "tertiary-container": "#a86400",
+                        "surface": "#f8f9fa",
+                        "tertiary-fixed-dim": "#ffb86d",
+                        "surface-container": "#edeeef",
+                        "on-surface-variant": "#414751",
+                        "on-secondary": "#ffffff",
+                        "surface-container-lowest": "#ffffff",
+                        "surface-container-highest": "#e1e3e4",
+                        "primary-fixed": "#d2e4ff",
+                        "on-error-container": "#93000a",
+                        "on-secondary-fixed-variant": "#5f402b",
+                        "error-container": "#ffdad6",
+                        "inverse-surface": "#2e3132",
+                        "primary-fixed-dim": "#a0c9ff",
+                        "on-tertiary-fixed": "#2c1600",
+                        "on-tertiary-container": "#fffaff",
+                        "inverse-primary": "#a0c9ff",
+                        "surface-container-high": "#e7e8e9",
+                        "tertiary": "#864e00",
+                        "on-primary-fixed": "#001c37",
+                        "background": "#f8f9fa",
+                        "primary-container": "#2f77bd",
+                        "on-secondary-container": "#7a5742",
+                        "secondary-fixed-dim": "#eabda2",
+                        "outline-variant": "#c1c7d2"
+                    },
+                    "borderRadius": {
+                        "DEFAULT": "0.25rem",
+                        "lg": "0.5rem",
+                        "xl": "0.75rem",
+                        "full": "9999px"
+                    },
+                    "spacing": {
+                        "header_height": "64px",
+                        "footer_height": "40px",
+                        "gutter": "24px",
+                        "margin_page": "40px",
+                        "container_max_width": "1200px",
+                        "stitch_gap": "4px",
+                        "content_height": "calc(100vh - 64px - 40px)"
+                    },
+                    "fontFamily": {
+                        "body-md": ["Noto Sans KR"],
+                        "headline-md": ["Noto Sans KR"],
+                        "label-sm": ["Noto Sans KR"]
+                    }
+                },
+            },
+        }
+    </script>
+<style>
+        body { font-family: 'Noto Sans KR', sans-serif; overflow: hidden; height: 100vh; display: flex; flex-direction: column; }
+        .stitch-border-b { border-bottom: 1px dashed #c1c7d2; }
+        .stitch-border-r { border-right: 1px dashed #c1c7d2; }
+        .stitch-border-t { border-top: 1px dashed #c1c7d2; }
+        .custom-scrollbar::-webkit-scrollbar { width: 4px; }
+        .custom-scrollbar::-webkit-scrollbar-track { background: transparent; }
+        .custom-scrollbar::-webkit-scrollbar-thumb { background: #c1c7d2; border-radius: 10px; }
+        .book-page-shadow { box-shadow: 0 4px 20px rgba(0, 0, 0, 0.05); }
+    </style>
+</head>
+<body class="bg-surface">
+<!-- Fixed Top Navigation Bar -->
+<nav class="shrink-0 w-full z-50 flex justify-between items-center px-10 max-w-[1200px] mx-auto bg-white h-[60px] border-b border-dashed border-outline-variant">
+<div class="font-bold text-[24px] text-primary">DUDC 로고</div>
+<div class="hidden md:flex items-center space-x-10">
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-[14px] font-medium" href="#">홈</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-[14px] font-medium" href="#">DUDC 소개</a>
+<a class="text-primary font-bold border-b-2 border-primary pb-1 text-[14px]" href="#">업무첫걸음</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-[14px] font-medium" href="#">DUDC 문화</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-[14px] font-medium" href="#">첫출근 미션</a>
+<a class="text-on-surface-variant hover:text-primary transition-colors duration-200 text-[14px] font-medium" href="#">커뮤니티</a>
+</div>
+<div class="flex items-center">
+<button class="px-4 py-1.5 rounded-full border border-primary text-primary text-[14px] font-medium hover:bg-primary-fixed transition-colors">로그인</button>
+</div>
+</nav>
+<!-- Main Content Area -->
+<main class="flex-1 flex overflow-hidden" style="height: calc(-100px + 100vh);">
+<!-- Narrow Left Sidebar -->
+<aside class="w-[280px] bg-white stitch-border-r flex flex-col p-6 overflow-hidden">
+<div class="flex items-center gap-2 mb-8">
+<span class="material-symbols-outlined text-secondary">menu_book</span>
+<h2 class="font-bold text-[17px] text-on-surface">문화 포스트 목록</h2>
+</div>
+<div class="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+<div class="p-4 bg-primary-container/10 border border-primary rounded-xl cursor-pointer">
+<p class="text-[11px] text-primary font-bold mb-1 uppercase tracking-wider">Guide 01</p>
+<h3 class="text-[15px] font-bold text-on-surface">사내 예절 안내</h3>
+</div>
+<div class="p-4 bg-white border border-outline-variant border-dashed rounded-xl cursor-pointer hover:border-primary transition-colors opacity-70">
+<p class="text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider">Guide 02</p>
+<h3 class="text-[15px] font-bold text-on-surface">메일 및 협업 툴 활용</h3>
+</div>
+<div class="p-4 bg-white border border-outline-variant border-dashed rounded-xl cursor-pointer hover:border-primary transition-colors opacity-70">
+<p class="text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider">Guide 03</p>
+<h3 class="text-[15px] font-bold text-on-surface">보고 체계 및 일정 관리</h3>
+</div>
+<div class="p-4 bg-white border border-outline-variant border-dashed rounded-xl cursor-pointer hover:border-primary transition-colors opacity-70">
+<p class="text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider">Guide 04</p>
+<h3 class="text-[15px] font-bold text-on-surface">회식 및 소통 문화</h3>
+</div>
+</div>
+<div class="mt-6 p-4 bg-surface-container-low rounded-xl flex items-center gap-3">
+<img alt="Mascot" class="w-10 h-10 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuAb-sjyPjj8c68JH6h8ivED0m7YhVt0WicnHOF_Kh8L5cvEDJL7M0wKMkO55prRo6xcQXWxHEuNqPAKUafBI6qQpd8GBwKIYfl8ewMX2iy_9fhnG6KfoVsoADiXOzYgvtGbYLKhSYROnf6i0QeqVVgyQHv9-XuXWktXmCOV2qwia_7ykSlTu08Jo-BEeAZNO5kfQTzORyjdXhHScjH533M32RxIVF8tHwznJa-h6SCQhTPzNuZw87lI">
+<div>
+<p class="text-[11px] text-on-surface-variant">궁금한 점이 있나요?</p>
+<p class="text-[13px] font-bold text-secondary">지식 베이스</p>
+</div>
+</div>
+</aside>
+<!-- Digital Book Reader Area -->
+<section class="flex-1 bg-surface-container-lowest relative flex items-center justify-center p-10 overflow-hidden">
+<!-- Floating Navigation Buttons -->
+<button class="absolute left-8 w-12 h-12 bg-white rounded-full border border-outline-variant shadow-sm flex items-center justify-center hover:scale-105 transition-transform z-10">
+<span class="material-symbols-outlined text-on-surface-variant">chevron_left</span>
+</button>
+<button class="absolute right-8 w-12 h-12 bg-white rounded-full border border-outline-variant shadow-sm flex items-center justify-center hover:scale-105 transition-transform z-10">
+<span class="material-symbols-outlined text-on-surface-variant">chevron_right</span>
+</button>
+<!-- Book Page Container -->
+<div class="w-full max-w-[840px] h-full bg-white book-page-shadow rounded-[2rem] border border-outline-variant flex flex-col overflow-hidden">
+<!-- Page Header -->
+<div class="px-12 py-8 stitch-border-b flex items-center justify-between">
+<div class="flex items-center gap-4">
+<span class="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full text-[12px] font-bold">New Joiner Guide</span>
+<h2 class="text-[24px] font-bold text-on-surface">사내 예절 안내</h2>
+</div>
+<div class="text-[14px] text-on-surface-variant font-medium">
+<span class="text-primary font-bold">01</span> / 05
+                    </div>
+</div>
+<!-- Page Content -->
+<div class="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
+<div class="max-w-2xl mx-auto space-y-10">
+<div>
+<h3 class="text-[20px] font-bold text-primary flex items-center gap-2 mb-4">
+<span class="material-symbols-outlined">sentiment_satisfied</span>
+                                인사 예절의 기본
+                            </h3>
+<p class="text-[16px] leading-relaxed text-on-surface-variant">
+                                DUDC의 문화는 상호 존중에서 시작됩니다. 아침 출근 시, 회의실 입장 시, 그리고 퇴근 시 가벼운 목례와 인사를 건네보세요. 작은 배려가 즐거운 근무 환경을 만듭니다.
+                            </p>
+</div>
+<div class="p-8 bg-surface-container-low border border-dashed border-outline-variant rounded-2xl">
+<h4 class="font-bold text-[16px] text-on-surface mb-4">Check Points:</h4>
+<ul class="space-y-4">
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-[15px] text-on-surface-variant">출입구에서 동료를 만나면 밝게 인사하기</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-[15px] text-on-surface-variant">엘리베이터 안에서는 조용히 대화하기</span>
+</li>
+<li class="flex items-center gap-3">
+<span class="material-symbols-outlined text-primary">check_circle</span>
+<span class="text-[15px] text-on-surface-variant">회의 시작 5분 전 도착 매너 지키기</span>
+</li>
+</ul>
+</div>
+<div class="grid grid-cols-2 gap-6">
+<div class="aspect-video rounded-2xl overflow-hidden border border-outline-variant">
+<img alt="Meeting Room" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCopM5UZNOrt_l0xYegVnj-EkOL8FgQnDwpuPHvOKDsE5qrsHIA9pSZSvtLboacidR-R7EQRGS5jH24UkQoXc8GJMuZTY5s5irlqYHH-V91aWRdQU8jmNjkVj7YPTkSIJTI9YnmLnsb2-gfYvWkauMI7GzkCv2k8cg4fAamYdHIpGyqRrYFPLCdJoF9CIwOnQQeERK7ISh7THnRmoIUy4V1zKWBpq9FLIPUeU4VjpCY8jWrehmDuqUT">
+</div>
+<div class="aspect-video rounded-2xl overflow-hidden border border-outline-variant">
+<img alt="Lobby" class="w-full h-full object-cover" src="https://lh3.googleusercontent.com/aida-public/AB6AXuC4ZHbqewmtdxe-5MEx75gcFsSBVPhbybRHSdttrbGyc-GClPOBf0fmnkEvvmeTJtt9llWBXH7W8OXXEmx8ix8BwDNE84ARsanQ2fPV4xqM9Rkq8efUluPaGrXq4RYcmNFCVziaYzF6pAAFyqigqoKOV24u82ws8jZRiwrLLQ2r0hYY7ObvUcIz6AJGvj5TBFQeNOjFR55ElQPNxtDWBrbMYNcYLOFgw0Yg845q5B_C_-GFjHhTZ0yc">
+</div>
+</div>
+</div>
+</div>
+<!-- Page Footer -->
+<div class="px-12 py-6 bg-surface-container-lowest stitch-border-t flex items-center justify-between">
+<button class="flex items-center gap-2 text-on-surface-variant hover:text-primary transition-colors group">
+<span class="material-symbols-outlined text-[20px] group-hover:-translate-x-1 transition-transform">arrow_back</span>
+<span class="text-[14px] font-bold">이전 페이지</span>
+</button>
+<div class="flex-1 max-w-[300px] h-[4px] bg-surface-container-high rounded-full relative mx-10">
+<div class="absolute left-0 top-0 h-full w-[20%] bg-primary rounded-full"></div>
+<div class="absolute left-[20%] -translate-x-1/2 -top-6 w-8 h-8">
+<img alt="Shark" class="w-full h-full object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuCliTitZ0kLC2uqZPSANcSkuNKCbTYky2rAJN0Wb1OfLZ5OqRmL93atM6m4aA8hUscHwR8RKsEagWlW010AR1Jvb9sugecVnEmtElsFi3Q8QVsAj0BfRWkgh9Uu_kBOVc5MN6uF5tToXAPSueWH2u4dBUblpi52OVQ8aD52s-p3Tj-U4fYc08122ZzxCsCmpGo0Bxm_H3dRYqgnlyzWU1qbV6YPbCa3d4LTs8yVrt6t9NEzNiGOn_hT">
+</div>
+</div>
+<button class="flex items-center gap-2 bg-primary text-white px-6 py-2 rounded-full font-bold hover:bg-opacity-90 transition-all group">
+<span class="text-[14px]">다음 페이지</span>
+<span class="material-symbols-outlined text-[20px] group-hover:translate-x-1 transition-transform">arrow_forward</span>
+</button>
+</div>
+</div>
+<!-- Floating Mascot -->
+<div class="absolute bottom-10 right-10 flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-dashed border-primary shadow-lg animate-bounce">
+<p class="text-[13px] font-bold text-primary">첫 페이지 정독 중!</p>
+<img alt="Duck" class="w-8 h-8 object-contain" src="https://lh3.googleusercontent.com/aida-public/AB6AXuBggE5V1a-yNANAivFjoWAEn6dg1I8oiWqlgxIUI1tgHmHp4e-r7IIEmqMeVujI254u7VGZ4m6qTZtl8QGoN-ypy40gE0_8fhXBLrpOGsXjZh8T_a8rGk6qtksiak6vaj6dJ-AefE7Pz5T7m0LkVj-glGJ4BULHUNsS_yqiqkz7Vxdv_j5_yG09RXH9_9bn8YwLh-inZiUazC0jbZeEexYvEoYQcP8wwkZu07y68QrnaztKh8H6WVEm">
+</div>
+</section>
+</main>
+<!-- Footer Bar -->
+<footer class="h-[40px] bg-white stitch-border-t px-10 flex items-center justify-between z-50">
+<div class="flex items-center gap-4">
+<span class="text-[12px] font-bold text-on-surface">DUDC 신입사원을 위한 Portal</span>
+
+</div>
+<div class="flex gap-6">
+
+
+
+</div>
+</footer>
+
+
+
+
+</body></html>
