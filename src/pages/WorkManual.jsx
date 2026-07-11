@@ -109,11 +109,11 @@ const INITIAL_MANUALS = [
 function BookPage({ page }) {
   if (page.placeholder) {
     return (
-      <div className="w-full px-8 py-10 flex flex-col items-center justify-center text-center gap-3 relative break-keep">
-        <span className="material-symbols-outlined text-primary/20 text-[48px]">construction</span>
-        <h2 className="text-headline-md font-bold text-on-surface">{page.heading}</h2>
-        <p className="text-body-md text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
-        <div className="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">
+      <div className="w-full px-14 py-16 flex flex-col items-center justify-center text-center gap-4 relative break-keep">
+        <span className="material-symbols-outlined text-primary/20 text-[64px]">construction</span>
+        <h2 className="text-headline-lg font-bold text-on-surface">{page.heading}</h2>
+        <p className="text-body-lg text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
+        <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
           — {page.pageNum} —
         </div>
       </div>
@@ -122,17 +122,20 @@ function BookPage({ page }) {
 
   if (page.html) {
     return (
-      <div className="w-full px-8 py-10 relative break-keep">
-        <div className="space-y-6">
-          <span className="inline-block px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-bold">
+      <div className="w-full px-14 py-16 relative break-keep">
+        <div className="space-y-8">
+          <span className="inline-block px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-body-md font-bold">
             새로 작성된 글
           </span>
-          <h2 className="text-center text-headline-md font-bold text-on-surface pb-4 border-b-2 border-primary/10">
+          <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
             {page.heading}
           </h2>
-          <div className="ql-editor !p-0 break-keep text-on-surface-variant" dangerouslySetInnerHTML={{ __html: page.html }} />
+          <div
+            className="ql-editor !p-0 !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
+            dangerouslySetInnerHTML={{ __html: page.html }}
+          />
         </div>
-        <div className="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">
+        <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
           — {page.pageNum} —
         </div>
       </div>
@@ -140,31 +143,31 @@ function BookPage({ page }) {
   }
 
   return (
-    <div className="w-full px-8 py-10 relative break-keep">
-      <div className="space-y-8">
-        {page.docNo && <div className="text-right text-[12px] text-outline">{page.docNo}</div>}
-        <h2 className="text-center text-headline-md font-bold text-on-surface pb-4 border-b-2 border-primary/10">
+    <div className="w-full px-14 py-16 relative break-keep">
+      <div className="space-y-10">
+        {page.docNo && <div className="text-right text-[14px] text-outline">{page.docNo}</div>}
+        <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
           {page.heading}
         </h2>
 
         {page.sections && (
-          <div className="space-y-6">
+          <div className="space-y-8">
             {page.sections.map((section) => (
               <div key={section.title}>
-                <h3 className="font-bold text-primary flex items-center gap-3 mb-2">
-                  <span className="w-1.5 h-6 bg-primary rounded-full" />
+                <h3 className="text-[19px] font-bold text-primary flex items-center gap-3 mb-3">
+                  <span className="w-2 h-7 bg-primary rounded-full" />
                   {section.title}
                 </h3>
-                <p className="pl-5 text-body-md leading-relaxed text-on-surface-variant break-keep">{section.body}</p>
+                <p className="pl-6 text-body-lg leading-[1.9] text-on-surface-variant break-keep">{section.body}</p>
               </div>
             ))}
           </div>
         )}
 
         {page.list && (
-          <ul className="space-y-3 pl-2">
+          <ul className="space-y-4 pl-2">
             {page.list.map((item) => (
-              <li key={item} className="flex items-center gap-2 text-body-md text-on-surface-variant">
+              <li key={item} className="flex items-center gap-3 text-body-lg text-on-surface-variant">
                 <span className="text-primary">●</span>
                 <span>{item}</span>
               </li>
@@ -173,9 +176,9 @@ function BookPage({ page }) {
         )}
 
         {page.bullets && (
-          <ul className="pl-5 space-y-2">
+          <ul className="pl-6 space-y-3">
             {page.bullets.map((bullet) => (
-              <li key={bullet} className="flex items-start gap-2 text-body-md text-on-surface-variant">
+              <li key={bullet} className="flex items-start gap-3 text-body-lg text-on-surface-variant">
                 <span className="text-primary mt-1.5">●</span>
                 <span>{bullet}</span>
               </li>
@@ -184,16 +187,16 @@ function BookPage({ page }) {
         )}
 
         {page.note && (
-          <div className="p-5 bg-primary/5 border border-dashed border-primary/20 rounded-xl">
-            <div className="flex items-center gap-2 text-primary font-bold mb-1">
-              <span className="material-symbols-outlined text-[18px]">info</span>
-              <span className="text-label-sm">[신규 입사자 참고]</span>
+          <div className="p-6 bg-primary/5 border border-dashed border-primary/20 rounded-xl">
+            <div className="flex items-center gap-2 text-primary font-bold mb-2">
+              <span className="material-symbols-outlined text-[20px]">info</span>
+              <span className="text-body-md">[신규 입사자 참고]</span>
             </div>
-            <p className="text-body-md text-on-surface-variant leading-snug break-keep">{page.note}</p>
+            <p className="text-body-lg text-on-surface-variant leading-relaxed break-keep">{page.note}</p>
           </div>
         )}
       </div>
-      <div className="absolute bottom-6 left-0 right-0 text-center text-label-sm text-outline">
+      <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
         — {page.pageNum} —
       </div>
     </div>
@@ -368,7 +371,7 @@ export default function WorkManual() {
               <span className="material-symbols-outlined text-[32px]">chevron_right</span>
             </button>
 
-            <div className="relative max-w-[900px] w-full h-full max-h-[560px]">
+            <div className="relative max-w-[1400px] w-full h-full max-h-[720px]">
               <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
               <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
               <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
@@ -416,64 +419,95 @@ export default function WorkManual() {
       </footer>
 
       {isAdmin && isRegisterOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-          <div className="w-full max-w-2xl bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-xl overflow-hidden">
-            <div className="px-8 py-6 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30">
+        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+          <div className="w-[92vw] h-[88vh] max-w-[1600px] bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
+            {/* Modal Header */}
+            <div className="px-8 py-5 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30 shrink-0">
               <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">add_circle</span>
-                신규 매뉴얼 등록
+                <span className="material-symbols-outlined text-primary">auto_stories</span>
+                신규 매뉴얼 작성
               </h2>
               <button
                 onClick={closeRegisterModal}
-                className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
               >
                 <span className="material-symbols-outlined text-on-surface-variant">close</span>
               </button>
             </div>
 
-            <div className="px-8 py-6 space-y-5 max-h-[70vh] overflow-y-auto custom-scrollbar">
-              <div>
-                <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="manual-title">
-                  매뉴얼 제목
-                </label>
-                <input
-                  id="manual-title"
-                  type="text"
-                  value={newTitle}
-                  onChange={(e) => setNewTitle(e.target.value)}
-                  placeholder="매뉴얼 제목을 입력하세요"
-                  className="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
-                />
-              </div>
+            {/* Book-style Editor + Live Preview */}
+            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
+              <div className="relative w-full h-full">
+                <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
+                <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
+                <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
+                <div className="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0" />
 
-              <div>
-                <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block">본문 내용</label>
-                <div className="dudc-quill rounded-xl overflow-hidden">
-                  <ReactQuill
-                    theme="snow"
-                    value={newContent}
-                    onChange={setNewContent}
-                    modules={QUILL_MODULES}
-                    formats={QUILL_FORMATS}
-                    placeholder="매뉴얼 본문을 작성하세요..."
-                  />
+                <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest h-full">
+                  <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
+
+                  {/* Left Page: Editor */}
+                  <div className="w-1/2 border-r border-outline-variant/20 flex flex-col overflow-hidden">
+                    <div className="px-14 pt-16 pb-6 shrink-0">
+                      <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-body-md font-bold mb-6">
+                        편집 중
+                      </span>
+                      <input
+                        type="text"
+                        value={newTitle}
+                        onChange={(e) => setNewTitle(e.target.value)}
+                        placeholder="제목을 입력하세요"
+                        className="w-full text-center text-headline-lg font-bold text-on-surface bg-transparent border-none outline-none placeholder:text-outline/40 pb-6 border-b-2 border-primary/10"
+                      />
+                    </div>
+                    <div className="flex-1 min-h-0 px-14 pb-10">
+                      <div className="dudc-quill dudc-quill-lg rounded-xl overflow-hidden h-full">
+                        <ReactQuill
+                          theme="snow"
+                          value={newContent}
+                          onChange={setNewContent}
+                          modules={QUILL_MODULES}
+                          formats={QUILL_FORMATS}
+                          placeholder="본문을 작성해보세요. 오른쪽 페이지에서 실시간으로 확인할 수 있어요."
+                        />
+                      </div>
+                    </div>
+                  </div>
+
+                  {/* Right Page: Live Preview */}
+                  <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
+                    <BookPage
+                      page={{
+                        heading: newTitle.trim() || "제목을 입력해주세요",
+                        html: newContent,
+                        pageNum: 1,
+                      }}
+                    />
+                  </div>
                 </div>
               </div>
             </div>
 
-            <div className="px-8 py-6 border-t-2 border-dashed border-outline-variant flex justify-end gap-3 bg-surface-container-low">
-              <button
-                onClick={closeRegisterModal}
-                className="px-6 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-lowest transition-colors"
-              >
-                취소
-              </button>
-              <button
-                onClick={handleSaveNewManual}
-                className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all"
-              >
-                저장
-              </button>
+            {/* Footer Actions */}
+            <div className="px-8 py-5 border-t-2 border-dashed border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
+              <p className="text-label-sm text-on-surface-variant flex items-center gap-1.5">
+                <span className="material-symbols-outlined text-[16px]">visibility</span>
+                오른쪽 페이지에서 실시간 미리보기를 확인하세요.
+              </p>
+              <div className="flex gap-3">
+                <button
+                  onClick={closeRegisterModal}
+                  className="px-6 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-lowest transition-colors"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={handleSaveNewManual}
+                  className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all"
+                >
+                  저장
+                </button>
+              </div>
             </div>
           </div>
         </div>

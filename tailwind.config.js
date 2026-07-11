@@ -89,6 +89,20 @@ export default {
         "body-lg": ["18px", { lineHeight: "1.6", fontWeight: "400" }],
         "label-sm": ["14px", { lineHeight: "1.2", letterSpacing: "0.01em", fontWeight: "500" }],
       },
+      keyframes: {
+        "fade-in": {
+          "0%": { opacity: "0" },
+          "100%": { opacity: "1" },
+        },
+        "scale-in": {
+          "0%": { opacity: "0", transform: "scale(0.96) translateY(8px)" },
+          "100%": { opacity: "1", transform: "scale(1) translateY(0)" },
+        },
+      },
+      animation: {
+        "fade-in": "fade-in 0.2s ease-out",
+        "scale-in": "scale-in 0.25s cubic-bezier(0.16, 1, 0.3, 1)",
+      },
     },
   },
   plugins: [],

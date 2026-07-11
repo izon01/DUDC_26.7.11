@@ -156,3 +156,32 @@ body {
 .dudc-quill .ql-snow .ql-toolbar button.ql-active .ql-stroke {
   stroke: #005ea1;
 }
+
+/* Taller variant used inside the book-style manual editor modal */
+.dudc-quill.dudc-quill-lg {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+}
+
+.dudc-quill.dudc-quill-lg > div {
+  display: flex;
+  flex-direction: column;
+  flex: 1;
+  min-height: 0;
+}
+
+.dudc-quill.dudc-quill-lg .ql-toolbar.ql-snow {
+  flex-shrink: 0;
+}
+
+.dudc-quill.dudc-quill-lg .ql-container.ql-snow {
+  flex: 1;
+  min-height: 0;
+  overflow-y: auto;
+  font-size: 17px;
+}
+
+.dudc-quill.dudc-quill-lg .ql-editor {
+  min-height: 100%;
+}
