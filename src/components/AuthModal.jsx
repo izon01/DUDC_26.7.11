@@ -1,5 +1,8 @@
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
+
+const DASHBOARD_PATH = "/work-manual";
 
 const initialFields = { email: "", password: "", name: "", affiliation: "" };
 
@@ -9,9 +12,10 @@ const DEV_TEST_ACCOUNTS = [
   { label: "일반 유저 테스트", email: "user@dudc.local", password: "User1234!" },
 ];
 
-export default function AuthModal({ onClose }) {
+export default function AuthModal({ onClose, initialMode = "login" }) {
   const { login, signup } = useAuth();
-  const [mode, setMode] = useState("login");
+  const navigate = useNavigate();
+  const [mode, setMode] = useState(initialMode);
   const [fields, setFields] = useState(initialFields);
   const [error, setError] = useState("");
   const [infoMessage, setInfoMessage] = useState("");
@@ -43,6 +47,7 @@ export default function AuthModal({ onClose }) {
       if (mode === "login") {
         await login(fields.email, fields.password);
         onClose();
+        navigate(DASHBOARD_PATH, { replace: true });
       } else {
         if (fields.password.length < 8) {
           throw new Error("비밀번호는 8자 이상이어야 합니다.");
