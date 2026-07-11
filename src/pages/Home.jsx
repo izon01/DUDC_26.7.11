@@ -161,24 +161,6 @@ export default function Home() {
           </section>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="shrink-0 w-full h-[40px] flex justify-center items-center px-10 bg-surface-container-low border-t-2 border-dotted border-outline-variant">
-        <div className="w-full max-w-container_max_width flex justify-between items-center text-on-surface-variant text-[12px]">
-          <span className="font-bold text-on-surface">© 2024 DUDC Onboarding Portal. All rights reserved.</span>
-          <div className="flex gap-6">
-            <a className="hover:text-primary transition-colors" href="#">
-              Privacy Policy
-            </a>
-            <a className="hover:text-primary transition-colors" href="#">
-              Contact Us
-            </a>
-            <a className="hover:text-primary transition-colors" href="#">
-              Help Desk
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }

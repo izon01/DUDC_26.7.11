@@ -407,17 +407,6 @@ export default function WorkManual() {
         </main>
       </div>
 
-      <footer className="shrink-0 flex justify-between items-center px-10 py-3 bg-surface-container-low border-t border-dashed border-outline-variant">
-        <span className="font-label-sm text-label-sm font-bold text-on-surface">
-          © 2024 DUDC Onboarding Portal. All rights reserved.
-        </span>
-        <div className="flex gap-6">
-          <a className="font-label-sm text-label-sm text-on-surface-variant hover:text-primary transition-colors" href="#">
-            Contact Us
-          </a>
-        </div>
-      </footer>
-
       {isAdmin && isRegisterOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="w-[92vw] h-[88vh] max-w-[1600px] bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">

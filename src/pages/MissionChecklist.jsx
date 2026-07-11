@@ -171,25 +171,6 @@ export default function MissionChecklist() {
           </div>
         </div>
       </main>
-
-      {/* Footer Shell */}
-      <footer className="shrink-0 w-full flex justify-between items-center px-margin_page py-4 bg-surface-container-low border-t border-dashed border-outline-variant">
-        <div className="font-label-sm text-label-sm font-bold text-on-surface">DUDC Onboarding Portal</div>
-        <div className="flex space-x-6">
-          <a className="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">
-            Privacy Policy
-          </a>
-          <a className="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">
-            Contact Us
-          </a>
-          <a className="text-on-surface-variant hover:text-primary transition-colors duration-200 font-label-sm text-label-sm" href="#">
-            Help Desk
-          </a>
-        </div>
-        <div className="font-label-sm text-label-sm text-on-surface-variant">
-          © 2024 DUDC Onboarding Portal. All rights reserved.
-        </div>
-      </footer>
     </div>
   );
 }

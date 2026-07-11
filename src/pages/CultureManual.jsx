@@ -230,13 +230,6 @@ export default function CultureManual() {
           </div>
         </section>
       </main>
-
-      {/* Footer Bar */}
-      <footer className="h-[40px] bg-white stitch-border-t px-10 flex items-center justify-between z-50 shrink-0">
-        <div className="flex items-center gap-4">
-          <span className="text-[12px] font-bold text-on-surface">DUDC 신입사원을 위한 Portal</span>
-        </div>
-      </footer>
     </div>
   );
 }

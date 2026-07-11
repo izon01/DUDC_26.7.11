@@ -104,24 +104,6 @@ export default function Intro() {
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="h-[56px] w-full bg-surface-container-low border-t border-dashed border-outline-variant shrink-0 flex items-center">
-        <div className="w-full max-w-container_max_width mx-auto px-margin_page flex justify-between items-center text-outline text-xs">
-          <span>© 2024 DUDC Onboarding Portal. All rights reserved.</span>
-          <div className="flex gap-6">
-            <a className="hover:text-primary transition-colors" href="#">
-              Privacy Policy
-            </a>
-            <a className="hover:text-primary transition-colors" href="#">
-              Contact Us
-            </a>
-            <a className="hover:text-primary transition-colors" href="#">
-              Help Desk
-            </a>
-          </div>
-        </div>
-      </footer>
     </div>
   );
 }
