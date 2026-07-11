@@ -106,6 +106,55 @@ const INITIAL_MANUALS = [
   { id: "benefits", title: "복리후생 프로그램 안내", spreads: [placeholderSpread("복리후생 프로그램 안내")] },
 ];
 
+function stripHtml(html) {
+  return html.replace(/<[^>]*>/g, " ");
+}
+
+function escapeHtml(str) {
+  return String(str).replace(/&/g, "&amp;").replace(/</g, "&lt;").replace(/>/g, "&gt;");
+}
+
+// Flattens a page's structured or html content into plain text for search.
+function pageSearchText(page) {
+  if (!page) return "";
+  const parts = [page.heading, page.note];
+  if (page.sections) page.sections.forEach((s) => parts.push(s.title, s.body));
+  if (page.list) parts.push(...page.list);
+  if (page.bullets) parts.push(...page.bullets);
+  if (page.html) parts.push(stripHtml(page.html));
+  return parts.filter(Boolean).join(" ");
+}
+
+function manualSearchText(manual) {
+  return [manual.title, ...manual.spreads.flatMap((s) => [pageSearchText(s.left), pageSearchText(s.right)])]
+    .join(" ")
+    .toLowerCase();
+}
+
+// Converts a page's structured or placeholder content into editable HTML for the Quill editor.
+function pageToEditableHtml(page) {
+  if (!page || page.placeholder) return "";
+  if (page.html) return page.html;
+
+  const chunks = [];
+  if (page.sections) {
+    page.sections.forEach((section) => {
+      chunks.push(`<p><strong>${escapeHtml(section.title)}</strong></p>`);
+      chunks.push(`<p>${escapeHtml(section.body)}</p>`);
+    });
+  }
+  if (page.list) {
+    chunks.push(`<ol>${page.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>`);
+  }
+  if (page.bullets) {
+    chunks.push(`<ul>${page.bullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}</ul>`);
+  }
+  if (page.note) {
+    chunks.push(`<p>${escapeHtml(page.note)}</p>`);
+  }
+  return chunks.join("");
+}
+
 function BookPage({ page }) {
   if (page.placeholder) {
     return (
@@ -211,14 +260,16 @@ export default function WorkManual() {
   const [selectedManualId, setSelectedManualId] = useState(INITIAL_MANUALS[0].id);
   const [spreadIndex, setSpreadIndex] = useState(0);
 
-  const [isRegisterOpen, setIsRegisterOpen] = useState(false);
+  const [isEditorOpen, setIsEditorOpen] = useState(false);
+  const [editorMode, setEditorMode] = useState("create"); // "create" | "edit"
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
 
-  const filteredManuals = useMemo(
-    () => manuals.filter((m) => m.title.toLowerCase().includes(searchTerm.toLowerCase())),
-    [manuals, searchTerm]
-  );
+  const filteredManuals = useMemo(() => {
+    const term = searchTerm.trim().toLowerCase();
+    if (!term) return manuals;
+    return manuals.filter((m) => manualSearchText(m).includes(term));
+  }, [manuals, searchTerm]);
 
   const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? manuals[0];
   const currentSpread = selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0];
@@ -238,37 +289,59 @@ export default function WorkManual() {
     setSpreadIndex((idx) => Math.min(selectedManual.spreads.length - 1, idx + 1));
   }
 
-  function openRegisterModal() {
+  function openCreateModal() {
+    setEditorMode("create");
     setNewTitle("");
     setNewContent("");
-    setIsRegisterOpen(true);
+    setIsEditorOpen(true);
   }
 
-  function closeRegisterModal() {
-    setIsRegisterOpen(false);
+  function openEditModal() {
+    setEditorMode("edit");
+    setNewTitle(selectedManual.title);
+    setNewContent(pageToEditableHtml(currentSpread.left));
+    setIsEditorOpen(true);
   }
 
-  function handleSaveNewManual() {
+  function closeEditor() {
+    setIsEditorOpen(false);
+  }
+
+  function handleSaveManual() {
     const title = newTitle.trim();
     const isContentEmpty = newContent.replace(/<(.|\n)*?>/g, "").trim().length === 0;
     if (!title || isContentEmpty) return;
 
-    const newManual = {
-      id: `custom-${Date.now()}`,
-      title,
-      badge: "새 글",
-      spreads: [
-        {
-          left: { heading: title, html: newContent, pageNum: 1 },
-          right: { heading: "다음 페이지를 기다리는 중", placeholder: true, pageNum: 2 },
-        },
-      ],
-    };
+    if (editorMode === "edit") {
+      setManuals((prev) =>
+        prev.map((manual) => {
+          if (manual.id !== selectedManualId) return manual;
+          const updatedSpreads = manual.spreads.map((spread, idx) =>
+            idx === spreadIndex
+              ? { ...spread, left: { heading: title, html: newContent, pageNum: spread.left.pageNum } }
+              : spread
+          );
+          return { ...manual, title, spreads: updatedSpreads };
+        })
+      );
+    } else {
+      const newManual = {
+        id: `custom-${Date.now()}`,
+        title,
+        badge: "새 글",
+        spreads: [
+          {
+            left: { heading: title, html: newContent, pageNum: 1 },
+            right: { heading: "다음 페이지를 기다리는 중", placeholder: true, pageNum: 2 },
+          },
+        ],
+      };
+      setManuals((prev) => [...prev, newManual]);
+      setSelectedManualId(newManual.id);
+      setSpreadIndex(0);
+    }
 
-    setManuals((prev) => [...prev, newManual]);
-    setSelectedManualId(newManual.id);
-    setSpreadIndex(0);
-    setIsRegisterOpen(false);
+    setIsEditorOpen(false);
   }
 
   return (
@@ -285,6 +358,16 @@ export default function WorkManual() {
             </h2>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
+            {isAdmin && (
+              <button
+                onClick={openCreateModal}
+                className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              >
+                <span className="material-symbols-outlined">add_circle</span>
+                신규 매뉴얼 등록
+              </button>
+            )}
+
             <div className="mb-6 px-1">
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
@@ -293,7 +376,7 @@ export default function WorkManual() {
               <div className="relative flex items-center">
                 <input
                   className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md pl-3 pr-10 py-2 transition-all"
-                  placeholder="검색어를 입력하세요..."
+                  placeholder="제목, 본문 내용으로 검색..."
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
@@ -303,6 +386,10 @@ export default function WorkManual() {
                 </span>
               </div>
             </div>
+
+            {filteredManuals.length === 0 && (
+              <p className="px-2 py-6 text-center text-label-sm text-on-surface-variant">검색 결과가 없습니다.</p>
+            )}
 
             {filteredManuals.map((manual) => (
               <button
@@ -335,25 +422,13 @@ export default function WorkManual() {
         <main className="flex-1 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
           {isAdmin && (
             <button
-              onClick={openRegisterModal}
+              onClick={openEditModal}
               className="absolute top-6 right-8 z-20 flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
             >
-              <span className="material-symbols-outlined">add_circle</span>
-              <span className="text-body-md">신규 매뉴얼 등록</span>
+              <span className="material-symbols-outlined">edit</span>
+              <span className="text-body-md">수정</span>
             </button>
           )}
-
-          <div className="px-10 pt-8 pb-4 z-10">
-            <div className="flex items-center gap-3">
-              <h1 className="font-headline-lg text-headline-lg text-on-surface">{selectedManual.title}</h1>
-              {selectedManual.badge && (
-                <span className="px-3 py-1 bg-secondary-container text-on-secondary-container rounded-full text-label-sm font-bold">
-                  {selectedManual.badge}
-                </span>
-              )}
-            </div>
-            <div className="w-full border-b border-dashed border-outline-variant mt-4" />
-          </div>
 
           <div className="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
             <button
@@ -371,7 +446,7 @@ export default function WorkManual() {
               <span className="material-symbols-outlined text-[32px]">chevron_right</span>
             </button>
 
-            <div className="relative max-w-[1400px] w-full h-full max-h-[720px]">
+            <div className="relative max-w-[1400px] w-full h-full max-h-[820px]">
               <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
               <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
               <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
@@ -407,17 +482,19 @@ export default function WorkManual() {
         </main>
       </div>
 
-      {isAdmin && isRegisterOpen && (
+      {isAdmin && isEditorOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
           <div className="w-[92vw] h-[88vh] max-w-[1600px] bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
             {/* Modal Header */}
             <div className="px-8 py-5 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30 shrink-0">
               <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">auto_stories</span>
-                신규 매뉴얼 작성
+                <span className="material-symbols-outlined text-primary">
+                  {editorMode === "edit" ? "edit_note" : "auto_stories"}
+                </span>
+                {editorMode === "edit" ? "매뉴얼 수정" : "신규 매뉴얼 작성"}
               </h2>
               <button
-                onClick={closeRegisterModal}
+                onClick={closeEditor}
                 className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
               >
                 <span className="material-symbols-outlined text-on-surface-variant">close</span>
@@ -439,7 +516,7 @@ export default function WorkManual() {
                   <div className="w-1/2 border-r border-outline-variant/20 flex flex-col overflow-hidden">
                     <div className="px-14 pt-16 pb-6 shrink-0">
                       <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-body-md font-bold mb-6">
-                        편집 중
+                        {editorMode === "edit" ? "수정 중" : "편집 중"}
                       </span>
                       <input
                         type="text"
@@ -485,13 +562,13 @@ export default function WorkManual() {
               </p>
               <div className="flex gap-3">
                 <button
-                  onClick={closeRegisterModal}
+                  onClick={closeEditor}
                   className="px-6 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-lowest transition-colors"
                 >
                   취소
                 </button>
                 <button
-                  onClick={handleSaveNewManual}
+                  onClick={handleSaveManual}
                   className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all"
                 >
                   저장
