@@ -2,6 +2,7 @@ import { useMemo, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Header from "../components/Header";
+import { useAuth } from "../context/AuthContext";
 
 const QUILL_MODULES = {
   toolbar: [
@@ -200,6 +201,8 @@ function BookPage({ page }) {
 }
 
 export default function WorkManual() {
+  const { user } = useAuth();
+  const isAdmin = user?.role === "admin";
   const [manuals, setManuals] = useState(INITIAL_MANUALS);
   const [searchTerm, setSearchTerm] = useState("");
   const [selectedManualId, setSelectedManualId] = useState(INITIAL_MANUALS[0].id);
@@ -327,13 +330,15 @@ export default function WorkManual() {
 
         {/* Main Stage */}
         <main className="flex-1 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
-          <button
-            onClick={openRegisterModal}
-            className="absolute top-6 right-8 z-20 flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
-          >
-            <span className="material-symbols-outlined">add_circle</span>
-            <span className="text-body-md">신규 매뉴얼 등록</span>
-          </button>
+          {isAdmin && (
+            <button
+              onClick={openRegisterModal}
+              className="absolute top-6 right-8 z-20 flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
+            >
+              <span className="material-symbols-outlined">add_circle</span>
+              <span className="text-body-md">신규 매뉴얼 등록</span>
+            </button>
+          )}
 
           <div className="px-10 pt-8 pb-4 z-10">
             <div className="flex items-center gap-3">
@@ -410,7 +415,7 @@ export default function WorkManual() {
         </div>
       </footer>
 
-      {isRegisterOpen && (
+      {isAdmin && isRegisterOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/30 backdrop-blur-sm">
           <div className="w-full max-w-2xl bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-xl overflow-hidden">
             <div className="px-8 py-6 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30">
