@@ -111,77 +111,63 @@ body {
   border-color: #005ea1;
 }
 
-/* React-Quill: Stitch theme (pastel / dashed / rounded) */
-.dudc-quill .ql-toolbar.ql-snow {
-  border: 2px dashed #c1c7d2;
-  border-bottom: none;
-  border-radius: 0.75rem 0.75rem 0 0;
-  background-color: #f3f4f5;
+/* React-Quill: flowing book-style editor — no chrome, text auto-flows
+   across CSS columns so each column reads as one page of the book. */
+.dudc-quill-flow .ql-toolbar.ql-snow {
+  border: none;
+  background: transparent;
+  padding: 4px 8px 12px;
   font-family: "Noto Sans KR", sans-serif;
 }
 
-.dudc-quill .ql-container.ql-snow {
-  border: 2px dashed #c1c7d2;
-  border-radius: 0 0 0.75rem 0.75rem;
-  background-color: #ffffff;
-  font-family: "Noto Sans KR", sans-serif;
-  font-size: 15px;
-}
-
-.dudc-quill .ql-editor {
-  min-height: 160px;
-  line-height: 1.7;
-  word-break: keep-all;
-}
-
-.dudc-quill .ql-editor.ql-blank::before {
-  color: #717782;
-  font-style: normal;
-}
-
-.dudc-quill .ql-snow .ql-picker {
+.dudc-quill-flow .ql-snow .ql-picker {
   color: #414751;
 }
 
-.dudc-quill .ql-snow.ql-toolbar button:hover,
-.dudc-quill .ql-snow .ql-toolbar button:hover,
-.dudc-quill .ql-snow.ql-toolbar button.ql-active,
-.dudc-quill .ql-snow .ql-toolbar button.ql-active {
+.dudc-quill-flow .ql-snow.ql-toolbar button:hover,
+.dudc-quill-flow .ql-snow .ql-toolbar button:hover,
+.dudc-quill-flow .ql-snow.ql-toolbar button.ql-active,
+.dudc-quill-flow .ql-snow .ql-toolbar button.ql-active {
   color: #005ea1;
 }
 
-.dudc-quill .ql-snow.ql-toolbar button:hover .ql-stroke,
-.dudc-quill .ql-snow .ql-toolbar button:hover .ql-stroke,
-.dudc-quill .ql-snow.ql-toolbar button.ql-active .ql-stroke,
-.dudc-quill .ql-snow .ql-toolbar button.ql-active .ql-stroke {
+.dudc-quill-flow .ql-snow.ql-toolbar button:hover .ql-stroke,
+.dudc-quill-flow .ql-snow .ql-toolbar button:hover .ql-stroke,
+.dudc-quill-flow .ql-snow.ql-toolbar button.ql-active .ql-stroke,
+.dudc-quill-flow .ql-snow .ql-toolbar button.ql-active .ql-stroke {
   stroke: #005ea1;
 }
 
-/* Taller variant used inside the book-style manual editor modal */
-.dudc-quill.dudc-quill-lg {
+.dudc-quill-flow .ql-container.ql-snow {
+  border: none;
+  position: relative;
+  overflow: hidden;
+  width: calc(var(--page-width, 300px) * 2 + var(--column-gap, 96px));
+  height: var(--page-height, 400px);
+  margin: 0 auto;
+  font-family: "Noto Sans KR", sans-serif;
+}
+
+.dudc-quill-flow .ql-editor {
+  /* NOTE: width must stay an explicit pixel value, not max-content —
+     Chromium mis-sizes multicol content under max-content sizing and
+     fabricates dozens of mostly-empty columns. See --flow-width below. */
+  width: var(--flow-width, 6000px);
   height: 100%;
-  display: flex;
-  flex-direction: column;
+  box-sizing: border-box;
+  column-width: var(--page-width, 300px);
+  column-gap: var(--column-gap, 96px);
+  column-fill: auto;
+  padding: 56px 48px;
+  font-size: 16px;
+  line-height: 1.75;
+  word-break: keep-all;
+  transform: translateX(var(--spread-offset, 0px));
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1);
 }
 
-.dudc-quill.dudc-quill-lg > div {
-  display: flex;
-  flex-direction: column;
-  flex: 1;
-  min-height: 0;
-}
-
-.dudc-quill.dudc-quill-lg .ql-toolbar.ql-snow {
-  flex-shrink: 0;
-}
-
-.dudc-quill.dudc-quill-lg .ql-container.ql-snow {
-  flex: 1;
-  min-height: 0;
-  overflow-y: auto;
-  font-size: 17px;
-}
-
-.dudc-quill.dudc-quill-lg .ql-editor {
-  min-height: 100%;
+.dudc-quill-flow .ql-editor.ql-blank::before {
+  color: #717782;
+  font-style: normal;
+  left: 48px;
 }

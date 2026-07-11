@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useEffect, useLayoutEffect, useMemo, useRef, useState } from "react";
 import ReactQuill from "react-quill";
 import "react-quill/dist/quill.snow.css";
 import Header from "../components/Header";
@@ -39,7 +39,6 @@ const INITIAL_MANUALS = [
     spreads: [
       {
         left: {
-          docNo: "No. 2024-011",
           heading: "0. 온보딩 첫걸음",
           sections: [
             {
@@ -66,7 +65,6 @@ const INITIAL_MANUALS = [
       },
       {
         left: {
-          docNo: "No. 2024-012",
           heading: "I. 근태 및 기초 복무 가이드",
           sections: [
             {
@@ -160,9 +158,9 @@ function BookPage({ page }) {
     return (
       <div className="w-full px-14 py-16 flex flex-col items-center justify-center text-center gap-4 relative break-keep">
         <span className="material-symbols-outlined text-primary/20 text-[64px]">construction</span>
-        <h2 className="text-headline-lg font-bold text-on-surface">{page.heading}</h2>
-        <p className="text-body-lg text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
-        <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
+        <h2 className="text-2xl font-semibold text-on-surface">{page.heading}</h2>
+        <p className="text-base text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
+        <div className="absolute bottom-8 left-0 right-0 text-center text-label-sm text-outline">
           — {page.pageNum} —
         </div>
       </div>
@@ -173,18 +171,15 @@ function BookPage({ page }) {
     return (
       <div className="w-full px-14 py-16 relative break-keep">
         <div className="space-y-8">
-          <span className="inline-block px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-body-md font-bold">
-            새로 작성된 글
-          </span>
-          <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
+          <h2 className="text-center text-2xl font-semibold text-on-surface pb-5 mb-2 border-b-2 border-primary/10">
             {page.heading}
           </h2>
           <div
-            className="ql-editor !p-0 !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
+            className="ql-editor !p-0 !text-base !leading-relaxed break-keep text-on-surface-variant"
             dangerouslySetInnerHTML={{ __html: page.html }}
           />
         </div>
-        <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
+        <div className="absolute bottom-8 left-0 right-0 text-center text-label-sm text-outline">
           — {page.pageNum} —
         </div>
       </div>
@@ -193,21 +188,20 @@ function BookPage({ page }) {
 
   return (
     <div className="w-full px-14 py-16 relative break-keep">
-      <div className="space-y-10">
-        {page.docNo && <div className="text-right text-[14px] text-outline">{page.docNo}</div>}
-        <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
+      <div className="space-y-12">
+        <h2 className="text-center text-2xl font-semibold text-on-surface pb-5 mb-2 border-b-2 border-primary/10">
           {page.heading}
         </h2>
 
         {page.sections && (
-          <div className="space-y-8">
+          <div className="space-y-10">
             {page.sections.map((section) => (
               <div key={section.title}>
-                <h3 className="text-[19px] font-bold text-primary flex items-center gap-3 mb-3">
-                  <span className="w-2 h-7 bg-primary rounded-full" />
+                <h3 className="text-lg font-bold text-primary flex items-center gap-3 mb-4">
+                  <span className="w-2 h-6 bg-primary rounded-full" />
                   {section.title}
                 </h3>
-                <p className="pl-6 text-body-lg leading-[1.9] text-on-surface-variant break-keep">{section.body}</p>
+                <p className="pl-6 text-base leading-relaxed text-on-surface-variant break-keep">{section.body}</p>
               </div>
             ))}
           </div>
@@ -216,7 +210,7 @@ function BookPage({ page }) {
         {page.list && (
           <ul className="space-y-4 pl-2">
             {page.list.map((item) => (
-              <li key={item} className="flex items-center gap-3 text-body-lg text-on-surface-variant">
+              <li key={item} className="flex items-center gap-3 text-base text-on-surface-variant">
                 <span className="text-primary">●</span>
                 <span>{item}</span>
               </li>
@@ -227,7 +221,7 @@ function BookPage({ page }) {
         {page.bullets && (
           <ul className="pl-6 space-y-3">
             {page.bullets.map((bullet) => (
-              <li key={bullet} className="flex items-start gap-3 text-body-lg text-on-surface-variant">
+              <li key={bullet} className="flex items-start gap-3 text-base text-on-surface-variant">
                 <span className="text-primary mt-1.5">●</span>
                 <span>{bullet}</span>
               </li>
@@ -239,14 +233,158 @@ function BookPage({ page }) {
           <div className="p-6 bg-primary/5 border border-dashed border-primary/20 rounded-xl">
             <div className="flex items-center gap-2 text-primary font-bold mb-2">
               <span className="material-symbols-outlined text-[20px]">info</span>
-              <span className="text-body-md">[신규 입사자 참고]</span>
+              <span className="text-label-sm">[신규 입사자 참고]</span>
             </div>
-            <p className="text-body-lg text-on-surface-variant leading-relaxed break-keep">{page.note}</p>
+            <p className="text-base text-on-surface-variant leading-relaxed break-keep">{page.note}</p>
           </div>
         )}
       </div>
-      <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
+      <div className="absolute bottom-8 left-0 right-0 text-center text-label-sm text-outline">
         — {page.pageNum} —
+      </div>
+    </div>
+  );
+}
+
+// Single flowing Quill editor whose content auto-paginates across book-style
+// spreads using CSS multi-column layout: when a page's column fills up, the
+// browser natively flows the remaining text into the next column (page).
+function FlowingBookEditor({ value, onChange }) {
+  const boxRef = useRef(null);
+  const quillRef = useRef(null);
+  const [boxSize, setBoxSize] = useState({ width: 0, height: 0 });
+  const [toolbarHeight, setToolbarHeight] = useState(46);
+  const [spreadIndex, setSpreadIndex] = useState(0);
+  const [totalPages, setTotalPages] = useState(1);
+
+  const COLUMN_GAP = 144;
+  const MAX_PAGES = 60;
+
+  useLayoutEffect(() => {
+    const el = boxRef.current;
+    if (!el) return undefined;
+    const observer = new ResizeObserver((entries) => {
+      const { width, height } = entries[0].contentRect;
+      setBoxSize({ width, height });
+    });
+    observer.observe(el);
+    return () => observer.disconnect();
+  }, []);
+
+  useLayoutEffect(() => {
+    const editor = quillRef.current?.getEditor?.();
+    const toolbarEl = editor?.container?.previousElementSibling;
+    if (!toolbarEl) return undefined;
+    const observer = new ResizeObserver((entries) => {
+      setToolbarHeight(entries[0].contentRect.height);
+    });
+    observer.observe(toolbarEl);
+    return () => observer.disconnect();
+  }, []);
+
+  const pageWidth = boxSize.width > 0 ? Math.max(160, (boxSize.width - COLUMN_GAP) / 2) : 0;
+  const pageHeight = boxSize.height > 0 ? Math.max(160, boxSize.height - toolbarHeight) : 0;
+  const spreadWidth = pageWidth * 2 + COLUMN_GAP;
+  const totalSpreads = Math.max(1, Math.ceil(totalPages / 2));
+  // Chromium mis-sizes multicol content under `width: max-content` (fabricates
+  // dozens of near-empty columns), so the flow track uses a generous fixed
+  // pixel width instead, and actual page count is derived from where the
+  // last character lands rather than from scrollWidth.
+  const flowWidth = pageWidth > 0 ? pageWidth * MAX_PAGES + COLUMN_GAP * (MAX_PAGES - 1) : 6000;
+
+  useEffect(() => {
+    const editor = quillRef.current?.getEditor?.();
+    if (!editor || pageWidth <= 0) return undefined;
+    const recompute = () => {
+      const length = editor.getLength();
+      const bounds = editor.getBounds(Math.max(0, length - 1));
+      const rightEdge = bounds.left + bounds.width;
+      const pages = Math.min(MAX_PAGES, Math.max(1, Math.ceil(rightEdge / (pageWidth + COLUMN_GAP))));
+      setTotalPages(pages);
+    };
+    recompute();
+    const observer = new ResizeObserver(recompute);
+    observer.observe(editor.root);
+    return () => observer.disconnect();
+  }, [pageWidth, value]);
+
+  useEffect(() => {
+    setSpreadIndex((idx) => Math.min(idx, totalSpreads - 1));
+  }, [totalSpreads]);
+
+  function handleSelectionChange(range, source, editor) {
+    if (!range || pageWidth <= 0) return;
+    const bounds = editor.getBounds(range.index);
+    const target = Math.max(0, Math.min(totalSpreads - 1, Math.floor(bounds.left / spreadWidth)));
+    setSpreadIndex((prev) => (prev !== target ? target : prev));
+  }
+
+  function goPrev() {
+    setSpreadIndex((i) => Math.max(0, i - 1));
+  }
+
+  function goNext() {
+    setSpreadIndex((i) => Math.min(totalSpreads - 1, i + 1));
+  }
+
+  return (
+    <div className="relative w-full h-full flex flex-col items-center justify-center">
+      <button
+        onClick={goPrev}
+        disabled={spreadIndex === 0}
+        className="absolute left-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/70 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <span className="material-symbols-outlined text-[32px]">chevron_left</span>
+      </button>
+      <button
+        onClick={goNext}
+        disabled={spreadIndex >= totalSpreads - 1}
+        className="absolute right-0 top-1/2 -translate-y-1/2 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/70 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
+      >
+        <span className="material-symbols-outlined text-[32px]">chevron_right</span>
+      </button>
+
+      <div ref={boxRef} className="relative w-full h-full max-w-[1400px] max-h-[820px]">
+        <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
+        <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
+        <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
+        <div className="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0" />
+
+        <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden bg-surface-container-lowest h-full">
+          <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
+
+          {pageWidth > 0 ? (
+            <div
+              className="dudc-quill-flow"
+              style={{
+                "--page-width": `${pageWidth}px`,
+                "--page-height": `${pageHeight}px`,
+                "--column-gap": `${COLUMN_GAP}px`,
+                "--flow-width": `${flowWidth}px`,
+                "--spread-offset": `-${spreadIndex * spreadWidth}px`,
+              }}
+            >
+              <ReactQuill
+                ref={quillRef}
+                theme="snow"
+                value={value}
+                onChange={onChange}
+                onChangeSelection={handleSelectionChange}
+                modules={QUILL_MODULES}
+                formats={QUILL_FORMATS}
+                placeholder="여기에 매뉴얼 내용을 적어보세요. 페이지가 꽉 차면 자동으로 다음 장으로 넘어갑니다."
+              />
+            </div>
+          ) : (
+            <div className="w-full h-full flex items-center justify-center text-on-surface-variant text-body-md">
+              준비 중...
+            </div>
+          )}
+        </div>
+      </div>
+
+      <div className="mt-4 text-label-sm text-outline">
+        {spreadIndex + 1} / {totalSpreads} 스프레드 · 총 {totalPages}페이지
       </div>
     </div>
   );
@@ -484,97 +622,38 @@ export default function WorkManual() {
 
       {isAdmin && isEditorOpen && (
         <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="w-[92vw] h-[88vh] max-w-[1600px] bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
-            {/* Modal Header */}
-            <div className="px-8 py-5 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30 shrink-0">
-              <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">
-                  {editorMode === "edit" ? "edit_note" : "auto_stories"}
-                </span>
-                {editorMode === "edit" ? "매뉴얼 수정" : "신규 매뉴얼 작성"}
-              </h2>
-              <button
-                onClick={closeEditor}
-                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
-              >
-                <span className="material-symbols-outlined text-on-surface-variant">close</span>
-              </button>
+          <div className="relative w-[92vw] h-[88vh] max-w-[1600px] bg-surface-container-lowest rounded-2xl shadow-2xl overflow-hidden flex flex-col animate-scale-in">
+            {/* Floating close button — no header bar */}
+            <button
+              onClick={closeEditor}
+              className="absolute top-5 right-5 z-40 w-10 h-10 flex items-center justify-center rounded-full bg-surface-container-lowest/80 backdrop-blur-sm shadow-md hover:bg-surface-container-low transition-colors"
+            >
+              <span className="material-symbols-outlined text-on-surface-variant">close</span>
+            </button>
+
+            {/* Title — sits directly on the page, no border */}
+            <div className="shrink-0 pt-10 pb-2 px-16">
+              <input
+                type="text"
+                value={newTitle}
+                onChange={(e) => setNewTitle(e.target.value)}
+                placeholder="제목을 입력하세요"
+                className="w-full text-center text-2xl font-semibold text-on-surface bg-transparent border-none outline-none placeholder:text-outline/40"
+              />
             </div>
 
-            {/* Book-style Editor + Live Preview */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
-              <div className="relative w-full h-full">
-                <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
-                <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
-                <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
-                <div className="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0" />
-
-                <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest h-full">
-                  <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
-
-                  {/* Left Page: Editor */}
-                  <div className="w-1/2 border-r border-outline-variant/20 flex flex-col overflow-hidden">
-                    <div className="px-14 pt-16 pb-6 shrink-0">
-                      <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-body-md font-bold mb-6">
-                        {editorMode === "edit" ? "수정 중" : "편집 중"}
-                      </span>
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        placeholder="제목을 입력하세요"
-                        className="w-full text-center text-headline-lg font-bold text-on-surface bg-transparent border-none outline-none placeholder:text-outline/40 pb-6 border-b-2 border-primary/10"
-                      />
-                    </div>
-                    <div className="flex-1 min-h-0 px-14 pb-10">
-                      <div className="dudc-quill dudc-quill-lg rounded-xl overflow-hidden h-full">
-                        <ReactQuill
-                          theme="snow"
-                          value={newContent}
-                          onChange={setNewContent}
-                          modules={QUILL_MODULES}
-                          formats={QUILL_FORMATS}
-                          placeholder="본문을 작성해보세요. 오른쪽 페이지에서 실시간으로 확인할 수 있어요."
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Page: Live Preview */}
-                  <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
-                    <BookPage
-                      page={{
-                        heading: newTitle.trim() || "제목을 입력해주세요",
-                        html: newContent,
-                        pageNum: 1,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
+            {/* Flowing book editor */}
+            <div className="flex-1 min-h-0 px-8 pb-6">
+              <FlowingBookEditor value={newContent} onChange={setNewContent} />
             </div>
 
-            {/* Footer Actions */}
-            <div className="px-8 py-5 border-t-2 border-dashed border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
-              <p className="text-label-sm text-on-surface-variant flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">visibility</span>
-                오른쪽 페이지에서 실시간 미리보기를 확인하세요.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={closeEditor}
-                  className="px-6 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-lowest transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleSaveManual}
-                  className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all"
-                >
-                  저장
-                </button>
-              </div>
-            </div>
+            {/* Floating save button — no footer bar */}
+            <button
+              onClick={handleSaveManual}
+              className="absolute bottom-6 right-8 z-40 px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm shadow-lg hover:opacity-90 active:scale-95 transition-all"
+            >
+              저장
+            </button>
           </div>
         </div>
       )}
