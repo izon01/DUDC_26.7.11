@@ -109,7 +109,7 @@ function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
 
   return (
     <div className="flex-1 overflow-y-auto custom-scrollbar bg-surface-container-lowest">
-      <div className="sticky top-0 z-30 h-16 bg-white stitch-border-b px-10 flex items-center justify-between gap-6">
+      <div className="h-16 bg-white stitch-border-b px-10 flex items-center justify-between gap-6">
         <div className="flex items-center gap-3 flex-1 min-w-0">
           <span className="material-symbols-outlined text-primary shrink-0">
             {mode === "edit" ? "edit_note" : "post_add"}
@@ -139,7 +139,7 @@ function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
       </div>
 
       <div className="max-w-5xl w-full mx-auto px-10 py-10">
-        <div className="dudc-quill dudc-quill-sticky rounded-xl overflow-hidden">
+        <div className="dudc-quill dudc-quill-sticky">
           <ReactQuill
             theme="snow"
             value={bodyHtml}

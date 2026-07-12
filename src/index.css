@@ -187,9 +187,21 @@ body {
 }
 
 /* Sticky toolbar variant used in the full-width culture post editor, so
-   formatting controls stay reachable while scrolling through a long post. */
+   formatting controls stay reachable while scrolling through a long post.
+   Scopes to the editor's own scroll container (below the global header, which
+   is a static sibling outside this container) so top: 0 here already sits
+   right under the header — no header-height offset needed or duplicated. */
 .dudc-quill-sticky .ql-toolbar.ql-snow {
   position: sticky;
-  top: 64px;
-  z-index: 20;
+  top: 0;
+  z-index: 40;
+  background-color: #ffffff;
+}
+
+/* Let the editor grow with its content instead of scrolling internally —
+   the whole window scrolls, only the header and toolbar stay pinned. */
+.dudc-quill-sticky .ql-container.ql-snow,
+.dudc-quill-sticky .ql-editor {
+  min-height: 400px;
+  overflow: visible;
 }
