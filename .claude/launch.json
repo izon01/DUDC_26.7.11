@@ -5,7 +5,8 @@
       "name": "dudc-dev",
       "runtimeExecutable": "cmd.exe",
       "runtimeArgs": ["/c", "C:\\Users\\jwh05\\Desktop\\codiing\\DUDC\\.claude\\run-dev.cmd"],
-      "port": 5173
+      "port": 5173,
+      "autoPort": true
     }
   ]
 }
