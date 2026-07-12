@@ -185,3 +185,11 @@ body {
 .dudc-quill.dudc-quill-lg .ql-editor {
   min-height: 100%;
 }
+
+/* Sticky toolbar variant used in the full-width culture post editor, so
+   formatting controls stay reachable while scrolling through a long post. */
+.dudc-quill-sticky .ql-toolbar.ql-snow {
+  position: sticky;
+  top: 64px;
+  z-index: 20;
+}
