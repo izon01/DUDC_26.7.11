@@ -409,15 +409,24 @@ export default function Community() {
     <div className="h-screen w-full flex flex-col bg-background font-body-md text-on-surface overflow-hidden">
       <Header />
 
-      <main className="flex-1 pt-2 pb-4 flex flex-col items-center px-margin_page max-w-[1400px] mx-auto w-full overflow-hidden">
-        {/* Page Header */}
-        <div className="w-full mt-4 mb-4 flex justify-between items-end shrink-0">
-          <div>
-            <h1 className="font-headline-lg text-on-surface">커뮤니티 광장</h1>
-            <p className="text-on-surface-variant mt-1 text-label-sm">
+      <main className="flex-1 pt-2 pb-4 flex flex-col items-center px-margin_page max-w-container_max_width mx-auto w-full overflow-hidden">
+        {/* Hero Banner */}
+        <section className="w-full mt-4 min-h-[180px] bg-[#d2e4ff]/40 rounded-xl border-2 border-dotted border-outline-variant p-8 md:p-10 flex justify-between items-center relative shrink-0">
+          <div className="z-10 flex flex-col gap-2">
+            <h1 className="font-headline-xl text-[32px] md:text-[40px] text-on-surface leading-tight">커뮤니티 광장</h1>
+            <p className="text-on-surface-variant font-body-md text-body-md max-w-[420px]">
               동료들과 자유롭게 소통하며 새로운 소식을 확인하세요.
             </p>
           </div>
+          <div className="items-center justify-end hidden md:flex shrink-0">
+            <span className="text-6xl select-none" aria-hidden="true">
+              💬
+            </span>
+          </div>
+        </section>
+
+        {/* Write Button */}
+        <div className="w-full flex justify-end mt-3 mb-3 shrink-0">
           <button
             onClick={() => setIsWriteModalOpen(true)}
             className="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm shadow-lg shadow-primary/20 flex items-center gap-2 hover:bg-primary/90 active:scale-95 transition-all"
