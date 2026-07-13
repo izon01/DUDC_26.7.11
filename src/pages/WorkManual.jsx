@@ -4,6 +4,7 @@ import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
+import { highlightHtml, highlightText } from "../searchHighlight";
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -28,18 +29,18 @@ function manualSearchText(manual) {
     .toLowerCase();
 }
 
-function BookPage({ page }) {
+function BookPage({ page, searchTerm }) {
   const hasContent = Boolean(page.heading?.trim() || stripHtml(page.html || "").trim());
   return (
     <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
       <div className="space-y-8">
         <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
-          {page.heading || "제목 없음"}
+          {highlightText(page.heading || "제목 없음", searchTerm)}
         </h2>
         {hasContent ? (
           <div
             className="ck-content !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
-            dangerouslySetInnerHTML={{ __html: page.html }}
+            dangerouslySetInnerHTML={{ __html: highlightHtml(page.html, searchTerm) }}
           />
         ) : (
           <p className="text-center text-body-lg text-outline">아직 작성된 내용이 없습니다.</p>
@@ -322,7 +323,7 @@ export default function WorkManual() {
               </div>
               <div className="relative flex items-center">
                 <input
-                  className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md pl-3 pr-10 py-2 transition-all"
+                  className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all"
                   placeholder="제목, 본문 내용으로 검색..."
                   type="text"
                   value={searchTerm}
@@ -351,20 +352,9 @@ export default function WorkManual() {
                     : "w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 }
               >
-                {manual.title || "(제목 없음)"}
+                {highlightText(manual.title || "(제목 없음)", searchTerm)}
               </button>
             ))}
-          </div>
-
-          <div className="p-6">
-            <div className="p-4 bg-tertiary-fixed rounded-2xl border border-dashed border-tertiary-container relative">
-              <p className="text-label-sm text-on-tertiary-fixed leading-tight">
-                궁금한 점은 사내 메신저 '두닥챗'을 이용해주세요!
-              </p>
-              <div className="mt-2 flex justify-end">
-                <span className="material-symbols-outlined text-tertiary text-[24px]">pest_control_rodent</span>
-              </div>
-            </div>
           </div>
         </aside>
 
@@ -467,7 +457,7 @@ export default function WorkManual() {
                           onHtmlChange={(v) => updatePageField("left", "html", v)}
                         />
                       ) : (
-                        <BookPage page={currentSpread.left} />
+                        <BookPage page={currentSpread.left} searchTerm={searchTerm} />
                       )}
                     </div>
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
@@ -482,7 +472,7 @@ export default function WorkManual() {
                           onHtmlChange={(v) => updatePageField("right", "html", v)}
                         />
                       ) : (
-                        <BookPage page={currentSpread.right} />
+                        <BookPage page={currentSpread.right} searchTerm={searchTerm} />
                       )}
                     </div>
                   </div>

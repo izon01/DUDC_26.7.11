@@ -4,6 +4,7 @@ import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
+import { highlightHtml, highlightText } from "../searchHighlight";
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -265,7 +266,7 @@ export default function CultureManual() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="제목, 내용으로 검색..."
-              className="w-full bg-white border border-dashed border-outline-variant rounded-lg pl-9 pr-3 py-2 text-[13px] focus:border-primary focus:ring-0 transition-all"
+              className="w-full bg-white border border-dashed border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:border-primary focus:ring-0 transition-all"
             />
           </div>
 
@@ -306,7 +307,7 @@ export default function CultureManual() {
                   >
                     {`Guide ${String(idx + 1).padStart(2, "0")}`}
                   </p>
-                  <h3 className="text-[15px] font-bold text-on-surface">{guide.title}</h3>
+                  <h3 className="text-[15px] font-bold text-on-surface">{highlightText(guide.title, searchTerm)}</h3>
                 </div>
               );
             })}
@@ -340,7 +341,9 @@ export default function CultureManual() {
                     <span className="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full text-[12px] font-bold shrink-0">
                       New Joiner Guide
                     </span>
-                    <h2 className="text-[24px] font-bold text-on-surface truncate">{selectedGuide.title}</h2>
+                    <h2 className="text-[24px] font-bold text-on-surface truncate">
+                      {highlightText(selectedGuide.title, searchTerm)}
+                    </h2>
                   </div>
                   {isAdmin && (
                     <div className="flex items-center gap-2 shrink-0">
@@ -367,7 +370,7 @@ export default function CultureManual() {
                   <div className="max-w-2xl mx-auto space-y-10">
                     <div
                       className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
-                      dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
+                      dangerouslySetInnerHTML={{ __html: highlightHtml(selectedGuide.bodyHtml, searchTerm) }}
                     />
 
                     {selectedGuide.checkPoints.length > 0 && (
