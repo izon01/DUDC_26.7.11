@@ -1,4 +1,4 @@
-import { useMemo, useState } from "react";
+import { useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
@@ -28,7 +28,6 @@ const INITIAL_MANUALS = [
     spreads: [
       {
         left: {
-          docNo: "No. 2024-011",
           heading: "0. 온보딩 첫걸음",
           sections: [
             {
@@ -55,7 +54,6 @@ const INITIAL_MANUALS = [
       },
       {
         left: {
-          docNo: "No. 2024-012",
           heading: "I. 근태 및 기초 복무 가이드",
           sections: [
             {
@@ -120,7 +118,7 @@ function manualSearchText(manual) {
     .toLowerCase();
 }
 
-// Converts a page's structured or placeholder content into editable HTML for the Quill editor.
+// Converts a page's structured or placeholder content into editable HTML for the CKEditor.
 function pageToEditableHtml(page) {
   if (!page || page.placeholder) return "";
   if (page.html) return page.html;
@@ -133,7 +131,10 @@ function pageToEditableHtml(page) {
     });
   }
   if (page.list) {
-    chunks.push(`<ol>${page.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ol>`);
+    // Source strings already carry their own "1. ..." numbering (read mode
+    // renders them as a bulleted list), so use <ul> here too — <ol> would
+    // double up the numbering with the browser's own list counter.
+    chunks.push(`<ul>${page.list.map((item) => `<li>${escapeHtml(item)}</li>`).join("")}</ul>`);
   }
   if (page.bullets) {
     chunks.push(`<ul>${page.bullets.map((bullet) => `<li>${escapeHtml(bullet)}</li>`).join("")}</ul>`);
@@ -144,14 +145,24 @@ function pageToEditableHtml(page) {
   return chunks.join("");
 }
 
+// Converts any page shape (placeholder / structured / html) into the flat
+// { heading, html, pageNum } shape the spread editor reads and writes.
+function toEditablePage(page) {
+  return {
+    heading: page?.heading || "",
+    html: pageToEditableHtml(page),
+    pageNum: page?.pageNum,
+  };
+}
+
 function BookPage({ page }) {
   if (page.placeholder) {
     return (
-      <div className="w-full px-14 py-16 flex flex-col items-center justify-center text-center gap-4 relative break-keep">
+      <div className="w-full min-h-full px-14 pt-8 pb-16 flex flex-col items-center justify-center text-center gap-4 relative break-keep">
         <span className="material-symbols-outlined text-primary/20 text-[64px]">construction</span>
         <h2 className="text-headline-lg font-bold text-on-surface">{page.heading}</h2>
         <p className="text-body-lg text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
-        <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
+        <div className="absolute bottom-8 left-0 w-full text-center text-body-md text-outline">
           — {page.pageNum} —
         </div>
       </div>
@@ -160,7 +171,7 @@ function BookPage({ page }) {
 
   if (page.html) {
     return (
-      <div className="w-full px-14 py-16 relative break-keep">
+      <div className="w-full min-h-full px-14 pt-8 pb-16 relative break-keep">
         <div className="space-y-8">
           <span className="inline-block px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-body-md font-bold">
             새로 작성된 글
@@ -173,7 +184,7 @@ function BookPage({ page }) {
             dangerouslySetInnerHTML={{ __html: page.html }}
           />
         </div>
-        <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
+        <div className="absolute bottom-8 left-0 w-full text-center text-body-md text-outline">
           — {page.pageNum} —
         </div>
       </div>
@@ -181,9 +192,8 @@ function BookPage({ page }) {
   }
 
   return (
-    <div className="w-full px-14 py-16 relative break-keep">
+    <div className="w-full min-h-full px-14 pt-8 pb-16 relative break-keep">
       <div className="space-y-10">
-        {page.docNo && <div className="text-right text-[14px] text-outline">{page.docNo}</div>}
         <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
           {page.heading}
         </h2>
@@ -234,8 +244,39 @@ function BookPage({ page }) {
           </div>
         )}
       </div>
-      <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
+      <div className="absolute bottom-8 left-0 w-full text-center text-body-md text-outline">
         — {page.pageNum} —
+      </div>
+    </div>
+  );
+}
+
+// In-place page editor — mirrors BookPage's size/padding/typography exactly
+// (same px-14/pt-8/pb-16 page box, same heading classes) so flipping between
+// read and edit mode never changes the book's apparent size or font ratio.
+function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChange, onHtmlChange, editorKey }) {
+  return (
+    <div className="w-full h-full min-h-full px-14 pt-8 pb-16 relative break-keep flex flex-col">
+      <input
+        type="text"
+        value={heading}
+        onChange={(e) => onHeadingChange(e.target.value)}
+        placeholder="제목을 입력하세요"
+        className="w-full text-center text-headline-lg font-bold text-on-surface bg-transparent outline-none placeholder:text-outline/40 pb-6 mb-8 border-b-2 border-primary/10 focus:border-primary/40 transition-colors shrink-0"
+      />
+      <div className="flex-1 min-h-0">
+        <div className="dudc-ckeditor dudc-ckeditor-lg h-full">
+          <CKEditor
+            key={editorKey}
+            editor={ClassicEditor}
+            data={html}
+            config={ckeditorConfig}
+            onChange={(_event, editor) => onHtmlChange(editor.getData())}
+          />
+        </div>
+      </div>
+      <div className="absolute bottom-8 left-0 w-full text-center text-body-md text-outline pointer-events-none">
+        — {pageNum} —
       </div>
     </div>
   );
@@ -249,13 +290,10 @@ export default function WorkManual() {
   const [selectedManualId, setSelectedManualId] = useState(INITIAL_MANUALS[0].id);
   const [spreadIndex, setSpreadIndex] = useState(0);
 
-  const [isEditorOpen, setIsEditorOpen] = useState(false);
-  const [editorMode, setEditorMode] = useState("create"); // "create" | "edit"
-  const [newTitle, setNewTitle] = useState("");
-  const [newContent, setNewContent] = useState("");
-  const [ckeditorConfig] = useState(() =>
-    createCkeditorConfig("본문을 작성해보세요. 오른쪽 페이지에서 실시간으로 확인할 수 있어요.")
-  );
+  const [isEditMode, setIsEditMode] = useState(false);
+  const [editSessionKey, setEditSessionKey] = useState(0);
+  const editSnapshotRef = useRef(null);
+  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문을 작성해보세요."));
 
   const filteredManuals = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -269,71 +307,128 @@ export default function WorkManual() {
   const progressPercent = Math.round(((spreadIndex + 1) * 2 * 100) / totalPages);
 
   function handleSelectManual(id) {
+    if (isEditMode) return;
     setSelectedManualId(id);
     setSpreadIndex(0);
   }
 
+  // Makes sure the given spread's pages are in the flat editable shape,
+  // converting placeholder/structured content on first visit while leaving
+  // already-editable pages (and any in-progress edits) untouched.
+  function ensureSpreadEditable(idx) {
+    setManuals((prev) =>
+      prev.map((manual) => {
+        if (manual.id !== selectedManualId) return manual;
+        const updatedSpreads = manual.spreads.map((spread, i) => {
+          if (i !== idx) return spread;
+          return {
+            left: spread.left?.html !== undefined ? spread.left : toEditablePage(spread.left),
+            right: spread.right?.html !== undefined ? spread.right : toEditablePage(spread.right),
+          };
+        });
+        return { ...manual, spreads: updatedSpreads };
+      })
+    );
+  }
+
   function goPrev() {
-    setSpreadIndex((idx) => Math.max(0, idx - 1));
+    const target = spreadIndex - 1;
+    if (target < 0) return;
+    if (isEditMode) ensureSpreadEditable(target);
+    setSpreadIndex(target);
   }
 
   function goNext() {
-    setSpreadIndex((idx) => Math.min(selectedManual.spreads.length - 1, idx + 1));
-  }
-
-  function openCreateModal() {
-    setEditorMode("create");
-    setNewTitle("");
-    setNewContent("");
-    setIsEditorOpen(true);
-  }
-
-  function openEditModal() {
-    setEditorMode("edit");
-    setNewTitle(selectedManual.title);
-    setNewContent(pageToEditableHtml(currentSpread.left));
-    setIsEditorOpen(true);
-  }
-
-  function closeEditor() {
-    setIsEditorOpen(false);
-  }
-
-  function handleSaveManual() {
-    const title = newTitle.trim();
-    const isContentEmpty = newContent.replace(/<(.|\n)*?>/g, "").trim().length === 0;
-    if (!title || isContentEmpty) return;
-
-    if (editorMode === "edit") {
+    const target = spreadIndex + 1;
+    if (target >= selectedManual.spreads.length) {
+      if (!isEditMode) return;
+      // In edit mode, paging past the last spread extends the manual with a
+      // fresh blank spread so the next two pages can be written immediately.
+      const nextPageNum = selectedManual.spreads.length * 2 + 1;
       setManuals((prev) =>
-        prev.map((manual) => {
-          if (manual.id !== selectedManualId) return manual;
-          const updatedSpreads = manual.spreads.map((spread, idx) =>
-            idx === spreadIndex
-              ? { ...spread, left: { heading: title, html: newContent, pageNum: spread.left.pageNum } }
-              : spread
-          );
-          return { ...manual, title, spreads: updatedSpreads };
-        })
+        prev.map((manual) =>
+          manual.id !== selectedManualId
+            ? manual
+            : {
+                ...manual,
+                spreads: [
+                  ...manual.spreads,
+                  {
+                    left: { heading: "", html: "", pageNum: nextPageNum },
+                    right: { heading: "", html: "", pageNum: nextPageNum + 1 },
+                  },
+                ],
+              }
+        )
       );
-    } else {
-      const newManual = {
-        id: `custom-${Date.now()}`,
-        title,
-        badge: "새 글",
-        spreads: [
-          {
-            left: { heading: title, html: newContent, pageNum: 1 },
-            right: { heading: "다음 페이지를 기다리는 중", placeholder: true, pageNum: 2 },
-          },
-        ],
-      };
-      setManuals((prev) => [...prev, newManual]);
-      setSelectedManualId(newManual.id);
-      setSpreadIndex(0);
+      setSpreadIndex(target);
+      return;
     }
+    if (isEditMode) ensureSpreadEditable(target);
+    setSpreadIndex(target);
+  }
 
-    setIsEditorOpen(false);
+  function beginCreate() {
+    editSnapshotRef.current = { manuals, selectedManualId, spreadIndex };
+    const newManual = {
+      id: `custom-${Date.now()}`,
+      title: "",
+      badge: "새 글",
+      spreads: [
+        {
+          left: { heading: "", html: "", pageNum: 1 },
+          right: { heading: "", html: "", pageNum: 2 },
+        },
+      ],
+    };
+    setManuals((prev) => [...prev, newManual]);
+    setSelectedManualId(newManual.id);
+    setSpreadIndex(0);
+    setEditSessionKey((k) => k + 1);
+    setIsEditMode(true);
+  }
+
+  function beginEdit() {
+    editSnapshotRef.current = { manuals, selectedManualId, spreadIndex };
+    ensureSpreadEditable(spreadIndex);
+    setEditSessionKey((k) => k + 1);
+    setIsEditMode(true);
+  }
+
+  function cancelEdit() {
+    const snapshot = editSnapshotRef.current;
+    if (snapshot) {
+      setManuals(snapshot.manuals);
+      setSelectedManualId(snapshot.selectedManualId);
+      setSpreadIndex(snapshot.spreadIndex);
+    }
+    editSnapshotRef.current = null;
+    setIsEditMode(false);
+  }
+
+  function finishEdit() {
+    if (!selectedManual.title.trim()) {
+      window.alert("매뉴얼 제목을 입력해주세요.");
+      return;
+    }
+    editSnapshotRef.current = null;
+    setIsEditMode(false);
+  }
+
+  function updateManualTitle(value) {
+    setManuals((prev) => prev.map((manual) => (manual.id === selectedManualId ? { ...manual, title: value } : manual)));
+  }
+
+  function updatePageField(side, field, value) {
+    setManuals((prev) =>
+      prev.map((manual) => {
+        if (manual.id !== selectedManualId) return manual;
+        const updatedSpreads = manual.spreads.map((spread, idx) =>
+          idx !== spreadIndex ? spread : { ...spread, [side]: { ...spread[side], [field]: value } }
+        );
+        return { ...manual, spreads: updatedSpreads };
+      })
+    );
   }
 
   return (
@@ -352,8 +447,9 @@ export default function WorkManual() {
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
             {isAdmin && (
               <button
-                onClick={openCreateModal}
-                className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm"
+                onClick={beginCreate}
+                disabled={isEditMode}
+                className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="material-symbols-outlined">add_circle</span>
                 신규 매뉴얼 등록
@@ -387,13 +483,14 @@ export default function WorkManual() {
               <button
                 key={manual.id}
                 onClick={() => handleSelectManual(manual.id)}
+                disabled={isEditMode}
                 className={
                   manual.id === selectedManualId
-                    ? "w-full text-left p-3 rounded-xl bg-primary text-on-primary font-bold transition-all shadow-sm"
-                    : "w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all"
+                    ? "w-full text-left p-3 rounded-xl bg-primary text-on-primary font-bold transition-all shadow-sm disabled:cursor-not-allowed"
+                    : "w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 }
               >
-                {manual.title}
+                {manual.title || "(제목 없음)"}
               </button>
             ))}
           </div>
@@ -412,14 +509,43 @@ export default function WorkManual() {
 
         {/* Main Stage */}
         <main className="flex-1 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
+          {isAdmin && isEditMode && (
+            <input
+              type="text"
+              value={selectedManual.title}
+              onChange={(e) => updateManualTitle(e.target.value)}
+              placeholder="매뉴얼 제목을 입력하세요"
+              className="absolute top-6 left-1/2 -translate-x-1/2 z-20 w-[360px] px-4 py-2 rounded-full border-2 border-dashed border-primary/30 bg-white text-center font-bold text-on-surface focus:border-primary focus:ring-0 outline-none transition-colors"
+            />
+          )}
+
           {isAdmin && (
-            <button
-              onClick={openEditModal}
-              className="absolute top-6 right-8 z-20 flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
-            >
-              <span className="material-symbols-outlined">edit</span>
-              <span className="text-body-md">수정</span>
-            </button>
+            <div className="absolute top-6 right-8 z-20 flex items-center gap-3">
+              {isEditMode ? (
+                <>
+                  <button
+                    onClick={cancelEdit}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold hover:bg-white transition-all"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={finishEdit}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
+                  >
+                    저장
+                  </button>
+                </>
+              ) : (
+                <button
+                  onClick={beginEdit}
+                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
+                >
+                  <span className="material-symbols-outlined">edit</span>
+                  <span className="text-body-md">수정</span>
+                </button>
+              )}
+            </div>
           )}
 
           <div className="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
@@ -432,7 +558,7 @@ export default function WorkManual() {
             </button>
             <button
               onClick={goNext}
-              disabled={spreadIndex === selectedManual.spreads.length - 1}
+              disabled={!isEditMode && spreadIndex === selectedManual.spreads.length - 1}
               className="absolute right-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-[32px]">chevron_right</span>
@@ -447,10 +573,34 @@ export default function WorkManual() {
               <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest h-full">
                 <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
                 <div className="w-1/2 border-r border-outline-variant/20 relative overflow-y-auto custom-scrollbar">
-                  <BookPage page={currentSpread.left} />
+                  {isEditMode ? (
+                    <BookPageEditor
+                      editorKey={`${selectedManualId}-${spreadIndex}-left-${editSessionKey}`}
+                      heading={currentSpread.left.heading}
+                      html={currentSpread.left.html}
+                      pageNum={currentSpread.left.pageNum}
+                      ckeditorConfig={ckeditorConfig}
+                      onHeadingChange={(v) => updatePageField("left", "heading", v)}
+                      onHtmlChange={(v) => updatePageField("left", "html", v)}
+                    />
+                  ) : (
+                    <BookPage page={currentSpread.left} />
+                  )}
                 </div>
                 <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
-                  <BookPage page={currentSpread.right} />
+                  {isEditMode ? (
+                    <BookPageEditor
+                      editorKey={`${selectedManualId}-${spreadIndex}-right-${editSessionKey}`}
+                      heading={currentSpread.right.heading}
+                      html={currentSpread.right.html}
+                      pageNum={currentSpread.right.pageNum}
+                      ckeditorConfig={ckeditorConfig}
+                      onHeadingChange={(v) => updatePageField("right", "heading", v)}
+                      onHtmlChange={(v) => updatePageField("right", "html", v)}
+                    />
+                  ) : (
+                    <BookPage page={currentSpread.right} />
+                  )}
                 </div>
               </div>
             </div>
@@ -473,101 +623,6 @@ export default function WorkManual() {
           </div>
         </main>
       </div>
-
-      {isAdmin && isEditorOpen && (
-        <div className="fixed inset-0 z-[60] flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-          <div className="w-[92vw] h-[88vh] max-w-[1600px] bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
-            {/* Modal Header */}
-            <div className="px-8 py-5 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30 shrink-0">
-              <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
-                <span className="material-symbols-outlined text-primary">
-                  {editorMode === "edit" ? "edit_note" : "auto_stories"}
-                </span>
-                {editorMode === "edit" ? "매뉴얼 수정" : "신규 매뉴얼 작성"}
-              </h2>
-              <button
-                onClick={closeEditor}
-                className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
-              >
-                <span className="material-symbols-outlined text-on-surface-variant">close</span>
-              </button>
-            </div>
-
-            {/* Book-style Editor + Live Preview */}
-            <div className="flex-1 flex items-center justify-center p-8 overflow-hidden">
-              <div className="relative w-full h-full">
-                <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
-                <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
-                <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
-                <div className="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0" />
-
-                <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest h-full">
-                  <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
-
-                  {/* Left Page: Editor */}
-                  <div className="w-1/2 border-r border-outline-variant/20 flex flex-col overflow-hidden">
-                    <div className="px-14 pt-16 pb-6 shrink-0">
-                      <span className="inline-block px-4 py-1.5 bg-primary/10 text-primary rounded-full text-body-md font-bold mb-6">
-                        {editorMode === "edit" ? "수정 중" : "편집 중"}
-                      </span>
-                      <input
-                        type="text"
-                        value={newTitle}
-                        onChange={(e) => setNewTitle(e.target.value)}
-                        placeholder="제목을 입력하세요"
-                        className="w-full text-center text-headline-lg font-bold text-on-surface bg-transparent border-none outline-none placeholder:text-outline/40 pb-6 border-b-2 border-primary/10"
-                      />
-                    </div>
-                    <div className="flex-1 min-h-0 px-14 pb-10">
-                      <div className="dudc-ckeditor dudc-ckeditor-lg rounded-xl overflow-hidden h-full">
-                        <CKEditor
-                          editor={ClassicEditor}
-                          data={newContent}
-                          config={ckeditorConfig}
-                          onChange={(_event, editor) => setNewContent(editor.getData())}
-                        />
-                      </div>
-                    </div>
-                  </div>
-
-                  {/* Right Page: Live Preview */}
-                  <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
-                    <BookPage
-                      page={{
-                        heading: newTitle.trim() || "제목을 입력해주세요",
-                        html: newContent,
-                        pageNum: 1,
-                      }}
-                    />
-                  </div>
-                </div>
-              </div>
-            </div>
-
-            {/* Footer Actions */}
-            <div className="px-8 py-5 border-t-2 border-dashed border-outline-variant flex items-center justify-between bg-surface-container-low shrink-0">
-              <p className="text-label-sm text-on-surface-variant flex items-center gap-1.5">
-                <span className="material-symbols-outlined text-[16px]">visibility</span>
-                오른쪽 페이지에서 실시간 미리보기를 확인하세요.
-              </p>
-              <div className="flex gap-3">
-                <button
-                  onClick={closeEditor}
-                  className="px-6 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-lowest transition-colors"
-                >
-                  취소
-                </button>
-                <button
-                  onClick={handleSaveManual}
-                  className="px-6 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all"
-                >
-                  저장
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      )}
     </div>
   );
 }
