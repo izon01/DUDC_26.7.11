@@ -1,20 +1,9 @@
 import { useMemo, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
-
-const QUILL_MODULES = {
-  toolbar: [
-    [{ size: ["small", false, "large", "huge"] }],
-    ["bold", "underline"],
-    [{ color: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-  ],
-};
-
-const QUILL_FORMATS = ["size", "bold", "underline", "color", "list", "align"];
+import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 
 function placeholderSpread(title) {
   return {
@@ -179,12 +168,10 @@ function BookPage({ page }) {
           <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
             {page.heading}
           </h2>
-          <div className="ql-snow">
-            <div
-              className="ql-editor !p-0 !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
-              dangerouslySetInnerHTML={{ __html: page.html }}
-            />
-          </div>
+          <div
+            className="ck-content !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
+            dangerouslySetInnerHTML={{ __html: page.html }}
+          />
         </div>
         <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
           — {page.pageNum} —
@@ -266,6 +253,9 @@ export default function WorkManual() {
   const [editorMode, setEditorMode] = useState("create"); // "create" | "edit"
   const [newTitle, setNewTitle] = useState("");
   const [newContent, setNewContent] = useState("");
+  const [ckeditorConfig] = useState(() =>
+    createCkeditorConfig("본문을 작성해보세요. 오른쪽 페이지에서 실시간으로 확인할 수 있어요.")
+  );
 
   const filteredManuals = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -529,14 +519,12 @@ export default function WorkManual() {
                       />
                     </div>
                     <div className="flex-1 min-h-0 px-14 pb-10">
-                      <div className="dudc-quill dudc-quill-lg rounded-xl overflow-hidden h-full">
-                        <ReactQuill
-                          theme="snow"
-                          value={newContent}
-                          onChange={setNewContent}
-                          modules={QUILL_MODULES}
-                          formats={QUILL_FORMATS}
-                          placeholder="본문을 작성해보세요. 오른쪽 페이지에서 실시간으로 확인할 수 있어요."
+                      <div className="dudc-ckeditor dudc-ckeditor-lg rounded-xl overflow-hidden h-full">
+                        <CKEditor
+                          editor={ClassicEditor}
+                          data={newContent}
+                          config={ckeditorConfig}
+                          onChange={(_event, editor) => setNewContent(editor.getData())}
                         />
                       </div>
                     </div>

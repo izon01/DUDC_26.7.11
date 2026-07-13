@@ -1,36 +1,9 @@
 import { useMemo, useState } from "react";
-import ReactQuill from "react-quill";
-import "react-quill/dist/quill.snow.css";
+import { CKEditor } from "@ckeditor/ckeditor5-react";
+import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
-
-const QUILL_MODULES = {
-  toolbar: [
-    [{ header: [1, 2, 3, false] }],
-    [{ size: ["small", false, "large", "huge"] }],
-    ["bold", "italic", "underline", "strike"],
-    [{ color: [] }, { background: [] }],
-    [{ list: "ordered" }, { list: "bullet" }],
-    [{ align: [] }],
-    ["blockquote", "link"],
-    ["clean"],
-  ],
-};
-
-const QUILL_FORMATS = [
-  "header",
-  "size",
-  "bold",
-  "italic",
-  "underline",
-  "strike",
-  "color",
-  "background",
-  "list",
-  "align",
-  "blockquote",
-  "link",
-];
+import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 
 const INITIAL_GUIDES = [
   {
@@ -93,6 +66,7 @@ function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
   const [title, setTitle] = useState(initialValues.title);
   const [bodyHtml, setBodyHtml] = useState(initialValues.bodyHtml);
   const [checkPointsText, setCheckPointsText] = useState(initialValues.checkPoints.join("\n"));
+  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문 내용을 자유롭게 작성해보세요."));
 
   function handleSubmit() {
     const trimmedTitle = title.trim();
@@ -139,14 +113,12 @@ function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
       </div>
 
       <div className="max-w-5xl w-full mx-auto px-10 py-10">
-        <div className="dudc-quill dudc-quill-sticky">
-          <ReactQuill
-            theme="snow"
-            value={bodyHtml}
-            onChange={setBodyHtml}
-            modules={QUILL_MODULES}
-            formats={QUILL_FORMATS}
-            placeholder="본문 내용을 자유롭게 작성해보세요."
+        <div className="dudc-ckeditor dudc-ckeditor-sticky">
+          <CKEditor
+            editor={ClassicEditor}
+            data={bodyHtml}
+            config={ckeditorConfig}
+            onChange={(_event, editor) => setBodyHtml(editor.getData())}
           />
         </div>
 
@@ -365,12 +337,10 @@ export default function CultureManual() {
             {/* Page Content */}
             <div className="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
               <div className="max-w-2xl mx-auto space-y-10">
-                <div className="ql-snow">
-                  <div
-                    className="ql-editor !p-0 !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
-                    dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
-                  />
-                </div>
+                <div
+                  className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
+                  dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
+                />
 
                 {selectedGuide.checkPoints.length > 0 && (
                   <div className="p-8 bg-surface-container-low border border-dashed border-outline-variant rounded-2xl">

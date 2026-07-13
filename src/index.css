@@ -111,97 +111,83 @@ body {
   border-color: #005ea1;
 }
 
-/* React-Quill: Stitch theme (pastel / dashed / rounded) */
-.dudc-quill .ql-toolbar.ql-snow {
+/* CKEditor 5: Stitch theme (pastel / dashed / rounded) */
+.dudc-ckeditor .ck.ck-toolbar {
   border: 2px dashed #c1c7d2;
   border-bottom: none;
   border-radius: 0.75rem 0.75rem 0 0;
   background-color: #f3f4f5;
-  font-family: "Noto Sans KR", sans-serif;
 }
 
-.dudc-quill .ql-container.ql-snow {
+.dudc-ckeditor .ck.ck-editor__editable {
   border: 2px dashed #c1c7d2;
   border-radius: 0 0 0.75rem 0.75rem;
-  background-color: #ffffff;
   font-family: "Noto Sans KR", sans-serif;
   font-size: 15px;
-}
-
-.dudc-quill .ql-editor {
-  min-height: 160px;
   line-height: 1.7;
   word-break: keep-all;
 }
 
-.dudc-quill .ql-editor.ql-blank::before {
-  color: #717782;
-  font-style: normal;
-}
-
-.dudc-quill .ql-snow .ql-picker {
-  color: #414751;
-}
-
-.dudc-quill .ql-snow.ql-toolbar button:hover,
-.dudc-quill .ql-snow .ql-toolbar button:hover,
-.dudc-quill .ql-snow.ql-toolbar button.ql-active,
-.dudc-quill .ql-snow .ql-toolbar button.ql-active {
-  color: #005ea1;
-}
-
-.dudc-quill .ql-snow.ql-toolbar button:hover .ql-stroke,
-.dudc-quill .ql-snow .ql-toolbar button:hover .ql-stroke,
-.dudc-quill .ql-snow.ql-toolbar button.ql-active .ql-stroke,
-.dudc-quill .ql-snow .ql-toolbar button.ql-active .ql-stroke {
-  stroke: #005ea1;
-}
-
-/* Taller variant used inside the book-style manual editor modal */
-.dudc-quill.dudc-quill-lg {
+/* Taller, bounded variant used inside the book-style manual editor modal */
+.dudc-ckeditor.dudc-ckeditor-lg {
   height: 100%;
   display: flex;
   flex-direction: column;
 }
 
-.dudc-quill.dudc-quill-lg > div {
+.dudc-ckeditor.dudc-ckeditor-lg .ck-editor {
   display: flex;
   flex-direction: column;
   flex: 1;
   min-height: 0;
 }
 
-.dudc-quill.dudc-quill-lg .ql-toolbar.ql-snow {
+.dudc-ckeditor.dudc-ckeditor-lg .ck.ck-toolbar {
   flex-shrink: 0;
 }
 
-.dudc-quill.dudc-quill-lg .ql-container.ql-snow {
+.dudc-ckeditor.dudc-ckeditor-lg .ck.ck-editor__editable {
   flex: 1;
   min-height: 0;
   overflow-y: auto;
   font-size: 17px;
 }
 
-.dudc-quill.dudc-quill-lg .ql-editor {
-  min-height: 100%;
-}
-
-/* Sticky toolbar variant used in the full-width culture post editor, so
-   formatting controls stay reachable while scrolling through a long post.
+/* Sticky toolbar variant used in the full-width culture/manual editor canvas,
+   so formatting controls stay reachable while scrolling through a long post.
    Scopes to the editor's own scroll container (below the global header, which
    is a static sibling outside this container) so top: 0 here already sits
    right under the header — no header-height offset needed or duplicated. */
-.dudc-quill-sticky .ql-toolbar.ql-snow {
+.dudc-ckeditor-sticky .ck.ck-toolbar {
   position: sticky;
   top: 0;
   z-index: 40;
-  background-color: #ffffff;
 }
 
 /* Let the editor grow with its content instead of scrolling internally —
    the whole window scrolls, only the header and toolbar stay pinned. */
-.dudc-quill-sticky .ql-container.ql-snow,
-.dudc-quill-sticky .ql-editor {
+.dudc-ckeditor-sticky .ck.ck-editor__editable {
   min-height: 400px;
-  overflow: visible;
+}
+
+/* CKEditor 5 doesn't ship its own heading typography — restore the sizes
+   Tailwind's preflight reset strips from h1-h3 (used by the Heading plugin),
+   scoped under .ck-content so both the live editable surface and the
+   rendered read view (which reuses the same class) match exactly. */
+.ck-content h1 {
+  font-size: 2em;
+  font-weight: 700;
+  margin: 0.67em 0;
+}
+
+.ck-content h2 {
+  font-size: 1.5em;
+  font-weight: 700;
+  margin: 0.83em 0;
+}
+
+.ck-content h3 {
+  font-size: 1.17em;
+  font-weight: 700;
+  margin: 1em 0;
 }
