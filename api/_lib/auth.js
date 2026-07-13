@@ -17,6 +17,24 @@ export function getAuthenticatedUser(req) {
   }
 }
 
+// Verifies the request is from any logged-in user (no role check). On
+// failure it writes the appropriate error response itself and returns null;
+// callers should `return` immediately when this returns null.
+export function requireAuth(req, res) {
+  if (!process.env.JWT_SECRET) {
+    console.error("JWT_SECRET is not set");
+    res.status(500).json({ message: "서버 설정 오류입니다." });
+    return null;
+  }
+
+  const user = getAuthenticatedUser(req);
+  if (!user) {
+    res.status(401).json({ message: "인증이 필요합니다." });
+    return null;
+  }
+  return user;
+}
+
 // Verifies the request is from a logged-in admin. On failure it writes the
 // appropriate error response itself and returns null; callers should `return`
 // immediately when this returns null.

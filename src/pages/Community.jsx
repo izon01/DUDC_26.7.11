@@ -1,5 +1,6 @@
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import Header from "../components/Header";
+import { useAuth } from "../context/AuthContext";
 
 const CATEGORY_STYLES = {
   사내소식: "bg-primary-fixed text-on-primary-fixed",
@@ -10,100 +11,27 @@ const CATEGORY_STYLES = {
 const CATEGORIES = Object.keys(CATEGORY_STYLES);
 const POSTS_PER_PAGE = 6;
 
-const INITIAL_POSTS = [
-  {
-    id: 1,
-    category: "사내소식",
-    date: "1일 전",
-    title: "신규 입사자 사내 식당 이용 가이드",
-    excerpt: "오늘부터 적용되는 사내 식당 신규 이용 수칙과 결제 시스템 변경에 대한 안내 드립니다.",
-    author: "김지윤 매니저",
-    authorIcon: "person",
-    comments: 8,
-  },
-  {
-    id: 2,
-    category: "자유게시판",
-    date: "2일 전",
-    title: "우리 팀만의 점심 회식 명소 추천",
-    excerpt: "지난주 팀원들과 다녀온 회사 근처 숨은 맛집 3곳을 공유합니다. 가성비 최고예요!",
-    author: "박승호 책임",
-    authorIcon: "person",
-    comments: 15,
-  },
-  {
-    id: 3,
-    category: "공지사항",
-    date: "3일 전",
-    title: "[필독] 이번 주 금요일 사내 대청소 안내",
-    excerpt: "쾌적한 사무 환경을 위해 금요일 오후 4시부터 1시간 동안 부서별 대청소를 실시합니다.",
-    author: "인사운영팀",
-    authorIcon: "corporate_fare",
-    comments: 4,
-  },
-  {
-    id: 4,
-    category: "자유게시판",
-    date: "4일 전",
-    title: "퇴근 후 러닝 크루 모집합니다",
-    excerpt: "매주 수요일 저녁 7시, 회사 정문 앞 공원에서 가볍게 5km 뛰실 분들 모집해요!",
-    author: "이민지 대리",
-    authorIcon: "person",
-    comments: 22,
-  },
-  {
-    id: 5,
-    category: "사내소식",
-    date: "5일 전",
-    title: "사내 도서관 신규 도서 목록 공유",
-    excerpt: "자기계발서부터 소설까지 5월 신규 입고 도서 목록을 공유하오니 많은 이용 바랍니다.",
-    author: "정동우 프로",
-    authorIcon: "person",
-    comments: 3,
-  },
-  {
-    id: 6,
-    category: "자유게시판",
-    date: "1주일 전",
-    title: "반려동물 자랑 타임! 제 고양이 보세요",
-    excerpt: "저희 집 고양이가 너무 귀여워서 게시글 남깁니다. 다들 랜선 집사 되어보세요.",
-    author: "최유리 주임",
-    authorIcon: "person",
-    comments: 42,
-  },
-  {
-    id: 7,
-    category: "사내소식",
-    date: "2일 전",
-    title: "DUDC 사내 도서관 신규 도서 목록 안내",
-    excerpt: "이번 달 새롭게 입고된 도서들을 소개합니다. 자기계발부터 소설까지 다양한 장르를 만나보세요.",
-    author: "정소연 주임",
-    authorIcon: "person",
-    comments: 0,
-  },
-  {
-    id: 8,
-    category: "공지사항",
-    date: "4일 전",
-    title: "신규 입사자 OJT 일정 및 강의실 안내",
-    excerpt: "다음 주 진행되는 신규 입사자 교육 일정과 장소를 공지하오니 대상자분들은 확인 바랍니다.",
-    author: "인사교육팀",
-    authorIcon: "corporate_fare",
-    comments: 2,
-  },
-  {
-    id: 9,
-    category: "공지사항",
-    date: "1주 전",
-    title: "전사 시스템 점검 안내 (금요일 야간)",
-    excerpt: "안정적인 서비스 제공을 위해 이번 주 금요일 야간에 시스템 점검이 예정되어 있습니다.",
-    author: "IT지원팀",
-    authorIcon: "corporate_fare",
-    comments: 1,
-  },
-];
+async function parseJsonSafely(res) {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
 
-function WriteModal({ onClose, onSubmit }) {
+function formatRelativeDate(iso) {
+  const diffMs = Date.now() - new Date(iso).getTime();
+  const diffMin = Math.floor(diffMs / 60000);
+  if (diffMin < 1) return "방금 전";
+  if (diffMin < 60) return `${diffMin}분 전`;
+  const diffHour = Math.floor(diffMin / 60);
+  if (diffHour < 24) return `${diffHour}시간 전`;
+  const diffDay = Math.floor(diffHour / 24);
+  if (diffDay < 7) return `${diffDay}일 전`;
+  return new Date(iso).toLocaleDateString("ko-KR");
+}
+
+function WriteModal({ isSubmitting, onClose, onSubmit }) {
   const [title, setTitle] = useState("");
   const [category, setCategory] = useState(CATEGORIES[0]);
   const [content, setContent] = useState("");
@@ -111,7 +39,7 @@ function WriteModal({ onClose, onSubmit }) {
   function handleSubmit(e) {
     e.preventDefault();
     if (!title.trim() || !content.trim()) return;
-    onSubmit({ title: title.trim(), category, excerpt: content.trim() });
+    onSubmit({ title: title.trim(), category, content: content.trim() });
   }
 
   return (
@@ -185,15 +113,17 @@ function WriteModal({ onClose, onSubmit }) {
             <button
               type="button"
               onClick={onClose}
-              className="px-6 py-2.5 rounded-full border border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-low transition-colors"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-full border border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
             >
               취소
             </button>
             <button
               type="submit"
-              className="px-6 py-2.5 rounded-full bg-primary text-white font-bold text-label-sm hover:bg-primary/90 active:scale-95 transition-all"
+              disabled={isSubmitting}
+              className="px-6 py-2.5 rounded-full bg-primary text-white font-bold text-label-sm hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              등록
+              {isSubmitting ? "등록 중..." : "등록"}
             </button>
           </div>
         </form>
@@ -202,30 +132,277 @@ function WriteModal({ onClose, onSubmit }) {
   );
 }
 
+function PostDetailModal({
+  post,
+  comments,
+  isLoading,
+  currentUser,
+  isSubmittingComment,
+  onClose,
+  onDeletePost,
+  onSubmitComment,
+  onDeleteComment,
+}) {
+  const [commentText, setCommentText] = useState("");
+
+  function handleSubmit(e) {
+    e.preventDefault();
+    const trimmed = commentText.trim();
+    if (!trimmed) return;
+    onSubmitComment(trimmed);
+    setCommentText("");
+  }
+
+  const canDeletePost =
+    post && currentUser && (currentUser.email === post.authorEmail || currentUser.role === "admin");
+
+  return (
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
+      <div className="w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
+        {isLoading || !post ? (
+          <div className="px-8 py-16 text-center text-on-surface-variant">불러오는 중...</div>
+        ) : (
+          <>
+            <div className="px-8 py-6 border-b border-dashed border-outline-variant flex items-start justify-between shrink-0">
+              <div className="min-w-0">
+                <div className="flex items-center gap-2 mb-2">
+                  <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full ${CATEGORY_STYLES[post.category]}`}>
+                    {post.category}
+                  </span>
+                  <span className="text-outline text-[11px]">{formatRelativeDate(post.createdAt)}</span>
+                </div>
+                <h2 className="text-headline-md font-bold text-on-surface break-words">{post.title}</h2>
+                <p className="text-label-sm text-on-surface-variant mt-1">{post.authorName}</p>
+              </div>
+              <div className="flex items-center gap-2 shrink-0 ml-4">
+                {canDeletePost && (
+                  <button
+                    onClick={onDeletePost}
+                    title="삭제"
+                    className="w-9 h-9 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:border-error hover:text-error transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">delete</span>
+                  </button>
+                )}
+                <button
+                  onClick={onClose}
+                  className="w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+                >
+                  <span className="material-symbols-outlined text-on-surface-variant">close</span>
+                </button>
+              </div>
+            </div>
+
+            <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
+              <p className="text-body-lg text-on-surface whitespace-pre-wrap break-words mb-8">{post.content}</p>
+
+              <div className="border-t border-dashed border-outline-variant pt-6">
+                <h3 className="font-bold text-body-lg text-on-surface mb-4">댓글 {comments.length}개</h3>
+                <div className="space-y-4 mb-6">
+                  {comments.length === 0 && (
+                    <p className="text-label-sm text-on-surface-variant">아직 댓글이 없습니다.</p>
+                  )}
+                  {comments.map((c) => {
+                    const canDeleteComment =
+                      currentUser && (currentUser.email === c.authorEmail || currentUser.role === "admin");
+                    return (
+                      <div
+                        key={c.id}
+                        className="p-4 bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant"
+                      >
+                        <div className="flex items-center justify-between mb-1">
+                          <span className="font-bold text-label-sm text-on-surface">{c.authorName}</span>
+                          <div className="flex items-center gap-2">
+                            <span className="text-[11px] text-outline">{formatRelativeDate(c.createdAt)}</span>
+                            {canDeleteComment && (
+                              <button
+                                onClick={() => onDeleteComment(c.id)}
+                                title="삭제"
+                                className="text-on-surface-variant hover:text-error transition-colors"
+                              >
+                                <span className="material-symbols-outlined text-[16px]">delete</span>
+                              </button>
+                            )}
+                          </div>
+                        </div>
+                        <p className="text-label-sm text-on-surface-variant whitespace-pre-wrap break-words">
+                          {c.content}
+                        </p>
+                      </div>
+                    );
+                  })}
+                </div>
+
+                <form onSubmit={handleSubmit} className="flex items-start gap-2">
+                  <textarea
+                    value={commentText}
+                    onChange={(e) => setCommentText(e.target.value)}
+                    placeholder="댓글을 입력하세요"
+                    rows={2}
+                    className="flex-1 bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg px-3 py-2 text-label-sm focus:border-primary focus:ring-0 transition-all resize-none"
+                  />
+                  <button
+                    type="submit"
+                    disabled={isSubmittingComment || !commentText.trim()}
+                    className="px-5 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed shrink-0"
+                  >
+                    등록
+                  </button>
+                </form>
+              </div>
+            </div>
+          </>
+        )}
+      </div>
+    </div>
+  );
+}
+
 export default function Community() {
-  const [posts, setPosts] = useState(INITIAL_POSTS);
-  const [isModalOpen, setIsModalOpen] = useState(false);
+  const { user, token } = useAuth();
+
+  const [posts, setPosts] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
+  const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+
+  const [selectedPostId, setSelectedPostId] = useState(null);
+  const [selectedPostDetail, setSelectedPostDetail] = useState(null);
+  const [isLoadingDetail, setIsLoadingDetail] = useState(false);
+  const [isSubmittingComment, setIsSubmittingComment] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadPosts() {
+      try {
+        const res = await fetch("/api/community");
+        const data = await parseJsonSafely(res);
+        if (!res.ok) throw new Error(data.message || "게시글을 불러오지 못했습니다.");
+        if (cancelled) return;
+        setPosts(data.posts);
+      } catch (error) {
+        if (!cancelled) setLoadError(error.message);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    loadPosts();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
+
+  useEffect(() => {
+    if (!selectedPostId) {
+      setSelectedPostDetail(null);
+      return;
+    }
+
+    let cancelled = false;
+    setIsLoadingDetail(true);
+
+    async function loadDetail() {
+      try {
+        const res = await fetch(`/api/community?id=${selectedPostId}`);
+        const data = await parseJsonSafely(res);
+        if (!res.ok) throw new Error(data.message || "게시글을 불러오지 못했습니다.");
+        if (cancelled) return;
+        setSelectedPostDetail(data);
+      } catch (error) {
+        if (!cancelled) window.alert(error.message);
+      } finally {
+        if (!cancelled) setIsLoadingDetail(false);
+      }
+    }
+
+    loadDetail();
+    return () => {
+      cancelled = true;
+    };
+  }, [selectedPostId]);
 
   const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
   const visiblePosts = posts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
 
-  function handleCreatePost({ title, category, excerpt }) {
-    setPosts((prev) => [
-      {
-        id: Date.now(),
-        category,
-        date: "방금 전",
-        title,
-        excerpt,
-        author: "나 (신입사원)",
-        authorIcon: "person",
-        comments: 0,
-      },
-      ...prev,
-    ]);
-    setCurrentPage(1);
-    setIsModalOpen(false);
+  async function handleCreatePost({ title, category, content }) {
+    setIsSubmittingPost(true);
+    try {
+      const res = await fetch("/api/community", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ title, category, content }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "글 작성에 실패했습니다.");
+      setPosts((prev) => [data.post, ...prev]);
+      setCurrentPage(1);
+      setIsWriteModalOpen(false);
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setIsSubmittingPost(false);
+    }
+  }
+
+  async function handleDeletePost() {
+    if (!window.confirm("정말 이 게시글을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.")) return;
+    try {
+      const res = await fetch(`/api/community?id=${selectedPostId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "게시글 삭제에 실패했습니다.");
+      setPosts((prev) => prev.filter((p) => p.id !== selectedPostId));
+      setSelectedPostId(null);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  }
+
+  async function handleSubmitComment(content) {
+    setIsSubmittingComment(true);
+    try {
+      const res = await fetch("/api/community-comments", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ postId: selectedPostId, content }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "댓글 등록에 실패했습니다.");
+      setSelectedPostDetail((prev) => (prev ? { ...prev, comments: [...prev.comments, data.comment] } : prev));
+      setPosts((prev) =>
+        prev.map((p) => (p.id === selectedPostId ? { ...p, commentCount: (p.commentCount || 0) + 1 } : p))
+      );
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setIsSubmittingComment(false);
+    }
+  }
+
+  async function handleDeleteComment(commentId) {
+    if (!window.confirm("이 댓글을 삭제하시겠습니까?")) return;
+    try {
+      const res = await fetch(`/api/community-comments?id=${commentId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "댓글 삭제에 실패했습니다.");
+      setSelectedPostDetail((prev) =>
+        prev ? { ...prev, comments: prev.comments.filter((c) => c.id !== commentId) } : prev
+      );
+      setPosts((prev) =>
+        prev.map((p) => (p.id === selectedPostId ? { ...p, commentCount: Math.max(0, (p.commentCount || 0) - 1) } : p))
+      );
+    } catch (error) {
+      window.alert(error.message);
+    }
   }
 
   return (
@@ -242,7 +419,7 @@ export default function Community() {
             </p>
           </div>
           <button
-            onClick={() => setIsModalOpen(true)}
+            onClick={() => setIsWriteModalOpen(true)}
             className="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm shadow-lg shadow-primary/20 flex items-center gap-2 hover:bg-primary/90 active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-[20px]">edit_note</span>
@@ -252,41 +429,52 @@ export default function Community() {
 
         {/* Post Grid */}
         <div className="w-full flex-1 overflow-y-auto custom-scroll pb-4">
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {visiblePosts.map((post) => (
-              <div
-                key={post.id}
-                className="bg-surface-container-lowest rounded-xl p-5 border border-dashed border-outline-variant card-shadow flex flex-col justify-between hover:border-primary/50 transition-colors cursor-pointer group"
-              >
-                <div>
-                  <div className="flex items-center gap-2 mb-3">
-                    <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full ${CATEGORY_STYLES[post.category]}`}>
-                      {post.category}
-                    </span>
-                    <span className="text-outline text-[11px]">{post.date}</span>
-                  </div>
-                  <h3 className="font-bold text-body-lg text-on-surface group-hover:text-primary transition-colors line-clamp-1">
-                    {post.title}
-                  </h3>
-                  <p className="text-on-surface-variant text-label-sm mt-2 line-clamp-2">{post.excerpt}</p>
-                </div>
-                <div className="mt-4 pt-3 border-t border-dashed border-outline-variant flex items-center justify-between">
-                  <div className="flex items-center gap-2">
-                    <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center">
-                      <span className="material-symbols-outlined text-[16px] text-on-surface-variant">
-                        {post.authorIcon}
+          {isLoading ? (
+            <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
+          ) : loadError ? (
+            <p className="text-center text-error py-10">{loadError}</p>
+          ) : posts.length === 0 ? (
+            <p className="text-center text-on-surface-variant py-10">
+              아직 등록된 글이 없습니다. 첫 글을 작성해보세요!
+            </p>
+          ) : (
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+              {visiblePosts.map((post) => (
+                <div
+                  key={post.id}
+                  onClick={() => setSelectedPostId(post.id)}
+                  className="bg-surface-container-lowest rounded-xl p-5 border border-dashed border-outline-variant card-shadow flex flex-col justify-between hover:border-primary/50 transition-colors cursor-pointer group"
+                >
+                  <div>
+                    <div className="flex items-center gap-2 mb-3">
+                      <span
+                        className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full ${CATEGORY_STYLES[post.category]}`}
+                      >
+                        {post.category}
                       </span>
+                      <span className="text-outline text-[11px]">{formatRelativeDate(post.createdAt)}</span>
                     </div>
-                    <span className="text-label-sm font-medium">{post.author}</span>
+                    <h3 className="font-bold text-body-lg text-on-surface group-hover:text-primary transition-colors line-clamp-1">
+                      {post.title}
+                    </h3>
+                    <p className="text-on-surface-variant text-label-sm mt-2 line-clamp-2">{post.content}</p>
                   </div>
-                  <div className="flex items-center gap-1 text-outline">
-                    <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
-                    <span className="text-[12px]">{post.comments}</span>
+                  <div className="mt-4 pt-3 border-t border-dashed border-outline-variant flex items-center justify-between">
+                    <div className="flex items-center gap-2">
+                      <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center">
+                        <span className="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
+                      </div>
+                      <span className="text-label-sm font-medium">{post.authorName}</span>
+                    </div>
+                    <div className="flex items-center gap-1 text-outline">
+                      <span className="material-symbols-outlined text-[16px]">chat_bubble</span>
+                      <span className="text-[12px]">{post.commentCount}</span>
+                    </div>
                   </div>
                 </div>
-              </div>
-            ))}
-          </div>
+              ))}
+            </div>
+          )}
         </div>
 
         {/* Pagination */}
@@ -323,7 +511,27 @@ export default function Community() {
         )}
       </main>
 
-      {isModalOpen && <WriteModal onClose={() => setIsModalOpen(false)} onSubmit={handleCreatePost} />}
+      {isWriteModalOpen && (
+        <WriteModal
+          isSubmitting={isSubmittingPost}
+          onClose={() => setIsWriteModalOpen(false)}
+          onSubmit={handleCreatePost}
+        />
+      )}
+
+      {selectedPostId && (
+        <PostDetailModal
+          post={selectedPostDetail?.post}
+          comments={selectedPostDetail?.comments || []}
+          isLoading={isLoadingDetail}
+          currentUser={user}
+          isSubmittingComment={isSubmittingComment}
+          onClose={() => setSelectedPostId(null)}
+          onDeletePost={handleDeletePost}
+          onSubmitComment={handleSubmitComment}
+          onDeleteComment={handleDeleteComment}
+        />
+      )}
     </div>
   );
 }

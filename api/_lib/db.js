@@ -24,6 +24,27 @@ export function ensureSchema() {
           created_at TIMESTAMPTZ NOT NULL DEFAULT now()
         )
       `,
+      sql`
+        CREATE TABLE IF NOT EXISTS community_posts (
+          id TEXT PRIMARY KEY,
+          title TEXT NOT NULL,
+          content TEXT NOT NULL,
+          category TEXT NOT NULL,
+          author_name TEXT NOT NULL,
+          author_email TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `,
+      sql`
+        CREATE TABLE IF NOT EXISTS community_comments (
+          id TEXT PRIMARY KEY,
+          post_id TEXT NOT NULL REFERENCES community_posts(id) ON DELETE CASCADE,
+          author_name TEXT NOT NULL,
+          author_email TEXT NOT NULL,
+          content TEXT NOT NULL,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+        )
+      `,
     ]).catch((error) => {
       schemaReady = null;
       throw error;
