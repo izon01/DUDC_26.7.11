@@ -3,13 +3,14 @@ import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 
 const CATEGORY_STYLES = {
-  사내소식: "bg-primary-fixed text-on-primary-fixed",
-  자유게시판: "bg-secondary-container text-on-secondary-container",
-  공지사항: "bg-tertiary-fixed text-on-tertiary-fixed",
+  공지사항: "bg-red-100 text-red-700",
+  사내소식: "bg-blue-100 text-blue-700",
+  자유게시판: "bg-green-100 text-green-700",
+  기타: "bg-purple-100 text-purple-700",
 };
 
 const CATEGORIES = Object.keys(CATEGORY_STYLES);
-const POSTS_PER_PAGE = 6;
+const POSTS_PER_PAGE = 9;
 
 async function parseJsonSafely(res) {
   try {
@@ -447,7 +448,7 @@ export default function Community() {
               아직 등록된 글이 없습니다. 첫 글을 작성해보세요!
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
               {visiblePosts.map((post) => (
                 <div
                   key={post.id}
