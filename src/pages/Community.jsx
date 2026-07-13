@@ -8,6 +8,7 @@ const CATEGORY_STYLES = {
 };
 
 const CATEGORIES = Object.keys(CATEGORY_STYLES);
+const POSTS_PER_PAGE = 6;
 
 const INITIAL_POSTS = [
   {
@@ -206,6 +207,9 @@ export default function Community() {
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
+  const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
+  const visiblePosts = posts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
+
   function handleCreatePost({ title, category, excerpt }) {
     setPosts((prev) => [
       {
@@ -220,6 +224,7 @@ export default function Community() {
       },
       ...prev,
     ]);
+    setCurrentPage(1);
     setIsModalOpen(false);
   }
 
@@ -248,7 +253,7 @@ export default function Community() {
         {/* Post Grid */}
         <div className="w-full flex-1 overflow-y-auto custom-scroll pb-4">
           <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-            {posts.map((post) => (
+            {visiblePosts.map((post) => (
               <div
                 key={post.id}
                 className="bg-surface-container-lowest rounded-xl p-5 border border-dashed border-outline-variant card-shadow flex flex-col justify-between hover:border-primary/50 transition-colors cursor-pointer group"
@@ -285,33 +290,37 @@ export default function Community() {
         </div>
 
         {/* Pagination */}
-        <div className="w-full flex justify-center items-center gap-2 py-4 shrink-0">
-          <button
-            onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all"
-          >
-            <span className="material-symbols-outlined text-[18px]">chevron_left</span>
-          </button>
-          {[1, 2, 3, 4, 5].map((page) => (
+        {totalPages > 1 && (
+          <div className="w-full flex justify-center items-center gap-2 py-4 shrink-0">
             <button
-              key={page}
-              onClick={() => setCurrentPage(page)}
-              className={
-                page === currentPage
-                  ? "w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-label-sm shadow-md shadow-primary/10"
-                  : "w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant font-medium text-label-sm hover:border-primary hover:text-primary transition-all"
-              }
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-on-surface-variant"
             >
-              {page}
+              <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
-          ))}
-          <button
-            onClick={() => setCurrentPage((p) => Math.min(5, p + 1))}
-            className="w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all"
-          >
-            <span className="material-symbols-outlined text-[18px]">chevron_right</span>
-          </button>
-        </div>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={
+                  page === currentPage
+                    ? "w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-label-sm shadow-md shadow-primary/10"
+                    : "w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant font-medium text-label-sm hover:border-primary hover:text-primary transition-all"
+                }
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-on-surface-variant"
+            >
+              <span className="material-symbols-outlined text-[18px]">chevron_right</span>
+            </button>
+          </div>
+        )}
       </main>
 
       {isModalOpen && <WriteModal onClose={() => setIsModalOpen(false)} onSubmit={handleCreatePost} />}
