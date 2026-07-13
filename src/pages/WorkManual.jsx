@@ -158,7 +158,7 @@ function toEditablePage(page) {
 function BookPage({ page }) {
   if (page.placeholder) {
     return (
-      <div className="w-full min-h-full px-14 pt-8 pb-16 flex flex-col items-center justify-center text-center gap-4 relative break-keep">
+      <div className="w-full min-h-full px-14 pt-6 pb-16 flex flex-col items-center justify-center text-center gap-4 relative break-keep">
         <span className="material-symbols-outlined text-primary/20 text-[64px]">construction</span>
         <h2 className="text-headline-lg font-bold text-on-surface">{page.heading}</h2>
         <p className="text-body-lg text-on-surface-variant">해당 매뉴얼 콘텐츠는 준비 중입니다.</p>
@@ -171,11 +171,8 @@ function BookPage({ page }) {
 
   if (page.html) {
     return (
-      <div className="w-full min-h-full px-14 pt-8 pb-16 relative break-keep">
+      <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
         <div className="space-y-8">
-          <span className="inline-block px-4 py-1.5 bg-secondary-container text-on-secondary-container rounded-full text-body-md font-bold">
-            새로 작성된 글
-          </span>
           <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
             {page.heading}
           </h2>
@@ -192,7 +189,7 @@ function BookPage({ page }) {
   }
 
   return (
-    <div className="w-full min-h-full px-14 pt-8 pb-16 relative break-keep">
+    <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
       <div className="space-y-10">
         <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
           {page.heading}
@@ -252,11 +249,11 @@ function BookPage({ page }) {
 }
 
 // In-place page editor — mirrors BookPage's size/padding/typography exactly
-// (same px-14/pt-8/pb-16 page box, same heading classes) so flipping between
+// (same px-14/pt-6/pb-16 page box, same heading classes) so flipping between
 // read and edit mode never changes the book's apparent size or font ratio.
 function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChange, onHtmlChange, editorKey }) {
   return (
-    <div className="w-full h-full min-h-full px-14 pt-8 pb-16 relative break-keep flex flex-col">
+    <div className="w-full h-full min-h-full px-14 pt-6 pb-16 relative break-keep flex flex-col">
       <input
         type="text"
         value={heading}
@@ -415,6 +412,19 @@ export default function WorkManual() {
     setIsEditMode(false);
   }
 
+  function handleDeleteManual() {
+    if (manuals.length <= 1) {
+      window.alert("최소 1개의 매뉴얼은 남아 있어야 합니다.");
+      return;
+    }
+    if (!window.confirm("정말 이 매뉴얼을 삭제하시겠습니까? 삭제된 데이터는 복구할 수 없습니다.")) return;
+
+    const remaining = manuals.filter((m) => m.id !== selectedManualId);
+    setManuals(remaining);
+    setSelectedManualId(remaining[0].id);
+    setSpreadIndex(0);
+  }
+
   function updateManualTitle(value) {
     setManuals((prev) => prev.map((manual) => (manual.id === selectedManualId ? { ...manual, title: value } : manual)));
   }
@@ -537,13 +547,22 @@ export default function WorkManual() {
                   </button>
                 </>
               ) : (
-                <button
-                  onClick={beginEdit}
-                  className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
-                >
-                  <span className="material-symbols-outlined">edit</span>
-                  <span className="text-body-md">수정</span>
-                </button>
+                <div className="flex flex-col gap-2">
+                  <button
+                    onClick={beginEdit}
+                    className="flex items-center gap-2 px-5 py-2.5 bg-primary text-on-primary rounded-full font-bold hover:opacity-90 active:scale-95 transition-all shadow-md"
+                  >
+                    <span className="material-symbols-outlined">edit</span>
+                    <span className="text-body-md">수정</span>
+                  </button>
+                  <button
+                    onClick={handleDeleteManual}
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-red-600 text-red-600 font-bold bg-white hover:bg-red-50 active:scale-95 transition-all"
+                  >
+                    <span className="material-symbols-outlined">delete</span>
+                    <span className="text-body-md">삭제</span>
+                  </button>
+                </div>
               )}
             </div>
           )}
