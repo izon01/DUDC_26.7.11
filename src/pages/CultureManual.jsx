@@ -365,10 +365,12 @@ export default function CultureManual() {
             {/* Page Content */}
             <div className="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
               <div className="max-w-2xl mx-auto space-y-10">
-                <div
-                  className="ql-editor !p-0 !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
-                  dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
-                />
+                <div className="ql-snow">
+                  <div
+                    className="ql-editor !p-0 !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
+                    dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
+                  />
+                </div>
 
                 {selectedGuide.checkPoints.length > 0 && (
                   <div className="p-8 bg-surface-container-low border border-dashed border-outline-variant rounded-2xl">

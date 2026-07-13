@@ -179,10 +179,12 @@ function BookPage({ page }) {
           <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
             {page.heading}
           </h2>
-          <div
-            className="ql-editor !p-0 !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
-            dangerouslySetInnerHTML={{ __html: page.html }}
-          />
+          <div className="ql-snow">
+            <div
+              className="ql-editor !p-0 !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
+              dangerouslySetInnerHTML={{ __html: page.html }}
+            />
+          </div>
         </div>
         <div className="absolute bottom-8 left-0 right-0 text-center text-body-md text-outline">
           — {page.pageNum} —
