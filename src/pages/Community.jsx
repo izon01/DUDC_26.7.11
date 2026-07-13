@@ -426,19 +426,8 @@ export default function Community() {
           </div>
         </section>
 
-        {/* Write Button */}
-        <div className="w-full flex justify-end mt-3 mb-3 shrink-0">
-          <button
-            onClick={() => setIsWriteModalOpen(true)}
-            className="px-6 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm shadow-lg shadow-primary/20 flex items-center gap-2 hover:bg-primary/90 active:scale-95 transition-all"
-          >
-            <span className="material-symbols-outlined text-[20px]">edit_note</span>
-            글쓰기
-          </button>
-        </div>
-
         {/* Post Grid */}
-        <div className="w-full flex-1 overflow-y-auto custom-scroll pb-4">
+        <div className="w-full flex-1 overflow-y-auto custom-scroll pt-4 pb-4">
           {isLoading ? (
             <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
           ) : loadError ? (
@@ -520,6 +509,16 @@ export default function Community() {
           </div>
         )}
       </main>
+
+      {/* Floating Write Button */}
+      <button
+        onClick={() => setIsWriteModalOpen(true)}
+        title="글쓰기"
+        className="fixed bottom-10 right-10 z-40 h-14 w-14 md:w-auto md:px-6 flex items-center justify-center gap-2 rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:scale-110 active:scale-95 transition-transform"
+      >
+        <span className="material-symbols-outlined text-[26px]">edit_note</span>
+        <span className="hidden md:inline font-bold text-label-sm">글쓰기</span>
+      </button>
 
       {isWriteModalOpen && (
         <WriteModal
