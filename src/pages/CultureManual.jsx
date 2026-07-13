@@ -1,55 +1,9 @@
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
-
-const INITIAL_GUIDES = [
-  {
-    id: "g1",
-    label: "Guide 01",
-    title: "사내 예절 안내",
-    bodyHtml:
-      "<h2>인사 예절의 기본</h2><p>DUDC의 문화는 상호 존중에서 시작됩니다. 아침 출근 시, 회의실 입장 시, 그리고 퇴근 시 가벼운 목례와 인사를 건네보세요. 작은 배려가 즐거운 근무 환경을 만듭니다.</p><h2>복장 및 근무 매너</h2><p>자율 복장을 원칙으로 하되, 외부 미팅이 있는 날은 비즈니스 캐주얼을 권장합니다.</p><h2>회의실 이용 예절</h2><p>회의실은 반드시 사전 예약 후 이용하며, 사용 후에는 원상태로 정리해주세요.</p><h2>호칭 문화</h2><p>DUDC는 직급 대신 '님' 호칭을 사용하는 수평적 커뮤니케이션 문화를 지향합니다.</p><h2>마무리 인사</h2><p>사내 예절 안내를 모두 읽어주셔서 감사합니다. 다음 가이드에서 협업 툴 활용법을 안내해 드릴게요.</p>",
-    checkPoints: [
-      "출입구에서 동료를 만나면 밝게 인사하기",
-      "엘리베이터 안에서는 조용히 대화하기",
-      "회의 시작 5분 전 도착 매너 지키기",
-      "외부 미팅 시 단정한 복장 착용",
-      "공용 공간 정숙 유지",
-      "예약 없이 장시간 점유 금지",
-      "사용 후 화이트보드 지우기",
-      "이름 + 님으로 호칭하기",
-      "존댓말 사용을 기본으로 하기",
-      "궁금한 점은 지식 베이스에서 검색하기",
-    ],
-  },
-  {
-    id: "g2",
-    label: "Guide 02",
-    title: "메일 및 협업 툴 활용",
-    bodyHtml:
-      "<h2>협업 툴 소개</h2><p>DUDC는 '두닥챗'과 'DUDC Space'를 통해 소통하고 업무를 관리합니다. 입사 첫날 계정을 확인해주세요.</p>",
-    checkPoints: ["두닥챗 알림 설정 확인", "DUDC Space 프로필 등록"],
-  },
-  {
-    id: "g3",
-    label: "Guide 03",
-    title: "보고 체계 및 일정 관리",
-    bodyHtml:
-      "<h2>보고 체계 안내</h2><p>모든 업무 보고는 팀장 → 실장 순으로 이루어지며, 주간 업무 계획은 매주 월요일 오전에 공유합니다.</p>",
-    checkPoints: ["주간 보고서 양식 준수", "일정 변경 시 사전 공유"],
-  },
-  {
-    id: "g4",
-    label: "Guide 04",
-    title: "회식 및 소통 문화",
-    bodyHtml:
-      "<h2>건강한 회식 문화</h2><p>DUDC는 강요 없는 회식 문화를 지향합니다. 참여는 자율이며, 점심 회식도 적극 권장합니다.</p>",
-    checkPoints: ["회식 참여는 자율 선택", "음주 강요 금지"],
-  },
-];
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -60,9 +14,17 @@ function guideSearchText(guide) {
   return parts.filter(Boolean).join(" ").toLowerCase();
 }
 
+async function parseJsonSafely(res) {
+  try {
+    return await res.json();
+  } catch {
+    return {};
+  }
+}
+
 // Full-width, single-column editor canvas (Naver-blog-style) that replaces the
 // entire reading area while an admin creates or edits a culture post.
-function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
+function CulturePostEditor({ mode, initialValues, isSaving, onCancel, onSave }) {
   const [title, setTitle] = useState(initialValues.title);
   const [bodyHtml, setBodyHtml] = useState(initialValues.bodyHtml);
   const [checkPointsText, setCheckPointsText] = useState(initialValues.checkPoints.join("\n"));
@@ -99,15 +61,17 @@ function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
         <div className="flex items-center gap-3 shrink-0">
           <button
             onClick={onCancel}
-            className="px-5 py-2 rounded-full border border-outline-variant text-on-surface-variant font-bold text-[13px] hover:bg-surface-container-low transition-colors"
+            disabled={isSaving}
+            className="px-5 py-2 rounded-full border border-outline-variant text-on-surface-variant font-bold text-[13px] hover:bg-surface-container-low transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
           >
             취소
           </button>
           <button
             onClick={handleSubmit}
-            className="px-5 py-2 rounded-full bg-primary text-white font-bold text-[13px] hover:bg-primary/90 active:scale-95 transition-all"
+            disabled={isSaving}
+            className="px-5 py-2 rounded-full bg-primary text-white font-bold text-[13px] hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
           >
-            저장
+            {isSaving ? "저장 중..." : "저장"}
           </button>
         </div>
       </div>
@@ -141,14 +105,41 @@ function CulturePostEditor({ mode, initialValues, onCancel, onSave }) {
 }
 
 export default function CultureManual() {
-  const { user } = useAuth();
+  const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  const [guides, setGuides] = useState(INITIAL_GUIDES);
+  const [guides, setGuides] = useState([]);
+  const [isLoading, setIsLoading] = useState(true);
+  const [loadError, setLoadError] = useState("");
+  const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGuideId, setSelectedGuideId] = useState(INITIAL_GUIDES[0].id);
+  const [selectedGuideId, setSelectedGuideId] = useState(null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState("create");
+
+  useEffect(() => {
+    let cancelled = false;
+
+    async function loadGuides() {
+      try {
+        const res = await fetch("/api/culture-posts");
+        const data = await parseJsonSafely(res);
+        if (!res.ok) throw new Error(data.message || "포스트를 불러오지 못했습니다.");
+        if (cancelled) return;
+        setGuides(data.posts);
+        if (data.posts.length > 0) setSelectedGuideId(data.posts[0].id);
+      } catch (error) {
+        if (!cancelled) setLoadError(error.message);
+      } finally {
+        if (!cancelled) setIsLoading(false);
+      }
+    }
+
+    loadGuides();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const filteredGuides = useMemo(() => {
     const term = searchTerm.trim().toLowerCase();
@@ -156,7 +147,7 @@ export default function CultureManual() {
     return guides.filter((g) => guideSearchText(g).includes(term));
   }, [guides, searchTerm]);
 
-  const selectedGuide = guides.find((g) => g.id === selectedGuideId) ?? guides[0];
+  const selectedGuide = guides.find((g) => g.id === selectedGuideId) ?? null;
 
   function selectGuide(id) {
     setSelectedGuideId(id);
@@ -176,35 +167,58 @@ export default function CultureManual() {
     setIsEditorOpen(false);
   }
 
-  function handleSaveEditor({ title, bodyHtml, checkPoints }) {
-    if (editorMode === "create") {
-      const newGuide = {
-        id: `custom-${Date.now()}`,
-        label: `Guide ${String(guides.length + 1).padStart(2, "0")}`,
-        title,
-        bodyHtml,
-        checkPoints,
-      };
-      setGuides((prev) => [...prev, newGuide]);
-      setSelectedGuideId(newGuide.id);
-    } else {
-      setGuides((prev) =>
-        prev.map((guide) => (guide.id === selectedGuideId ? { ...guide, title, bodyHtml, checkPoints } : guide))
-      );
+  async function handleSaveEditor({ title, bodyHtml, checkPoints }) {
+    setIsSaving(true);
+    try {
+      if (editorMode === "create") {
+        const res = await fetch("/api/culture-posts", {
+          method: "POST",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ title, bodyHtml, checkPoints }),
+        });
+        const data = await parseJsonSafely(res);
+        if (!res.ok) throw new Error(data.message || "포스트 등록에 실패했습니다.");
+        setGuides((prev) => [...prev, data.post]);
+        setSelectedGuideId(data.post.id);
+      } else {
+        const res = await fetch(`/api/culture-posts?id=${selectedGuideId}`, {
+          method: "PUT",
+          headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+          body: JSON.stringify({ title, bodyHtml, checkPoints }),
+        });
+        const data = await parseJsonSafely(res);
+        if (!res.ok) throw new Error(data.message || "포스트 수정에 실패했습니다.");
+        setGuides((prev) => prev.map((guide) => (guide.id === selectedGuideId ? data.post : guide)));
+      }
+      setIsEditorOpen(false);
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setIsSaving(false);
     }
-    setIsEditorOpen(false);
   }
 
-  function handleDeleteGuide() {
+  async function handleDeleteGuide() {
     if (guides.length <= 1) {
       window.alert("최소 1개의 포스트는 남아 있어야 합니다.");
       return;
     }
     if (!window.confirm(`"${selectedGuide.title}" 포스트를 정말 삭제하시겠어요?`)) return;
 
-    const remaining = guides.filter((g) => g.id !== selectedGuideId);
-    setGuides(remaining);
-    setSelectedGuideId(remaining[0].id);
+    try {
+      const res = await fetch(`/api/culture-posts?id=${selectedGuideId}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "포스트 삭제에 실패했습니다.");
+
+      const remaining = guides.filter((g) => g.id !== selectedGuideId);
+      setGuides(remaining);
+      setSelectedGuideId(remaining[0].id);
+    } catch (error) {
+      window.alert(error.message);
+    }
   }
 
   if (isAdmin && isEditorOpen) {
@@ -213,6 +227,7 @@ export default function CultureManual() {
         <Header />
         <CulturePostEditor
           mode={editorMode}
+          isSaving={isSaving}
           initialValues={
             editorMode === "edit"
               ? {
@@ -265,10 +280,12 @@ export default function CultureManual() {
           )}
 
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
-            {filteredGuides.length === 0 && (
-              <p className="px-2 py-6 text-center text-[12px] text-on-surface-variant">검색 결과가 없습니다.</p>
+            {!isLoading && filteredGuides.length === 0 && (
+              <p className="px-2 py-6 text-center text-[12px] text-on-surface-variant">
+                {guides.length === 0 ? "등록된 포스트가 없습니다." : "검색 결과가 없습니다."}
+              </p>
             )}
-            {filteredGuides.map((guide) => {
+            {filteredGuides.map((guide, idx) => {
               const isActive = guide.id === selectedGuideId;
               return (
                 <div
@@ -287,7 +304,7 @@ export default function CultureManual() {
                         : "text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider"
                     }
                   >
-                    {guide.label}
+                    {`Guide ${String(idx + 1).padStart(2, "0")}`}
                   </p>
                   <h3 className="text-[15px] font-bold text-on-surface">{guide.title}</h3>
                 </div>
@@ -305,65 +322,78 @@ export default function CultureManual() {
 
         {/* Single-column Reader Area */}
         <section className="flex-1 bg-surface-container-lowest relative flex items-center justify-center p-10 overflow-hidden">
-          <div className="w-full max-w-[900px] h-full bg-white book-page-shadow rounded-[2rem] border border-outline-variant flex flex-col overflow-hidden">
-            {/* Page Header */}
-            <div className="px-12 py-8 stitch-border-b flex items-center justify-between shrink-0">
-              <div className="flex items-center gap-4 min-w-0">
-                <span className="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full text-[12px] font-bold shrink-0">
-                  New Joiner Guide
-                </span>
-                <h2 className="text-[24px] font-bold text-on-surface truncate">{selectedGuide.title}</h2>
-              </div>
-              {isAdmin && (
-                <div className="flex items-center gap-2 shrink-0">
-                  <button
-                    onClick={openEditEditor}
-                    title="수정"
-                    className="w-8 h-8 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">edit</span>
-                  </button>
-                  <button
-                    onClick={handleDeleteGuide}
-                    title="삭제"
-                    className="w-8 h-8 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:border-error hover:text-error transition-colors"
-                  >
-                    <span className="material-symbols-outlined text-[16px]">delete</span>
-                  </button>
-                </div>
-              )}
+          {isLoading ? (
+            <p className="text-on-surface-variant">불러오는 중...</p>
+          ) : loadError ? (
+            <p className="text-error">{loadError}</p>
+          ) : !selectedGuide ? (
+            <div className="text-center text-on-surface-variant">
+              <p className="mb-2">등록된 문화 포스트가 없습니다.</p>
+              {isAdmin && <p className="text-[13px]">좌측의 '신규 포스트 등록' 버튼으로 첫 포스트를 작성해보세요.</p>}
             </div>
-
-            {/* Page Content */}
-            <div className="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
-              <div className="max-w-2xl mx-auto space-y-10">
-                <div
-                  className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
-                  dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
-                />
-
-                {selectedGuide.checkPoints.length > 0 && (
-                  <div className="p-8 bg-surface-container-low border border-dashed border-outline-variant rounded-2xl">
-                    <h4 className="font-bold text-[16px] text-on-surface mb-4">Check Points:</h4>
-                    <ul className="space-y-4">
-                      {selectedGuide.checkPoints.map((point) => (
-                        <li key={point} className="flex items-center gap-3">
-                          <span className="material-symbols-outlined text-primary">check_circle</span>
-                          <span className="text-[15px] text-on-surface-variant">{point}</span>
-                        </li>
-                      ))}
-                    </ul>
+          ) : (
+            <>
+              <div className="w-full max-w-[900px] h-full bg-white book-page-shadow rounded-[2rem] border border-outline-variant flex flex-col overflow-hidden">
+                {/* Page Header */}
+                <div className="px-12 py-8 stitch-border-b flex items-center justify-between shrink-0">
+                  <div className="flex items-center gap-4 min-w-0">
+                    <span className="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full text-[12px] font-bold shrink-0">
+                      New Joiner Guide
+                    </span>
+                    <h2 className="text-[24px] font-bold text-on-surface truncate">{selectedGuide.title}</h2>
                   </div>
-                )}
-              </div>
-            </div>
-          </div>
+                  {isAdmin && (
+                    <div className="flex items-center gap-2 shrink-0">
+                      <button
+                        onClick={openEditEditor}
+                        title="수정"
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">edit</span>
+                      </button>
+                      <button
+                        onClick={handleDeleteGuide}
+                        title="삭제"
+                        className="w-8 h-8 flex items-center justify-center rounded-full border border-outline-variant text-on-surface-variant hover:border-error hover:text-error transition-colors"
+                      >
+                        <span className="material-symbols-outlined text-[16px]">delete</span>
+                      </button>
+                    </div>
+                  )}
+                </div>
 
-          {/* Floating Mascot */}
-          <div className="absolute bottom-10 right-10 flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-dashed border-primary shadow-lg animate-bounce">
-            <p className="text-[13px] font-bold text-primary">정독 중이에요!</p>
-            <span className="material-symbols-outlined text-primary text-[24px]">pest_control_rodent</span>
-          </div>
+                {/* Page Content */}
+                <div className="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
+                  <div className="max-w-2xl mx-auto space-y-10">
+                    <div
+                      className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
+                      dangerouslySetInnerHTML={{ __html: selectedGuide.bodyHtml }}
+                    />
+
+                    {selectedGuide.checkPoints.length > 0 && (
+                      <div className="p-8 bg-surface-container-low border border-dashed border-outline-variant rounded-2xl">
+                        <h4 className="font-bold text-[16px] text-on-surface mb-4">Check Points:</h4>
+                        <ul className="space-y-4">
+                          {selectedGuide.checkPoints.map((point) => (
+                            <li key={point} className="flex items-center gap-3">
+                              <span className="material-symbols-outlined text-primary">check_circle</span>
+                              <span className="text-[15px] text-on-surface-variant">{point}</span>
+                            </li>
+                          ))}
+                        </ul>
+                      </div>
+                    )}
+                  </div>
+                </div>
+              </div>
+
+              {/* Floating Mascot */}
+              <div className="absolute bottom-10 right-10 flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-dashed border-primary shadow-lg animate-bounce">
+                <p className="text-[13px] font-bold text-primary">정독 중이에요!</p>
+                <span className="material-symbols-outlined text-primary text-[24px]">pest_control_rodent</span>
+              </div>
+            </>
+          )}
         </section>
       </main>
     </div>
