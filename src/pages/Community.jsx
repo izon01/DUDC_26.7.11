@@ -429,10 +429,10 @@ export default function Community() {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-background font-body-md text-on-surface overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col bg-background font-body-md text-on-surface">
       <Header />
 
-      <main className="flex-1 pt-2 pb-4 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full overflow-hidden">
+      <main className="flex-1 pt-2 pb-16 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <section className="w-full mt-4 min-h-[180px] bg-[#d2e4ff]/40 rounded-xl border-2 border-outline-variant p-8 md:p-10 flex justify-between items-center relative shrink-0">
           <div className="z-10 flex flex-col gap-2">
@@ -494,7 +494,7 @@ export default function Community() {
         </div>
 
         {/* Post Grid */}
-        <div className="w-full flex-1 overflow-y-auto custom-scroll pt-4 pb-4">
+        <div className="w-full pt-4 pb-4">
           {isLoading ? (
             <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
           ) : loadError ? (

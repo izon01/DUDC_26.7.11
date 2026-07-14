@@ -26,9 +26,9 @@ export default function Header() {
     <header className="sticky top-0 z-50 shrink-0 w-full bg-surface-container-lowest h-[72px] border-b border-outline-variant">
       <div className="h-full max-w-[1600px] mx-auto flex items-center justify-between px-4 sm:px-6 md:px-16">
         {/* Left: Brand Logo */}
-        <div className="shrink-0">
+        <Link to="/" className="shrink-0 cursor-pointer hover:opacity-80 transition-opacity">
           <img src="/img1.png" alt="DUDC" className="h-10 w-auto object-contain" />
-        </div>
+        </Link>
 
         {/* Center: Navigation Links (desktop/tablet only) */}
         <nav className="flex-1 hidden md:flex items-center justify-center gap-8 lg:gap-10">
