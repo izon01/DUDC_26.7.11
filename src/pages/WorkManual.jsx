@@ -33,13 +33,13 @@ function BookPage({ page, searchTerm }) {
   const hasContent = Boolean(page.heading?.trim() || stripHtml(page.html || "").trim());
   return (
     <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
-      <div className="space-y-8">
-        <h2 className="text-center text-headline-lg font-bold text-on-surface pb-6 border-b-2 border-primary/10">
+      <div className="space-y-6">
+        <h2 className="text-center text-[24px] font-bold text-on-surface pb-6 border-b-2 border-primary/10">
           {highlightText(page.heading || "제목 없음", searchTerm)}
         </h2>
         {hasContent ? (
           <div
-            className="ck-content !text-[18px] !leading-[1.9] break-keep text-on-surface-variant"
+            className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
             dangerouslySetInnerHTML={{ __html: highlightHtml(page.html, searchTerm) }}
           />
         ) : (
@@ -64,7 +64,7 @@ function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChang
         value={heading}
         onChange={(e) => onHeadingChange(e.target.value)}
         placeholder="제목을 입력하세요"
-        className="w-full text-center text-headline-lg font-bold text-on-surface bg-transparent outline-none placeholder:text-outline/40 pb-6 mb-8 border-b-2 border-primary/10 focus:border-primary/40 transition-colors shrink-0"
+        className="w-full text-center text-[24px] font-bold text-on-surface bg-transparent outline-none placeholder:text-outline/40 pb-6 mb-8 border-b-2 border-primary/10 focus:border-primary/40 transition-colors shrink-0"
       />
       <div className="flex-1 min-h-0">
         <div className="dudc-ckeditor dudc-ckeditor-lg h-full">

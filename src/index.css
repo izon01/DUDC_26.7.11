@@ -94,7 +94,7 @@ body {
 
 /* Bounded, borderless variant used to edit a WorkManual book page in place —
    blends into the page instead of looking like a boxed form field, and
-   matches BookPage's own read-mode typography (18px / 1.9 line-height)
+   matches BookPage's own read-mode typography (16px / 1.8 line-height)
    exactly so flipping between read and edit mode never changes the book's
    apparent size or font ratio. */
 .dudc-ckeditor.dudc-ckeditor-lg {
@@ -128,8 +128,8 @@ body {
   background: transparent;
   padding-left: 0;
   padding-right: 0;
-  font-size: 18px;
-  line-height: 1.9;
+  font-size: 16px;
+  line-height: 1.8;
 }
 
 /* Sticky toolbar variant used in the full-width culture/manual editor canvas,
