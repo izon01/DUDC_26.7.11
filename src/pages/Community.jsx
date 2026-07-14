@@ -10,7 +10,15 @@ const CATEGORY_STYLES = {
 };
 
 const CATEGORIES = Object.keys(CATEGORY_STYLES);
+const FILTER_CATEGORIES = ["전체", "사내소식", "자유게시판", "공지사항", "기타"];
 const POSTS_PER_PAGE = 9;
+
+function formatDateDot(date) {
+  const y = date.getFullYear();
+  const m = String(date.getMonth() + 1).padStart(2, "0");
+  const d = String(date.getDate()).padStart(2, "0");
+  return `${y}.${m}.${d}`;
+}
 
 async function parseJsonSafely(res) {
   try {
@@ -268,6 +276,8 @@ export default function Community() {
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [selectedCategory, setSelectedCategory] = useState("전체");
 
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [selectedPostDetail, setSelectedPostDetail] = useState(null);
@@ -326,8 +336,20 @@ export default function Community() {
     };
   }, [selectedPostId]);
 
-  const totalPages = Math.max(1, Math.ceil(posts.length / POSTS_PER_PAGE));
-  const visiblePosts = posts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
+  const filteredPosts = posts.filter((post) => {
+    const matchesCategory = selectedCategory === "전체" || post.category === selectedCategory;
+    const query = searchTerm.trim().toLowerCase();
+    const matchesSearch =
+      !query || post.title.toLowerCase().includes(query) || post.content.toLowerCase().includes(query);
+    return matchesCategory && matchesSearch;
+  });
+
+  const totalPages = Math.max(1, Math.ceil(filteredPosts.length / POSTS_PER_PAGE));
+  const visiblePosts = filteredPosts.slice((currentPage - 1) * POSTS_PER_PAGE, currentPage * POSTS_PER_PAGE);
+
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [searchTerm, selectedCategory]);
 
   async function handleCreatePost({ title, category, content }) {
     setIsSubmittingPost(true);
@@ -426,15 +448,62 @@ export default function Community() {
           </div>
         </section>
 
+        {/* Stats Banner */}
+        <div className="w-full mt-4 bg-gray-100 rounded-2xl p-6 flex items-center justify-between shrink-0">
+          <div>
+            <p className="text-label-sm font-label-sm text-on-surface-variant mb-1">전체 게시글</p>
+            <div className="flex items-baseline gap-2">
+              <span className="text-4xl font-extrabold text-on-surface">{posts.length}</span>
+              <span className="text-[12px] text-on-surface-variant">{formatDateDot(new Date())} 기준</span>
+            </div>
+          </div>
+          <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0">
+            <span className="material-symbols-outlined text-on-surface-variant">forum</span>
+          </div>
+        </div>
+
+        {/* Search + Category Filter */}
+        <div className="w-full mt-4 flex flex-col md:flex-row md:items-center gap-3 shrink-0">
+          <div className="relative flex-1">
+            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+              search
+            </span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="제목 또는 내용으로 검색"
+              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-outline-variant bg-white focus:border-primary focus:ring-0 text-body-md transition-all"
+            />
+          </div>
+          <div className="flex flex-wrap gap-2 shrink-0">
+            {FILTER_CATEGORIES.map((cat) => (
+              <button
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={
+                  cat === selectedCategory
+                    ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white transition-colors"
+                    : "px-4 py-2 rounded-full text-label-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                }
+              >
+                {cat}
+              </button>
+            ))}
+          </div>
+        </div>
+
         {/* Post Grid */}
         <div className="w-full flex-1 overflow-y-auto custom-scroll pt-4 pb-4">
           {isLoading ? (
             <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
           ) : loadError ? (
             <p className="text-center text-error py-10">{loadError}</p>
-          ) : posts.length === 0 ? (
+          ) : filteredPosts.length === 0 ? (
             <p className="text-center text-on-surface-variant py-10">
-              아직 등록된 글이 없습니다. 첫 글을 작성해보세요!
+              {posts.length === 0
+                ? "아직 등록된 글이 없습니다. 첫 글을 작성해보세요!"
+                : "검색 결과가 없습니다."}
             </p>
           ) : (
             <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
