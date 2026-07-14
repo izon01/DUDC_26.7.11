@@ -299,7 +299,7 @@ export default function WorkManual() {
         {/* Sidebar */}
         <aside className="w-full md:w-64 max-h-[40vh] md:max-h-none shrink-0 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low flex flex-col">
           <div className="p-6 border-b border-outline-variant">
-            <h2 className="font-headline-md text-[18px] font-bold text-on-surface flex items-center gap-2">
+            <h2 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">menu_book</span>
               업무 매뉴얼 리스트
             </h2>
@@ -309,7 +309,7 @@ export default function WorkManual() {
               <button
                 onClick={beginCreate}
                 disabled={isEditMode}
-                className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-3 bg-primary text-on-primary rounded-xl font-bold hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="material-symbols-outlined">add_circle</span>
                 신규 매뉴얼 등록
@@ -319,7 +319,7 @@ export default function WorkManual() {
             <div className="mb-6 px-1">
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
-                <span className="text-label-sm font-label-sm text-secondary">매뉴얼 검색</span>
+                <span className="text-sm font-medium text-secondary">매뉴얼 검색</span>
               </div>
               <div className="relative flex items-center">
                 <input
@@ -348,8 +348,8 @@ export default function WorkManual() {
                 disabled={isEditMode}
                 className={
                   manual.id === selectedManualId
-                    ? "w-full text-left p-3 rounded-xl bg-primary text-on-primary font-bold transition-all shadow-sm disabled:cursor-not-allowed"
-                    : "w-full text-left p-3 rounded-xl hover:bg-surface-container-highest text-on-surface-variant transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    ? "w-full text-left p-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm transition-all shadow-sm disabled:cursor-not-allowed"
+                    : "w-full text-left p-2.5 rounded-xl hover:bg-surface-container-highest text-on-surface-variant text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                 }
               >
                 {highlightText(manual.title || "(제목 없음)", searchTerm)}
