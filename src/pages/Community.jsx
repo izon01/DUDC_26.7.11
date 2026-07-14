@@ -442,9 +442,7 @@ export default function Community() {
             </p>
           </div>
           <div className="items-center justify-end hidden md:flex shrink-0">
-            <span className="text-6xl select-none" aria-hidden="true">
-              💬
-            </span>
+            <img src="/img5.png" alt="커뮤니티" className="h-32 md:h-40 lg:h-48 w-auto object-contain" />
           </div>
         </section>
 
