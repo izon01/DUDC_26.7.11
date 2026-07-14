@@ -40,8 +40,8 @@ export default function Home() {
                 여러분의 첫걸음이 빛날 수 있도록 돕겠습니다.
               </p>
             </div>
-            <div className="w-[280px] h-full items-center justify-end hidden md:flex">
-              <span className="material-symbols-outlined text-[140px] text-primary/40">emoji_people</span>
+            <div className="w-full md:w-[280px] flex items-center justify-center md:justify-end shrink-0 mt-4 md:mt-0">
+              <img src="/img2.png" alt="배너 이미지" className="h-32 md:h-40 lg:h-48 w-auto object-contain" />
             </div>
           </section>
 
