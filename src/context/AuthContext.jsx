@@ -64,6 +64,23 @@ export function AuthProvider({ children }) {
     setAuth({ token: null, user: null });
   }, []);
 
+  const updateProfile = useCallback(
+    async ({ affiliation, password }) => {
+      const res = await fetch("/api/profile", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${auth.token}` },
+        body: JSON.stringify({ affiliation, password }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) {
+        throw new Error(data.message || "프로필 수정에 실패했습니다.");
+      }
+      setAuth((prev) => ({ ...prev, user: data.user }));
+      return data.user;
+    },
+    [auth.token]
+  );
+
   return (
     <AuthContext.Provider
       value={{
@@ -73,6 +90,7 @@ export function AuthProvider({ children }) {
         login,
         signup,
         logout,
+        updateProfile,
       }}
     >
       {children}

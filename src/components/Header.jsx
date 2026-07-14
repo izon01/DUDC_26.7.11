@@ -2,6 +2,7 @@ import { useState } from "react";
 import { Link, useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import AuthModal from "./AuthModal";
+import ProfileModal from "./ProfileModal";
 
 const NAV_ITEMS = [
   { label: "홈", path: "/" },
@@ -16,6 +17,7 @@ export default function Header() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
+  const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
 
   function closeMobileMenu() {
@@ -63,6 +65,13 @@ export default function Header() {
                     </span>
                   )}
                 </span>
+                <button
+                  onClick={() => setIsProfileModalOpen(true)}
+                  title="프로필 설정"
+                  className="w-9 h-9 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors"
+                >
+                  <span className="material-symbols-outlined">account_circle</span>
+                </button>
                 <button
                   onClick={logout}
                   className="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors active:scale-95"
@@ -123,15 +132,27 @@ export default function Header() {
                     </span>
                   )}
                 </span>
-                <button
-                  onClick={() => {
-                    logout();
-                    closeMobileMenu();
-                  }}
-                  className="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors active:scale-95 shrink-0"
-                >
-                  로그아웃
-                </button>
+                <div className="flex items-center gap-2 shrink-0">
+                  <button
+                    onClick={() => {
+                      setIsProfileModalOpen(true);
+                      closeMobileMenu();
+                    }}
+                    title="프로필 설정"
+                    className="w-9 h-9 flex items-center justify-center rounded-full text-on-surface-variant hover:bg-surface-container-low hover:text-primary transition-colors"
+                  >
+                    <span className="material-symbols-outlined">account_circle</span>
+                  </button>
+                  <button
+                    onClick={() => {
+                      logout();
+                      closeMobileMenu();
+                    }}
+                    className="px-4 py-1.5 rounded-full border border-outline-variant text-on-surface-variant font-label-sm text-label-sm hover:bg-surface-container-low transition-colors active:scale-95"
+                  >
+                    로그아웃
+                  </button>
+                </div>
               </div>
             ) : (
               <button
@@ -149,6 +170,7 @@ export default function Header() {
       )}
 
       {isAuthModalOpen && <AuthModal onClose={() => setIsAuthModalOpen(false)} />}
+      {isProfileModalOpen && <ProfileModal onClose={() => setIsProfileModalOpen(false)} />}
     </header>
   );
 }
