@@ -1,4 +1,5 @@
 import Header from "../components/Header";
+import HeroBanner from "../components/HeroBanner";
 
 const CORE_VALUES = [
   {
@@ -35,18 +36,17 @@ export default function Intro() {
       <main className="flex-1 overflow-y-auto">
         <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-8 pb-16">
           {/* Hero Banner */}
-          <section className="w-full bg-blue-50 border border-gray-200 rounded-2xl flex flex-col md:flex-row items-center justify-between px-8 py-10 gap-8">
-            <h1 className="text-3xl md:text-4xl font-bold text-on-surface leading-tight text-center md:text-left">
-              <span className="text-primary">DUDC</span>의 새로운 가족이
-              <br />
-              되신 것을 환영합니다
-            </h1>
-            <img
-              src="/img3.png"
-              alt="Welcome"
-              className="w-48 md:w-64 lg:w-72 object-contain shrink-0"
-            />
-          </section>
+          <HeroBanner
+            title={
+              <>
+                <span className="text-primary">DUDC</span>의 새로운 가족이
+                <br />
+                되신 것을 환영합니다
+              </>
+            }
+            imageSrc="/img3.png"
+            imageAlt="Welcome"
+          />
 
           <div className="mt-10 md:mt-12 flex flex-col md:flex-row items-center relative">
             {/* Left Half: Welcome Message */}

@@ -1,4 +1,5 @@
 import Header from "../components/Header";
+import HeroBanner from "../components/HeroBanner";
 
 const RECENT_MANUALS = [
   { icon: "corporate_fare", title: "사내 보안 규정 안내", meta: "보안 관리팀 · 2시간 전" },
@@ -21,29 +22,19 @@ export default function Home() {
 
       <main className="flex-1 w-full flex flex-col items-center overflow-y-auto lg:overflow-hidden">
         <div className="w-full max-w-container_max_width min-h-full lg:h-full flex flex-col gap-6 py-6 px-4 md:px-8 lg:px-16 box-border lg:overflow-hidden">
-          {/* Champion Hero Banner */}
-          <section className="w-full min-h-[200px] bg-[#d2e4ff]/40 rounded-xl border-2 border-outline-variant p-6 md:p-10 flex flex-col md:flex-row justify-between items-center relative shrink-0">
-            <div className="z-10 flex flex-col gap-2">
-              <div className="flex items-center gap-3">
-                <span className="bg-primary px-3 py-0.5 text-on-primary font-label-sm text-[12px] rounded-full uppercase">
-                  New Member
-                </span>
-                <span className="text-primary font-bold text-label-sm">Welcome aboard!</span>
-              </div>
-              <h1 className="font-headline-xl text-[40px] text-on-surface leading-tight">
+          {/* Hero Banner */}
+          <HeroBanner
+            title={
+              <>
                 신입사원 여러분을
                 <br />
                 진심으로 환영합니다!
-              </h1>
-              <p className="text-on-surface-variant font-body-md text-body-md max-w-[450px]">
-                DUDC의 새로운 구성원이 되신 것을 축하드립니다. <br />
-                여러분의 첫걸음이 빛날 수 있도록 돕겠습니다.
-              </p>
-            </div>
-            <div className="w-full md:w-[280px] flex items-center justify-center md:justify-end shrink-0 mt-4 md:mt-0">
-              <img src="/img2.png" alt="배너 이미지" className="h-32 md:h-40 lg:h-48 w-auto object-contain" />
-            </div>
-          </section>
+              </>
+            }
+            subtitle="DUDC의 새로운 구성원이 되신 것을 축하드립니다. 여러분의 첫걸음이 빛날 수 있도록 돕겠습니다."
+            imageSrc="/img2.png"
+            imageAlt="배너 이미지"
+          />
 
           {/* Recent Work Manuals */}
           <section className="w-full bg-[#ffdbc7]/30 rounded-xl border-2 border-outline-variant p-6 shrink-0">

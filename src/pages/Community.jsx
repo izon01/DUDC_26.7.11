@@ -1,5 +1,6 @@
 import { useEffect, useState } from "react";
 import Header from "../components/Header";
+import HeroBanner from "../components/HeroBanner";
 import { useAuth } from "../context/AuthContext";
 
 const CATEGORY_STYLES = {
@@ -434,17 +435,13 @@ export default function Community() {
 
       <main className="flex-1 pt-2 pb-16 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
-        <section className="w-full mt-4 min-h-[180px] bg-[#d2e4ff]/40 rounded-xl border-2 border-outline-variant p-8 md:p-10 flex justify-between items-center relative shrink-0">
-          <div className="z-10 flex flex-col gap-2">
-            <h1 className="font-headline-xl text-[32px] md:text-[40px] text-on-surface leading-tight">커뮤니티 광장</h1>
-            <p className="text-on-surface-variant font-body-md text-body-md max-w-[420px]">
-              동료들과 자유롭게 소통하며 새로운 소식을 확인하세요.
-            </p>
-          </div>
-          <div className="items-center justify-end hidden md:flex shrink-0">
-            <img src="/img5.png" alt="커뮤니티" className="h-32 md:h-40 lg:h-48 w-auto object-contain" />
-          </div>
-        </section>
+        <HeroBanner
+          title="커뮤니티 광장"
+          subtitle="동료들과 자유롭게 소통하며 새로운 소식을 확인하세요."
+          imageSrc="/img5.png"
+          imageAlt="커뮤니티"
+          className="mt-4"
+        />
 
         {/* Stats Banner */}
         <div className="w-full mt-4 bg-gray-100 rounded-2xl p-6 flex items-center justify-between shrink-0">
