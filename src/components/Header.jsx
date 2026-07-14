@@ -18,12 +18,12 @@ export default function Header() {
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
 
   return (
-    <header className="shrink-0 w-full z-50 flex justify-between items-center px-margin_page max-w-container_max_width mx-auto bg-surface-container-lowest h-[60px] border-b border-dashed border-outline-variant">
-      {/* Brand Logo */}
-      <div className="font-headline-md text-headline-md font-bold text-primary">DUDC 로고</div>
+    <header className="sticky top-0 z-50 shrink-0 w-full flex items-center justify-between px-6 md:px-8 bg-surface-container-lowest h-[60px] border-b border-dashed border-outline-variant">
+      {/* Left: Brand Logo */}
+      <div className="shrink-0 font-headline-md text-headline-md font-bold text-primary">DUDC 로고</div>
 
-      {/* Navigation Links */}
-      <nav className="hidden md:flex items-center space-x-10">
+      {/* Center: Navigation Links */}
+      <nav className="flex-1 hidden md:flex items-center justify-center space-x-10">
         {NAV_ITEMS.map((item) => {
           const isActive = pathname === item.path;
           return (
@@ -42,8 +42,8 @@ export default function Header() {
         })}
       </nav>
 
-      {/* Trailing Action */}
-      <div className="flex items-center gap-3">
+      {/* Right: User */}
+      <div className="shrink-0 flex items-center justify-end gap-3">
         {user ? (
           <>
             <span className="flex items-center gap-1.5 text-label-sm font-label-sm text-on-surface-variant">
