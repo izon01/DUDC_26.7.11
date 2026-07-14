@@ -13,7 +13,7 @@ export default function LandingPage() {
   return (
     <div className="h-screen w-full flex flex-col bg-[#fafbfc] overflow-hidden">
       {/* Header */}
-      <header className="shrink-0 w-full flex items-center justify-between px-10 py-6 max-w-[1280px] mx-auto">
+      <header className="shrink-0 w-full flex items-center justify-between px-4 md:px-8 lg:px-16 py-6 max-w-[1280px] mx-auto">
         <div className="flex items-center gap-2.5">
           <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
             <span className="text-white font-bold text-[15px]">D</span>
@@ -37,8 +37,8 @@ export default function LandingPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 flex items-center overflow-hidden px-10 max-w-[1280px] mx-auto w-full">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-16 items-center">
+      <main className="flex-1 flex items-center overflow-y-auto lg:overflow-hidden py-8 lg:py-0 px-4 md:px-8 lg:px-16 max-w-[1280px] mx-auto w-full">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
           {/* Left: Hero copy */}
           <div>
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-fixed text-primary text-[13px] font-bold mb-6">
@@ -63,11 +63,11 @@ export default function LandingPage() {
           </div>
 
           {/* Right: Mascot cards */}
-          <div className="flex gap-5">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-4 lg:gap-5">
             {MASCOTS.map((mascot) => (
               <div
                 key={mascot.name}
-                className="w-[140px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-outline-variant/20 flex flex-col items-center py-8 px-4"
+                className="w-[110px] sm:w-[140px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-outline-variant/20 flex flex-col items-center py-8 px-4"
               >
                 <div className="w-16 h-16 flex items-center justify-center text-[40px] mb-4">
                   {mascot.emoji}
@@ -81,7 +81,7 @@ export default function LandingPage() {
       </main>
 
       {/* Footer */}
-      <footer className="shrink-0 w-full flex items-center justify-between px-10 py-6 max-w-[1280px] mx-auto text-[12px] text-outline">
+      <footer className="shrink-0 w-full flex items-center justify-between px-4 md:px-8 lg:px-16 py-6 max-w-[1280px] mx-auto text-[12px] text-outline">
         <span>© Daegu Urban Development Corporation</span>
         <span>Onboard Hub · Mockup Preview</span>
       </footer>

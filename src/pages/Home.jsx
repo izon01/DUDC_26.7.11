@@ -19,10 +19,10 @@ export default function Home() {
     <div className="h-screen w-full flex flex-col bg-background overflow-hidden">
       <Header />
 
-      <main className="flex-1 w-full flex flex-col items-center overflow-hidden">
-        <div className="w-full max-w-container_max_width h-full flex flex-col gap-6 py-6 px-10 box-border overflow-hidden">
+      <main className="flex-1 w-full flex flex-col items-center overflow-y-auto lg:overflow-hidden">
+        <div className="w-full max-w-container_max_width min-h-full lg:h-full flex flex-col gap-6 py-6 px-4 md:px-8 lg:px-16 box-border lg:overflow-hidden">
           {/* Champion Hero Banner */}
-          <section className="w-full min-h-[200px] bg-[#d2e4ff]/40 rounded-xl border-2 border-dotted border-outline-variant p-10 flex justify-between items-center relative shrink-0">
+          <section className="w-full min-h-[200px] bg-[#d2e4ff]/40 rounded-xl border-2 border-outline-variant p-6 md:p-10 flex flex-col md:flex-row justify-between items-center relative shrink-0">
             <div className="z-10 flex flex-col gap-2">
               <div className="flex items-center gap-3">
                 <span className="bg-primary px-3 py-0.5 text-on-primary font-label-sm text-[12px] rounded-full uppercase">
@@ -46,7 +46,7 @@ export default function Home() {
           </section>
 
           {/* Recent Work Manuals */}
-          <section className="w-full bg-[#ffdbc7]/30 rounded-xl border-2 border-dotted border-outline-variant p-6 shrink-0">
+          <section className="w-full bg-[#ffdbc7]/30 rounded-xl border-2 border-outline-variant p-6 shrink-0">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">menu_book</span>
@@ -56,11 +56,11 @@ export default function Home() {
                 전체보기
               </button>
             </div>
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
               {RECENT_MANUALS.map((manual) => (
                 <div
                   key={manual.title}
-                  className="bg-surface-container-lowest p-4 rounded-lg border-2 border-dotted border-outline-variant flex items-center gap-4 hover:shadow-sm transition-shadow cursor-pointer"
+                  className="bg-surface-container-lowest p-4 rounded-lg border-2 border-outline-variant flex items-center gap-4 hover:shadow-sm transition-shadow cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-on-secondary-container">{manual.icon}</span>
@@ -75,10 +75,10 @@ export default function Home() {
           </section>
 
           {/* Bottom Layout: Culture & Checklist */}
-          <section className="flex gap-6 grow overflow-hidden pb-4">
+          <section className="flex flex-col md:flex-row gap-6 grow lg:overflow-hidden pb-4 lg:min-h-0">
             {/* Culture Posts Card */}
-            <div className="w-1/2 bg-surface-container-lowest rounded-xl border-2 border-dotted border-outline-variant flex flex-col p-6 overflow-hidden">
-              <div className="flex justify-between items-center mb-4 border-b-2 border-dotted border-outline-variant pb-4">
+            <div className="w-full md:w-1/2 flex-1 lg:min-h-0 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6 lg:overflow-hidden">
+              <div className="flex justify-between items-center mb-4 border-b-2 border-outline-variant pb-4">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-tertiary">theater_comedy</span>
                   <h2 className="font-headline-md text-headline-md text-on-surface">최근 문화 포스트</h2>
@@ -88,7 +88,7 @@ export default function Home() {
               <div className="grow overflow-y-auto custom-scroll space-y-4 pr-2">
                 {CULTURE_POSTS.map((post, idx) => (
                   <div key={post.title}>
-                    {idx > 0 && <div className="border-t-2 border-dotted border-outline-variant mb-4" />}
+                    {idx > 0 && <div className="border-t-2 border-outline-variant mb-4" />}
                     <div className="group cursor-pointer">
                       <p className="text-label-sm font-label-sm text-tertiary mb-1">{post.tag}</p>
                       <h3 className="font-bold text-on-surface group-hover:text-primary transition-colors">
@@ -102,7 +102,7 @@ export default function Home() {
             </div>
 
             {/* Progress Checklist Card */}
-            <div className="w-1/2 bg-surface-container-lowest rounded-xl border-2 border-dotted border-outline-variant flex flex-col p-6 overflow-hidden">
+            <div className="w-full md:w-1/2 flex-1 lg:min-h-0 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6 lg:overflow-hidden">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">task_alt</span>
@@ -128,7 +128,7 @@ export default function Home() {
 
               {/* Checklist Items */}
               <div className="space-y-3 mb-4">
-                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-2 border-dotted border-outline-variant/30">
+                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-2 border-outline-variant/30">
                   <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
                     check_circle
                   </span>
@@ -136,7 +136,7 @@ export default function Home() {
                     기본 사내 IT 계정 생성 완료
                   </span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-2 border-dotted border-outline-variant/30">
+                <div className="flex items-center gap-3 p-3 bg-surface-container-low rounded-lg border-2 border-outline-variant/30">
                   <span className="material-symbols-outlined text-primary" style={{ fontVariationSettings: "'FILL' 1" }}>
                     check_circle
                   </span>
@@ -144,7 +144,7 @@ export default function Home() {
                     온보딩 환영 패키지 수령
                   </span>
                 </div>
-                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-dotted border-primary shadow-sm">
+                <div className="flex items-center gap-3 p-3 bg-white rounded-lg border-2 border-primary shadow-sm">
                   <div className="w-5 h-5 border-2 border-primary rounded-full" />
                   <span className="text-on-surface font-bold text-body-md">부서장 오리엔테이션 참석 (D-1)</span>
                   <span className="ml-auto text-primary text-[10px] font-bold px-1.5 py-0.5 bg-primary/10 rounded uppercase">

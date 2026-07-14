@@ -45,8 +45,8 @@ function WriteModal({ isSubmitting, onClose, onSubmit }) {
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-2xl border-2 border-dashed border-outline-variant shadow-xl overflow-hidden">
-        <div className="px-8 py-6 border-b border-dashed border-outline-variant flex items-center justify-between">
+      <div className="w-full max-w-lg bg-white rounded-2xl border-2 border-outline-variant shadow-xl overflow-hidden">
+        <div className="px-8 py-6 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">edit_note</span>
             새 글 작성
@@ -71,7 +71,7 @@ function WriteModal({ isSubmitting, onClose, onSubmit }) {
                   className={
                     cat === category
                       ? `px-3 py-1.5 rounded-full text-[12px] font-bold border-2 border-primary ${CATEGORY_STYLES[cat]}`
-                      : "px-3 py-1.5 rounded-full text-[12px] font-bold border-2 border-dashed border-outline-variant text-on-surface-variant"
+                      : "px-3 py-1.5 rounded-full text-[12px] font-bold border-2 border-outline-variant text-on-surface-variant"
                   }
                 >
                   {cat}
@@ -90,7 +90,7 @@ function WriteModal({ isSubmitting, onClose, onSubmit }) {
               value={title}
               onChange={(e) => setTitle(e.target.value)}
               placeholder="제목을 입력하세요"
-              className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md px-3 py-2 transition-all"
+              className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md px-3 py-2 transition-all"
               required
             />
           </div>
@@ -105,7 +105,7 @@ function WriteModal({ isSubmitting, onClose, onSubmit }) {
               onChange={(e) => setContent(e.target.value)}
               placeholder="내용을 입력하세요"
               rows={5}
-              className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md px-3 py-2 transition-all resize-none"
+              className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md px-3 py-2 transition-all resize-none"
               required
             />
           </div>
@@ -159,12 +159,12 @@ function PostDetailModal({
 
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/40 backdrop-blur-sm animate-fade-in">
-      <div className="w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl border-2 border-dashed border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
+      <div className="w-full max-w-2xl max-h-[85vh] bg-white rounded-2xl border-2 border-outline-variant shadow-2xl overflow-hidden flex flex-col animate-scale-in">
         {isLoading || !post ? (
           <div className="px-8 py-16 text-center text-on-surface-variant">불러오는 중...</div>
         ) : (
           <>
-            <div className="px-8 py-6 border-b border-dashed border-outline-variant flex items-start justify-between shrink-0">
+            <div className="px-8 py-6 border-b border-outline-variant flex items-start justify-between shrink-0">
               <div className="min-w-0">
                 <div className="flex items-center gap-2 mb-2">
                   <span className={`px-2.5 py-0.5 text-[11px] font-bold rounded-full ${CATEGORY_STYLES[post.category]}`}>
@@ -197,7 +197,7 @@ function PostDetailModal({
             <div className="flex-1 overflow-y-auto custom-scrollbar px-8 py-6">
               <p className="text-body-lg text-on-surface whitespace-pre-wrap break-words mb-8">{post.content}</p>
 
-              <div className="border-t border-dashed border-outline-variant pt-6">
+              <div className="border-t border-outline-variant pt-6">
                 <h3 className="font-bold text-body-lg text-on-surface mb-4">댓글 {comments.length}개</h3>
                 <div className="space-y-4 mb-6">
                   {comments.length === 0 && (
@@ -209,7 +209,7 @@ function PostDetailModal({
                     return (
                       <div
                         key={c.id}
-                        className="p-4 bg-surface-container-lowest rounded-xl border border-dashed border-outline-variant"
+                        className="p-4 bg-surface-container-lowest rounded-xl border border-outline-variant"
                       >
                         <div className="flex items-center justify-between mb-1">
                           <span className="font-bold text-label-sm text-on-surface">{c.authorName}</span>
@@ -240,7 +240,7 @@ function PostDetailModal({
                     onChange={(e) => setCommentText(e.target.value)}
                     placeholder="댓글을 입력하세요"
                     rows={2}
-                    className="flex-1 bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg px-3 py-2 text-label-sm focus:border-primary focus:ring-0 transition-all resize-none"
+                    className="flex-1 bg-surface-container-lowest border border-outline-variant rounded-lg px-3 py-2 text-label-sm focus:border-primary focus:ring-0 transition-all resize-none"
                   />
                   <button
                     type="submit"
@@ -410,9 +410,9 @@ export default function Community() {
     <div className="h-screen w-full flex flex-col bg-background font-body-md text-on-surface overflow-hidden">
       <Header />
 
-      <main className="flex-1 pt-2 pb-4 flex flex-col items-center px-margin_page max-w-container_max_width mx-auto w-full overflow-hidden">
+      <main className="flex-1 pt-2 pb-4 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full overflow-hidden">
         {/* Hero Banner */}
-        <section className="w-full mt-4 min-h-[180px] bg-[#d2e4ff]/40 rounded-xl border-2 border-dotted border-outline-variant p-8 md:p-10 flex justify-between items-center relative shrink-0">
+        <section className="w-full mt-4 min-h-[180px] bg-[#d2e4ff]/40 rounded-xl border-2 border-outline-variant p-8 md:p-10 flex justify-between items-center relative shrink-0">
           <div className="z-10 flex flex-col gap-2">
             <h1 className="font-headline-xl text-[32px] md:text-[40px] text-on-surface leading-tight">커뮤니티 광장</h1>
             <p className="text-on-surface-variant font-body-md text-body-md max-w-[420px]">
@@ -442,7 +442,7 @@ export default function Community() {
                 <div
                   key={post.id}
                   onClick={() => setSelectedPostId(post.id)}
-                  className="bg-surface-container-lowest rounded-xl p-5 border border-dashed border-outline-variant card-shadow flex flex-col justify-between hover:border-primary/50 transition-colors cursor-pointer group"
+                  className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant card-shadow flex flex-col justify-between hover:border-primary/50 transition-colors cursor-pointer group"
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-3">
@@ -458,7 +458,7 @@ export default function Community() {
                     </h3>
                     <p className="text-on-surface-variant text-label-sm mt-2 line-clamp-2">{post.content}</p>
                   </div>
-                  <div className="mt-4 pt-3 border-t border-dashed border-outline-variant flex items-center justify-between">
+                  <div className="mt-4 pt-3 border-t border-outline-variant flex items-center justify-between">
                     <div className="flex items-center gap-2">
                       <div className="w-6 h-6 rounded-full bg-surface-container-high flex items-center justify-center">
                         <span className="material-symbols-outlined text-[16px] text-on-surface-variant">person</span>
@@ -482,7 +482,7 @@ export default function Community() {
             <button
               onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
               disabled={currentPage === 1}
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-on-surface-variant"
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-on-surface-variant"
             >
               <span className="material-symbols-outlined text-[18px]">chevron_left</span>
             </button>
@@ -493,7 +493,7 @@ export default function Community() {
                 className={
                   page === currentPage
                     ? "w-10 h-10 flex items-center justify-center rounded-lg bg-primary text-white font-bold text-label-sm shadow-md shadow-primary/10"
-                    : "w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant font-medium text-label-sm hover:border-primary hover:text-primary transition-all"
+                    : "w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant font-medium text-label-sm hover:border-primary hover:text-primary transition-all"
                 }
               >
                 {page}
@@ -502,7 +502,7 @@ export default function Community() {
             <button
               onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
               disabled={currentPage === totalPages}
-              className="w-10 h-10 flex items-center justify-center rounded-lg border border-dashed border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-on-surface-variant"
+              className="w-10 h-10 flex items-center justify-center rounded-lg border border-outline-variant text-on-surface-variant hover:border-primary hover:text-primary transition-all disabled:opacity-30 disabled:cursor-not-allowed disabled:hover:border-outline-variant disabled:hover:text-on-surface-variant"
             >
               <span className="material-symbols-outlined text-[18px]">chevron_right</span>
             </button>

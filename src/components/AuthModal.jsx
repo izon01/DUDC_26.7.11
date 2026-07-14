@@ -66,8 +66,8 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
 
   return (
     <div className="fixed inset-0 z-[70] flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl border-2 border-dashed border-outline-variant shadow-xl overflow-hidden">
-        <div className="px-8 py-6 border-b-2 border-dashed border-outline-variant flex items-center justify-between bg-primary-fixed/30">
+      <div className="w-full max-w-md bg-surface-container-lowest rounded-2xl border-2 border-outline-variant shadow-xl overflow-hidden">
+        <div className="px-8 py-6 border-b-2 border-outline-variant flex items-center justify-between bg-primary-fixed/30">
           <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">account_circle</span>
             {mode === "login" ? "로그인" : "회원가입"}
@@ -88,7 +88,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
             className={
               mode === "login"
                 ? "flex-1 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm transition-all"
-                : "flex-1 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-low transition-all"
+                : "flex-1 py-2.5 rounded-full border-2 border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-low transition-all"
             }
           >
             로그인
@@ -99,7 +99,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
             className={
               mode === "signup"
                 ? "flex-1 py-2.5 rounded-full bg-primary text-on-primary font-bold text-label-sm transition-all"
-                : "flex-1 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-low transition-all"
+                : "flex-1 py-2.5 rounded-full border-2 border-outline-variant text-on-surface-variant font-bold text-label-sm hover:bg-surface-container-low transition-all"
             }
           >
             회원가입
@@ -107,7 +107,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
         </div>
 
         {import.meta.env.DEV && mode === "login" && (
-          <div className="mx-8 mt-4 px-4 py-3 rounded-xl bg-secondary-container/30 border-2 border-dashed border-secondary/40">
+          <div className="mx-8 mt-4 px-4 py-3 rounded-xl bg-secondary-container/30 border-2 border-secondary/40">
             <p className="text-label-sm font-bold text-secondary mb-2 flex items-center gap-1.5">
               <span className="material-symbols-outlined text-[16px]">construction</span>
               개발용 테스트 계정 (배포 시 자동으로 사라짐)
@@ -118,7 +118,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
                   key={account.email}
                   type="button"
                   onClick={() => fillTestAccount(account)}
-                  className="text-left px-3 py-2 rounded-lg bg-white border border-dashed border-outline-variant hover:border-primary transition-colors text-[12px]"
+                  className="text-left px-3 py-2 rounded-lg bg-white border border-outline-variant hover:border-primary transition-colors text-[12px]"
                 >
                   <span className="font-bold text-on-surface">{account.label}</span>
                   <span className="text-on-surface-variant"> — {account.email} / {account.password}</span>
@@ -130,12 +130,12 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
 
         <form onSubmit={handleSubmit} className="px-8 py-6 space-y-4">
           {infoMessage && (
-            <div className="px-4 py-2.5 rounded-lg bg-primary/5 border border-dashed border-primary/30 text-label-sm text-primary">
+            <div className="px-4 py-2.5 rounded-lg bg-primary/5 border border-primary/30 text-label-sm text-primary">
               {infoMessage}
             </div>
           )}
           {error && (
-            <div className="px-4 py-2.5 rounded-lg bg-error/5 border border-dashed border-error/30 text-label-sm text-error">
+            <div className="px-4 py-2.5 rounded-lg bg-error/5 border border-error/30 text-label-sm text-error">
               {error}
             </div>
           )}
@@ -153,7 +153,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
                   value={fields.name}
                   onChange={(e) => updateField("name", e.target.value)}
                   placeholder="홍길동"
-                  className="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
+                  className="w-full bg-surface-container-lowest border-2 border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
                 />
               </div>
               <div>
@@ -170,7 +170,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
                   value={fields.affiliation}
                   onChange={(e) => updateField("affiliation", e.target.value)}
                   placeholder="개발팀"
-                  className="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
+                  className="w-full bg-surface-container-lowest border-2 border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
                 />
               </div>
             </>
@@ -187,7 +187,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
               value={fields.email}
               onChange={(e) => updateField("email", e.target.value)}
               placeholder="you@dudc.com"
-              className="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
+              className="w-full bg-surface-container-lowest border-2 border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
             />
           </div>
 
@@ -203,7 +203,7 @@ export default function AuthModal({ onClose, initialMode = "login" }) {
               value={fields.password}
               onChange={(e) => updateField("password", e.target.value)}
               placeholder="8자 이상 입력해주세요"
-              className="w-full bg-surface-container-lowest border-2 border-dashed border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
+              className="w-full bg-surface-container-lowest border-2 border-outline-variant rounded-xl focus:border-primary focus:ring-0 text-body-md px-4 py-2.5 transition-all"
             />
           </div>
 

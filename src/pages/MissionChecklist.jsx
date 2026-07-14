@@ -57,7 +57,7 @@ export default function MissionChecklist() {
     <div className="h-screen w-full flex flex-col bg-background text-on-surface overflow-hidden font-body-md">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden bg-[#F9FAFB] py-gutter">
+      <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden bg-[#F9FAFB] py-gutter px-4 md:px-8">
         {/* Header Section */}
         <div className="w-full mb-8 flex flex-col items-center">
           <div className="flex items-center gap-3 mb-2">
@@ -75,7 +75,7 @@ export default function MissionChecklist() {
         {/* Checklist Card */}
         <div className="w-full max-w-3xl bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
           {/* Tabs */}
-          <div className="flex border-b border-dashed border-outline-variant">
+          <div className="flex border-b border-outline-variant">
             {TABS.map((tab) => {
               const isActive = tab.key === activeTabKey;
               return (
@@ -139,10 +139,10 @@ export default function MissionChecklist() {
           </div>
 
           {/* Pagination/Progress Footer */}
-          <div className="p-6 border-t border-dashed border-outline-variant flex justify-between items-center bg-surface-container-lowest">
+          <div className="p-6 border-t border-outline-variant flex flex-wrap gap-3 justify-between items-center bg-surface-container-lowest">
             <div className="flex items-center gap-3">
               <span className="text-label-sm text-on-surface-variant font-medium">진행률 {progressPercent}%</span>
-              <div className="w-48 h-2 bg-surface-container-highest rounded-full overflow-hidden relative">
+              <div className="w-28 sm:w-48 h-2 bg-surface-container-highest rounded-full overflow-hidden relative">
                 <div
                   className="absolute inset-0 h-full bg-primary-container rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}

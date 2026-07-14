@@ -97,7 +97,7 @@ function CulturePostEditor({ mode, initialValues, isSaving, onCancel, onSave }) 
             onChange={(e) => setCheckPointsText(e.target.value)}
             rows={5}
             placeholder={"예:\n출입구에서 동료를 만나면 밝게 인사하기\n엘리베이터 안에서는 조용히 대화하기"}
-            className="w-full bg-white border border-dashed border-outline-variant rounded-lg px-4 py-3 text-[14px] focus:border-primary focus:ring-0 transition-all resize-none"
+            className="w-full bg-white border border-outline-variant rounded-lg px-4 py-3 text-[14px] focus:border-primary focus:ring-0 transition-all resize-none"
           />
         </div>
       </div>
@@ -249,9 +249,9 @@ export default function CultureManual() {
     <div className="h-screen w-full flex flex-col bg-surface overflow-hidden">
       <Header />
 
-      <main className="flex-1 flex overflow-hidden">
+      <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Narrow Left Sidebar */}
-        <aside className="w-[280px] bg-white stitch-border-r flex flex-col p-6 overflow-hidden shrink-0">
+        <aside className="w-full md:w-[280px] max-h-[40vh] md:max-h-none bg-white border-b md:border-b-0 md:border-r border-outline-variant flex flex-col p-6 overflow-hidden shrink-0">
           <div className="flex items-center gap-2 mb-4">
             <span className="material-symbols-outlined text-secondary">menu_book</span>
             <h2 className="font-bold text-[17px] text-on-surface">문화 포스트 목록</h2>
@@ -266,7 +266,7 @@ export default function CultureManual() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="제목, 내용으로 검색..."
-              className="w-full bg-white border border-dashed border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:border-primary focus:ring-0 transition-all"
+              className="w-full bg-white border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:border-primary focus:ring-0 transition-all"
             />
           </div>
 
@@ -295,7 +295,7 @@ export default function CultureManual() {
                   className={
                     isActive
                       ? "p-4 bg-primary-container/10 border border-primary rounded-xl cursor-pointer"
-                      : "p-4 bg-white border border-outline-variant border-dashed rounded-xl cursor-pointer hover:border-primary transition-colors opacity-70"
+                      : "p-4 bg-white border border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors opacity-70"
                   }
                 >
                   <p
@@ -322,7 +322,7 @@ export default function CultureManual() {
         </aside>
 
         {/* Single-column Reader Area */}
-        <section className="flex-1 bg-surface-container-lowest relative flex items-center justify-center p-10 overflow-hidden">
+        <section className="flex-1 min-h-0 bg-surface-container-lowest relative flex items-center justify-center p-4 md:p-10 overflow-hidden">
           {isLoading ? (
             <p className="text-on-surface-variant">불러오는 중...</p>
           ) : loadError ? (
@@ -374,7 +374,7 @@ export default function CultureManual() {
                     />
 
                     {selectedGuide.checkPoints.length > 0 && (
-                      <div className="p-8 bg-surface-container-low border border-dashed border-outline-variant rounded-2xl">
+                      <div className="p-8 bg-surface-container-low border border-outline-variant rounded-2xl">
                         <h4 className="font-bold text-[16px] text-on-surface mb-4">Check Points:</h4>
                         <ul className="space-y-4">
                           {selectedGuide.checkPoints.map((point) => (
@@ -391,7 +391,7 @@ export default function CultureManual() {
               </div>
 
               {/* Floating Mascot */}
-              <div className="absolute bottom-10 right-10 flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-dashed border-primary shadow-lg animate-bounce">
+              <div className="absolute bottom-10 right-10 flex items-center gap-3 bg-white px-5 py-3 rounded-2xl border border-primary shadow-lg animate-bounce">
                 <p className="text-[13px] font-bold text-primary">정독 중이에요!</p>
                 <span className="material-symbols-outlined text-primary text-[24px]">pest_control_rodent</span>
               </div>

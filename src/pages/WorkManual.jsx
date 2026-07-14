@@ -295,10 +295,10 @@ export default function WorkManual() {
     <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
       <Header />
 
-      <div className="flex flex-1 overflow-hidden">
+      <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-64 shrink-0 border-r border-dashed border-outline-variant bg-surface-container-low flex flex-col">
-          <div className="p-6 border-b border-dashed border-outline-variant">
+        <aside className="w-full md:w-64 max-h-[40vh] md:max-h-none shrink-0 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low flex flex-col">
+          <div className="p-6 border-b border-outline-variant">
             <h2 className="font-headline-md text-[18px] font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">menu_book</span>
               업무 매뉴얼 리스트
@@ -323,7 +323,7 @@ export default function WorkManual() {
               </div>
               <div className="relative flex items-center">
                 <input
-                  className="w-full bg-surface-container-lowest border border-dashed border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all"
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all"
                   placeholder="제목, 본문 내용으로 검색..."
                   type="text"
                   value={searchTerm}
@@ -359,14 +359,14 @@ export default function WorkManual() {
         </aside>
 
         {/* Main Stage */}
-        <main className="flex-1 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
+        <main className="flex-1 min-h-0 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
           {isAdmin && isEditMode && (
             <input
               type="text"
               value={selectedManual.title}
               onChange={(e) => updateManualTitle(e.target.value)}
               placeholder="매뉴얼 제목을 입력하세요"
-              className="absolute top-6 left-1/2 -translate-x-1/2 z-20 w-[360px] px-4 py-2 rounded-full border-2 border-dashed border-primary/30 bg-white text-center font-bold text-on-surface focus:border-primary focus:ring-0 outline-none transition-colors"
+              className="absolute top-6 left-1/2 -translate-x-1/2 z-20 w-[360px] px-4 py-2 rounded-full border-2 border-primary/30 bg-white text-center font-bold text-on-surface focus:border-primary focus:ring-0 outline-none transition-colors"
             />
           )}
 
@@ -377,7 +377,7 @@ export default function WorkManual() {
                   <button
                     onClick={cancelEdit}
                     disabled={isSaving}
-                    className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-dashed border-outline-variant text-on-surface-variant font-bold hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    className="flex items-center gap-2 px-5 py-2.5 rounded-full border-2 border-outline-variant text-on-surface-variant font-bold hover:bg-white transition-all disabled:opacity-50 disabled:cursor-not-allowed"
                   >
                     취소
                   </button>
@@ -425,14 +425,14 @@ export default function WorkManual() {
                 <button
                   onClick={goPrev}
                   disabled={spreadIndex === 0}
-                  className="absolute left-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="absolute left-6 w-12 h-12 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[32px]">chevron_left</span>
                 </button>
                 <button
                   onClick={goNext}
                   disabled={!isEditMode && spreadIndex === selectedManual.spreads.length - 1}
-                  className="absolute right-6 w-12 h-12 rounded-full border border-dashed border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
+                  className="absolute right-6 w-12 h-12 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[32px]">chevron_right</span>
                 </button>
