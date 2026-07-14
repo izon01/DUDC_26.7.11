@@ -57,23 +57,30 @@ export default function MissionChecklist() {
     <div className="h-screen w-full flex flex-col bg-background text-on-surface overflow-hidden font-body-md">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center justify-center relative overflow-hidden bg-[#F9FAFB] py-gutter px-4 md:px-8">
-        {/* Header Section */}
-        <div className="w-full mb-8 flex flex-col items-center">
-          <div className="flex items-center gap-3 mb-2">
-            <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-label-sm font-label-sm">
-              Step 01. 환영합니다
-            </span>
-            <span className="material-symbols-outlined text-[28px] text-primary">pets</span>
+      <main className="flex-1 flex flex-col items-center justify-center relative overflow-y-auto bg-[#F9FAFB] py-gutter pb-16 px-4 md:px-8">
+        {/* Hero Banner */}
+        <section className="w-full max-w-3xl shrink-0 bg-blue-50 border border-gray-200 rounded-2xl flex flex-col md:flex-row items-center justify-between px-8 py-10 mb-10 gap-8">
+          <div className="flex flex-col items-start text-left">
+            <div className="flex items-center gap-3 mb-2">
+              <span className="bg-primary/10 text-primary px-3 py-1 rounded-full text-label-sm font-label-sm">
+                Step 01. 환영합니다
+              </span>
+              <span className="material-symbols-outlined text-[28px] text-primary">pets</span>
+            </div>
+            <h1 className="text-headline-lg font-headline-lg text-on-surface text-left">온보딩 체크리스트</h1>
+            <p className="text-on-surface-variant text-body-md mt-2 text-left">
+              DUDC의 일원이 되신 것을 축하드립니다. 차근차근 첫 단추를 꿰어보세요.
+            </p>
           </div>
-          <h1 className="text-headline-lg font-headline-lg text-on-surface text-center">온보딩 체크리스트</h1>
-          <p className="text-on-surface-variant text-body-md mt-2 text-center">
-            DUDC의 일원이 되신 것을 축하드립니다. 차근차근 첫 단추를 꿰어보세요.
-          </p>
-        </div>
+          <img
+            src="/img4.png"
+            alt="Onboarding"
+            className="w-48 md:w-64 lg:w-72 object-contain shrink-0"
+          />
+        </section>
 
         {/* Checklist Card */}
-        <div className="w-full max-w-3xl bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
+        <div className="w-full max-w-3xl shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
           {/* Tabs */}
           <div className="flex border-b border-outline-variant">
             {TABS.map((tab) => {
