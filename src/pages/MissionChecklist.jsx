@@ -7,10 +7,14 @@ const TABS = [
     key: "day1",
     label: "1일차",
     items: [
-      { title: "사내 메일 및 메신저 계정 생성", desc: "IT 지원팀의 안내에 따라 업무용 공식 계정을 활성화하세요." },
-      { title: "인사팀 서류 제출", desc: "학위증명서, 통장사본 등 필요 서류를 ERP에 업로드하세요." },
-      { title: "팀원들과 정식 인사 및 티타임", desc: "소속 부서원들과 간단한 인사를 나누고 팀 문화를 파악합니다." },
-      { title: "사무기기 세팅 및 소모품 수령", desc: "노트북, 모니터 등 지급받은 기기가 정상 작동하는지 확인하세요." },
+      { title: "사내 메일 및 메신저 계정 생성", desc: "IT 지원팀의 안내에 따라 공식 계정 활성화" },
+      { title: "인사팀 서류 제출", desc: "학위증명서, 통장사본 등 필요 서류 업로드" },
+      { title: "팀원들과 정식 인사 및 티타임", desc: "소속 부서원들과 간단한 인사 및 팀 문화 파악" },
+      { title: "사무기기 세팅 및 소모품 수령", desc: "노트북, 모니터 등 정상 작동 확인" },
+      { title: "출입증 발급 및 지문 등록", desc: "총무팀을 방문하여 사원증 발급" },
+      { title: "사내 그룹웨어 사용법 숙지", desc: "전자결재 및 휴가 신청 방법 확인" },
+      { title: "보안 서약서 및 정보보호 동의서 서명", desc: "ERP 시스템에서 전자 서명 완료" },
+      { title: "부서장 1:1 오리엔테이션", desc: "향후 업무 방향 및 목표 면담" },
     ],
   },
   {
@@ -69,7 +73,7 @@ export default function MissionChecklist() {
         />
 
         {/* Checklist Card */}
-        <div className="w-full max-w-3xl shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
+        <div className="w-full max-w-7xl mx-auto shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
           {/* Tabs */}
           <div className="flex border-b border-outline-variant">
             {TABS.map((tab) => {
@@ -92,8 +96,7 @@ export default function MissionChecklist() {
 
           {/* List Content */}
           <div className="flex-1 p-8 overflow-y-auto custom-scroll relative">
-            <div className="absolute left-[47px] top-12 bottom-12 w-px stitch-border-v opacity-30" />
-            <div className="space-y-6 relative z-10">
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 relative z-10">
               {activeTab.items.map((item, idx) => {
                 const isChecked = activeChecked[idx];
                 return (
@@ -138,7 +141,7 @@ export default function MissionChecklist() {
           <div className="p-6 border-t border-outline-variant flex flex-wrap gap-3 justify-between items-center bg-surface-container-lowest">
             <div className="flex items-center gap-3">
               <span className="text-label-sm text-on-surface-variant font-medium">진행률 {progressPercent}%</span>
-              <div className="w-28 sm:w-48 h-2 bg-surface-container-highest rounded-full overflow-hidden relative">
+              <div className="w-32 sm:w-64 h-2 bg-surface-container-highest rounded-full overflow-hidden relative">
                 <div
                   className="absolute inset-0 h-full bg-primary-container rounded-full transition-all duration-500"
                   style={{ width: `${progressPercent}%` }}
