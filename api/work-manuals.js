@@ -1,6 +1,6 @@
 import { sql } from "@vercel/postgres";
 import { randomUUID } from "node:crypto";
-import { ensureSchema } from "./_lib/db.js";
+import { batchUpdateSortOrder, ensureSchema } from "./_lib/db.js";
 import { requireAdmin } from "./_lib/auth.js";
 
 // PUT/DELETE target a single manual via ?id=<uuid> rather than a
@@ -68,11 +68,7 @@ export default async function handler(req, res) {
         return res.status(400).json({ message: "순서 배열이 필요합니다." });
       }
       try {
-        await Promise.all(
-          order.map(
-            (manualId, index) => sql`UPDATE work_manuals SET sort_order = ${index} WHERE id = ${manualId}`
-          )
-        );
+        await batchUpdateSortOrder("work_manuals", order);
         return res.status(200).json({ message: "순서가 저장되었습니다." });
       } catch (error) {
         console.error("work-manuals reorder error:", error);

@@ -80,3 +80,15 @@ export function ensureSchema() {
   }
   return schemaReady;
 }
+
+// Persists a full reorder in a single round trip instead of one UPDATE per
+// row. `table` is always a fixed internal string (never client input); `ids`
+// are parameterized, so this stays injection-safe despite building raw SQL.
+export async function batchUpdateSortOrder(table, ids) {
+  const valuesSql = ids.map((_, i) => `($${i * 2 + 1}::text, $${i * 2 + 2}::int)`).join(", ");
+  const params = ids.flatMap((id, index) => [id, index]);
+  await sql.query(
+    `UPDATE ${table} AS t SET sort_order = v.ord FROM (VALUES ${valuesSql}) AS v(id, ord) WHERE t.id = v.id`,
+    params
+  );
+}

@@ -70,8 +70,7 @@ export default async function handler(req, res) {
     }
 
     try {
-      const userRow = await sql`SELECT name FROM users WHERE id = ${user.id}`;
-      const authorName = userRow.rows[0]?.name || user.email;
+      const authorName = user.name || user.email;
 
       const id = randomUUID();
       const result = await sql`

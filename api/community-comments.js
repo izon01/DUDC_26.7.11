@@ -26,8 +26,7 @@ export default async function handler(req, res) {
         return res.status(404).json({ message: "게시글을 찾을 수 없습니다." });
       }
 
-      const userRow = await sql`SELECT name FROM users WHERE id = ${user.id}`;
-      const authorName = userRow.rows[0]?.name || user.email;
+      const authorName = user.name || user.email;
 
       const id = randomUUID();
       const result = await sql`
