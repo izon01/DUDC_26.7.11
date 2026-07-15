@@ -1,7 +1,8 @@
-import { useEffect, useMemo, useState } from "react";
+import { useEffect, useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
+import Toast from "../components/Toast";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 import { highlightHtml, highlightText } from "../searchHighlight";
@@ -118,6 +119,12 @@ export default function CultureManual() {
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState("create");
 
+  const [isReorderMode, setIsReorderMode] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [dragIndex, setDragIndex] = useState(null);
+  const [toastMessage, setToastMessage] = useState("");
+  const originalGuidesRef = useRef(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -151,7 +158,61 @@ export default function CultureManual() {
   const selectedGuide = guides.find((g) => g.id === selectedGuideId) ?? null;
 
   function selectGuide(id) {
+    if (isReorderMode) return;
     setSelectedGuideId(id);
+  }
+
+  function enterReorderMode() {
+    originalGuidesRef.current = guides;
+    setSearchTerm("");
+    setIsReorderMode(true);
+  }
+
+  function cancelReorder() {
+    if (originalGuidesRef.current) setGuides(originalGuidesRef.current);
+    originalGuidesRef.current = null;
+    setDragIndex(null);
+    setIsReorderMode(false);
+  }
+
+  function handleDragStart(index) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e, index) {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    setGuides((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(index, 0, moved);
+      return next;
+    });
+    setDragIndex(index);
+  }
+
+  function handleDragEnd() {
+    setDragIndex(null);
+  }
+
+  async function saveOrderToDB() {
+    setIsSavingOrder(true);
+    try {
+      const res = await fetch("/api/culture-posts", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ order: guides.map((g) => g.id) }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "순서 저장에 실패했습니다.");
+      originalGuidesRef.current = null;
+      setIsReorderMode(false);
+      setToastMessage("순서가 저장되었습니다.");
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setIsSavingOrder(false);
+    }
   }
 
   function openCreateEditor() {
@@ -266,18 +327,51 @@ export default function CultureManual() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="제목, 내용으로 검색..."
-              className="w-full bg-white border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:border-primary focus:ring-0 transition-all"
+              disabled={isReorderMode}
+              className="w-full bg-white border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:border-primary focus:ring-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
             />
           </div>
 
           {isAdmin && (
             <button
               onClick={openCreateEditor}
-              className="w-full mb-4 shrink-0 flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              disabled={isReorderMode}
+              className="w-full mb-4 shrink-0 flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
             >
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               신규 포스트 등록
             </button>
+          )}
+
+          {isAdmin && filteredGuides.length > 1 && (
+            <div className="mb-3 shrink-0 flex justify-end">
+              {!isReorderMode ? (
+                <button
+                  onClick={enterReorderMode}
+                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant text-[12px] font-bold hover:bg-surface-container-highest transition-colors"
+                >
+                  <span className="material-symbols-outlined text-[16px]">swap_vert</span>
+                  순서 변경
+                </button>
+              ) : (
+                <div className="flex items-center gap-3">
+                  <button
+                    onClick={cancelReorder}
+                    disabled={isSavingOrder}
+                    className="text-on-surface-variant text-[12px] font-bold hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    취소
+                  </button>
+                  <button
+                    onClick={saveOrderToDB}
+                    disabled={isSavingOrder}
+                    className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                  >
+                    {isSavingOrder ? "저장 중..." : "저장"}
+                  </button>
+                </div>
+              )}
+            </div>
           )}
 
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
@@ -291,23 +385,41 @@ export default function CultureManual() {
               return (
                 <div
                   key={guide.id}
+                  draggable={isReorderMode}
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragEnd={handleDragEnd}
                   onClick={() => selectGuide(guide.id)}
-                  className={
-                    isActive
-                      ? "p-4 bg-primary-container/10 border border-primary rounded-xl cursor-pointer"
-                      : "p-4 bg-white border border-outline-variant rounded-xl cursor-pointer hover:border-primary transition-colors opacity-70"
-                  }
+                  className={`flex items-center gap-2 rounded-xl transition-opacity ${
+                    isReorderMode
+                      ? `p-2 bg-white border border-outline-variant ${dragIndex === idx ? "opacity-40" : "opacity-100"}`
+                      : isActive
+                        ? "p-4 bg-primary-container/10 border border-primary cursor-pointer"
+                        : "p-4 bg-white border border-outline-variant cursor-pointer hover:border-primary transition-colors opacity-70"
+                  }`}
                 >
-                  <p
-                    className={
-                      isActive
-                        ? "text-[11px] text-primary font-bold mb-1 uppercase tracking-wider"
-                        : "text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider"
-                    }
-                  >
-                    {`Guide ${String(idx + 1).padStart(2, "0")}`}
-                  </p>
-                  <h3 className="text-[15px] font-bold text-on-surface">{highlightText(guide.title, searchTerm)}</h3>
+                  {isReorderMode && (
+                    <span
+                      className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0"
+                      style={{ fontSize: "18px" }}
+                    >
+                      drag_indicator
+                    </span>
+                  )}
+                  <div className="min-w-0 flex-1">
+                    <p
+                      className={
+                        isActive
+                          ? "text-[11px] text-primary font-bold mb-1 uppercase tracking-wider"
+                          : "text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider"
+                      }
+                    >
+                      {`Guide ${String(idx + 1).padStart(2, "0")}`}
+                    </p>
+                    <h3 className="text-[15px] font-bold text-on-surface truncate">
+                      {highlightText(guide.title, searchTerm)}
+                    </h3>
+                  </div>
                 </div>
               );
             })}
@@ -399,6 +511,8 @@ export default function CultureManual() {
           )}
         </section>
       </main>
+
+      {toastMessage && <Toast message={toastMessage} onDone={() => setToastMessage("")} />}
     </div>
   );
 }

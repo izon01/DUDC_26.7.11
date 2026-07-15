@@ -2,6 +2,7 @@ import { useEffect, useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
+import Toast from "../components/Toast";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 import { highlightHtml, highlightText } from "../searchHighlight";
@@ -101,6 +102,12 @@ export default function WorkManual() {
   const editSnapshotRef = useRef(null);
   const [ckeditorConfig] = useState(() => createCkeditorConfig("본문을 작성해보세요."));
 
+  const [isReorderMode, setIsReorderMode] = useState(false);
+  const [isSavingOrder, setIsSavingOrder] = useState(false);
+  const [dragIndex, setDragIndex] = useState(null);
+  const [toastMessage, setToastMessage] = useState("");
+  const originalManualsRef = useRef(null);
+
   useEffect(() => {
     let cancelled = false;
 
@@ -137,7 +144,7 @@ export default function WorkManual() {
   const progressPercent = totalPages ? Math.round(((spreadIndex + 1) * 2 * 100) / totalPages) : 0;
 
   function handleSelectManual(id) {
-    if (isEditMode) return;
+    if (isEditMode || isReorderMode) return;
     setSelectedManualId(id);
     setSpreadIndex(0);
   }
@@ -275,6 +282,59 @@ export default function WorkManual() {
     }
   }
 
+  function enterReorderMode() {
+    originalManualsRef.current = manuals;
+    setSearchTerm("");
+    setIsReorderMode(true);
+  }
+
+  function cancelReorder() {
+    if (originalManualsRef.current) setManuals(originalManualsRef.current);
+    originalManualsRef.current = null;
+    setDragIndex(null);
+    setIsReorderMode(false);
+  }
+
+  function handleDragStart(index) {
+    setDragIndex(index);
+  }
+
+  function handleDragOver(e, index) {
+    e.preventDefault();
+    if (dragIndex === null || dragIndex === index) return;
+    setManuals((prev) => {
+      const next = [...prev];
+      const [moved] = next.splice(dragIndex, 1);
+      next.splice(index, 0, moved);
+      return next;
+    });
+    setDragIndex(index);
+  }
+
+  function handleDragEnd() {
+    setDragIndex(null);
+  }
+
+  async function saveOrderToDB() {
+    setIsSavingOrder(true);
+    try {
+      const res = await fetch("/api/work-manuals", {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ order: manuals.map((m) => m.id) }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "순서 저장에 실패했습니다.");
+      originalManualsRef.current = null;
+      setIsReorderMode(false);
+      setToastMessage("순서가 저장되었습니다.");
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setIsSavingOrder(false);
+    }
+  }
+
   function updateManualTitle(value) {
     setManuals((prev) => prev.map((manual) => (manual.id === selectedManualId ? { ...manual, title: value } : manual)));
   }
@@ -308,7 +368,7 @@ export default function WorkManual() {
             {isAdmin && (
               <button
                 onClick={beginCreate}
-                disabled={isEditMode}
+                disabled={isEditMode || isReorderMode}
                 className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
               >
                 <span className="material-symbols-outlined">add_circle</span>
@@ -316,18 +376,19 @@ export default function WorkManual() {
               </button>
             )}
 
-            <div className="mb-6 px-1">
+            <div className="mb-4 px-1">
               <div className="flex items-center gap-2 mb-2">
                 <span className="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
                 <span className="text-sm font-medium text-secondary">매뉴얼 검색</span>
               </div>
               <div className="relative flex items-center">
                 <input
-                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all"
+                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
                   placeholder="제목, 본문 내용으로 검색..."
                   type="text"
                   value={searchTerm}
                   onChange={(e) => setSearchTerm(e.target.value)}
+                  disabled={isReorderMode}
                 />
                 <span className="absolute right-2 flex items-center justify-center w-8 h-8 bg-primary text-on-primary rounded-md">
                   <span className="material-symbols-outlined text-[20px]">search</span>
@@ -335,25 +396,79 @@ export default function WorkManual() {
               </div>
             </div>
 
+            {isAdmin && filteredManuals.length > 1 && (
+              <div className="mb-3 px-1 flex justify-end">
+                {!isReorderMode ? (
+                  <button
+                    onClick={enterReorderMode}
+                    disabled={isEditMode}
+                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant text-[12px] font-bold hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined text-[16px]">swap_vert</span>
+                    순서 변경
+                  </button>
+                ) : (
+                  <div className="flex items-center gap-3">
+                    <button
+                      onClick={cancelReorder}
+                      disabled={isSavingOrder}
+                      className="text-on-surface-variant text-[12px] font-bold hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      취소
+                    </button>
+                    <button
+                      onClick={saveOrderToDB}
+                      disabled={isSavingOrder}
+                      className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                    >
+                      {isSavingOrder ? "저장 중..." : "저장"}
+                    </button>
+                  </div>
+                )}
+              </div>
+            )}
+
             {!isLoading && filteredManuals.length === 0 && (
               <p className="px-2 py-6 text-center text-label-sm text-on-surface-variant">
                 {manuals.length === 0 ? "등록된 매뉴얼이 없습니다." : "검색 결과가 없습니다."}
               </p>
             )}
 
-            {filteredManuals.map((manual) => (
-              <button
+            {filteredManuals.map((manual, idx) => (
+              <div
                 key={manual.id}
-                onClick={() => handleSelectManual(manual.id)}
-                disabled={isEditMode}
+                draggable={isReorderMode}
+                onDragStart={() => handleDragStart(idx)}
+                onDragOver={(e) => handleDragOver(e, idx)}
+                onDragEnd={handleDragEnd}
                 className={
-                  manual.id === selectedManualId
-                    ? "w-full text-left p-2.5 rounded-xl bg-primary text-on-primary font-bold text-sm transition-all shadow-sm disabled:cursor-not-allowed"
-                    : "w-full text-left p-2.5 rounded-xl hover:bg-surface-container-highest text-on-surface-variant text-sm transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  isReorderMode
+                    ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
+                        dragIndex === idx ? "opacity-40" : "opacity-100"
+                      }`
+                    : "flex items-center"
                 }
               >
-                {highlightText(manual.title || "(제목 없음)", searchTerm)}
-              </button>
+                {isReorderMode && (
+                  <span
+                    className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
+                    style={{ fontSize: "18px" }}
+                  >
+                    drag_indicator
+                  </span>
+                )}
+                <button
+                  onClick={() => handleSelectManual(manual.id)}
+                  disabled={isEditMode || isReorderMode}
+                  className={`flex-1 min-w-0 text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
+                    manual.id === selectedManualId
+                      ? "bg-primary text-on-primary font-bold shadow-sm"
+                      : "hover:bg-surface-container-highest text-on-surface-variant"
+                  } ${isEditMode ? "opacity-40" : ""}`}
+                >
+                  {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                </button>
+              </div>
             ))}
           </div>
         </aside>
@@ -500,6 +615,8 @@ export default function WorkManual() {
           )}
         </main>
       </div>
+
+      {toastMessage && <Toast message={toastMessage} onDone={() => setToastMessage("")} />}
     </div>
   );
 }

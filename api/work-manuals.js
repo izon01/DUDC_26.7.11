@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       const result = await sql`
         SELECT id, title, spreads, created_at AS "createdAt"
         FROM work_manuals
-        ORDER BY created_at ASC
+        ORDER BY sort_order ASC NULLS LAST, created_at ASC
       `;
       return res.status(200).json({ manuals: result.rows });
     } catch (error) {
@@ -42,8 +42,11 @@ export default async function handler(req, res) {
     try {
       const id = randomUUID();
       const result = await sql`
-        INSERT INTO work_manuals (id, title, spreads)
-        VALUES (${id}, ${title}, ${JSON.stringify(spreads)}::jsonb)
+        INSERT INTO work_manuals (id, title, spreads, sort_order)
+        VALUES (
+          ${id}, ${title}, ${JSON.stringify(spreads)}::jsonb,
+          COALESCE((SELECT MAX(sort_order) FROM work_manuals), -1) + 1
+        )
         RETURNING id, title, spreads, created_at AS "createdAt"
       `;
       return res.status(201).json({ manual: result.rows[0] });
@@ -58,8 +61,26 @@ export default async function handler(req, res) {
     if (!admin) return;
 
     const { id } = req.query;
+
+    if (!id) {
+      const { order } = req.body ?? {};
+      if (!Array.isArray(order) || order.length === 0) {
+        return res.status(400).json({ message: "순서 배열이 필요합니다." });
+      }
+      try {
+        await Promise.all(
+          order.map(
+            (manualId, index) => sql`UPDATE work_manuals SET sort_order = ${index} WHERE id = ${manualId}`
+          )
+        );
+        return res.status(200).json({ message: "순서가 저장되었습니다." });
+      } catch (error) {
+        console.error("work-manuals reorder error:", error);
+        return res.status(500).json({ message: "순서 저장 중 오류가 발생했습니다." });
+      }
+    }
+
     const { title, spreads } = req.body ?? {};
-    if (!id) return res.status(400).json({ message: "id가 필요합니다." });
     if (!title || typeof title !== "string" || !Array.isArray(spreads)) {
       return res.status(400).json({ message: "제목과 스프레드 데이터가 필요합니다." });
     }

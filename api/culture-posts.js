@@ -21,7 +21,7 @@ export default async function handler(req, res) {
       const result = await sql`
         SELECT id, title, body_html AS "bodyHtml", check_points AS "checkPoints", created_at AS "createdAt"
         FROM culture_posts
-        ORDER BY created_at ASC
+        ORDER BY sort_order ASC NULLS LAST, created_at ASC
       `;
       return res.status(200).json({ posts: result.rows });
     } catch (error) {
@@ -42,8 +42,11 @@ export default async function handler(req, res) {
     try {
       const id = randomUUID();
       const result = await sql`
-        INSERT INTO culture_posts (id, title, body_html, check_points)
-        VALUES (${id}, ${title}, ${bodyHtml}, ${JSON.stringify(checkPoints)}::jsonb)
+        INSERT INTO culture_posts (id, title, body_html, check_points, sort_order)
+        VALUES (
+          ${id}, ${title}, ${bodyHtml}, ${JSON.stringify(checkPoints)}::jsonb,
+          COALESCE((SELECT MAX(sort_order) FROM culture_posts), -1) + 1
+        )
         RETURNING id, title, body_html AS "bodyHtml", check_points AS "checkPoints", created_at AS "createdAt"
       `;
       return res.status(201).json({ post: result.rows[0] });
@@ -58,8 +61,26 @@ export default async function handler(req, res) {
     if (!admin) return;
 
     const { id } = req.query;
+
+    if (!id) {
+      const { order } = req.body ?? {};
+      if (!Array.isArray(order) || order.length === 0) {
+        return res.status(400).json({ message: "순서 배열이 필요합니다." });
+      }
+      try {
+        await Promise.all(
+          order.map(
+            (postId, index) => sql`UPDATE culture_posts SET sort_order = ${index} WHERE id = ${postId}`
+          )
+        );
+        return res.status(200).json({ message: "순서가 저장되었습니다." });
+      } catch (error) {
+        console.error("culture-posts reorder error:", error);
+        return res.status(500).json({ message: "순서 저장 중 오류가 발생했습니다." });
+      }
+    }
+
     const { title, bodyHtml, checkPoints } = req.body ?? {};
-    if (!id) return res.status(400).json({ message: "id가 필요합니다." });
     if (!title || typeof title !== "string" || typeof bodyHtml !== "string" || !Array.isArray(checkPoints)) {
       return res.status(400).json({ message: "제목, 본문, 체크포인트가 필요합니다." });
     }
