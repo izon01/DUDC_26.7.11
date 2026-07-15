@@ -35,7 +35,7 @@ function manualSearchText(manual) {
     .toLowerCase();
 }
 
-function BookPage({ page, searchTerm, side }) {
+function BookPage({ page, searchTerm, side, totalPages }) {
   const hasContent = Boolean(page.heading?.trim() || stripHtml(page.html || "").trim());
   return (
     <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
@@ -57,7 +57,7 @@ function BookPage({ page, searchTerm, side }) {
           side === "left" ? "left-9" : "right-9"
         }`}
       >
-        {page.pageNum}
+        {page.pageNum} / {totalPages}
       </div>
     </div>
   );
@@ -66,7 +66,17 @@ function BookPage({ page, searchTerm, side }) {
 // In-place page editor — mirrors BookPage's size/padding/typography exactly
 // (same px-14/pt-6/pb-16 page box, same heading classes) so flipping between
 // read and edit mode never changes the book's apparent size or font ratio.
-function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChange, onHtmlChange, editorKey, side }) {
+function BookPageEditor({
+  heading,
+  html,
+  pageNum,
+  ckeditorConfig,
+  onHeadingChange,
+  onHtmlChange,
+  editorKey,
+  side,
+  totalPages,
+}) {
   return (
     <div className="w-full h-full min-h-full px-14 pt-6 pb-16 relative break-keep flex flex-col">
       <input
@@ -92,7 +102,7 @@ function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChang
           side === "left" ? "left-9" : "right-9"
         }`}
       >
-        {pageNum}
+        {pageNum} / {totalPages}
       </div>
     </div>
   );
@@ -609,9 +619,10 @@ export default function WorkManual() {
                           onHeadingChange={(v) => updatePageField("left", "heading", v)}
                           onHtmlChange={(v) => updatePageField("left", "html", v)}
                           side="left"
+                          totalPages={totalPages}
                         />
                       ) : (
-                        <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" />
+                        <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" totalPages={totalPages} />
                       )}
                     </div>
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
@@ -625,9 +636,10 @@ export default function WorkManual() {
                           onHeadingChange={(v) => updatePageField("right", "heading", v)}
                           onHtmlChange={(v) => updatePageField("right", "html", v)}
                           side="right"
+                          totalPages={totalPages}
                         />
                       ) : (
-                        <BookPage page={currentSpread.right} searchTerm={searchTerm} side="right" />
+                        <BookPage page={currentSpread.right} searchTerm={searchTerm} side="right" totalPages={totalPages} />
                       )}
                     </div>
                   </div>
@@ -636,25 +648,19 @@ export default function WorkManual() {
             )}
           </div>
 
-          {selectedManual && (
-            <div className="px-10 pb-8 flex flex-col items-center z-10">
-              <div className="w-2/3 relative h-1.5 bg-surface-container-highest rounded-full overflow-hidden">
-                <div
-                  className="absolute left-0 top-0 h-full bg-primary transition-all duration-500"
-                  style={{ width: `${progressPercent}%` }}
-                />
-              </div>
-              <div className="w-2/3 flex justify-between mt-2 text-label-sm text-outline">
-                <span>시작</span>
-                <span className="text-primary font-bold">
-                  {(spreadIndex + 1) * 2} / {totalPages} 페이지
-                </span>
-                <span>완료</span>
-              </div>
-            </div>
-          )}
         </main>
       </div>
+
+      {/* Floating reading-progress bar — pinned to the viewport bottom so it
+          never takes up layout space, unlike the old inline progress block. */}
+      {selectedManual && (
+        <div className="fixed bottom-0 left-0 w-full h-[3px] bg-surface-container-highest z-40">
+          <div
+            className="h-full bg-primary transition-all duration-500"
+            style={{ width: `${progressPercent}%` }}
+          />
+        </div>
+      )}
 
       {toastMessage && <Toast message={toastMessage} onDone={() => setToastMessage("")} />}
     </div>
