@@ -2,9 +2,42 @@ import { useState } from "react";
 import AuthModal from "../components/AuthModal";
 
 const MASCOTS = [
-  { name: "청키", role: "학습 가이드 · ENFP", emoji: "🦈" },
-  { name: "아두", role: "지식 비서 · ISTJ", emoji: "🦫" },
-  { name: "라미", role: "소통 호스트 · ESFJ", emoji: "🦆" },
+  {
+    image: "/img3.png",
+    nameKo: "청키",
+    nameEn: "chungky",
+    details: [
+      { label: "동물", value: "상어" },
+      { label: "직업", value: "기획담당" },
+      { label: "상징", value: "주거복지 / 기획" },
+      { label: "성격", value: "열정이 넘치고 다정함" },
+      { label: "MBTI", value: "ENFP (재기발랄한 활동가)" },
+    ],
+  },
+  {
+    image: "/img4.png",
+    nameKo: "아두",
+    nameEn: "adu",
+    details: [
+      { label: "동물", value: "두더지" },
+      { label: "직업", value: "개발담당" },
+      { label: "상징", value: "측량 / 설계 / 공사" },
+      { label: "성격", value: "뚝딱뚝딱 만드는 것을 좋아함" },
+      { label: "MBTI", value: "ISTJ (청렴결백 논리주의자)" },
+    ],
+  },
+  {
+    image: "/img5.png",
+    nameKo: "라미",
+    nameEn: "rami",
+    details: [
+      { label: "동물", value: "오리" },
+      { label: "직업", value: "홍보담당" },
+      { label: "상징", value: "소통 / 홍보" },
+      { label: "성격", value: "호기심이 많고 책임감이 강함" },
+      { label: "MBTI", value: "ESFJ (사교적인 외교관)" },
+    ],
+  },
 ];
 
 export default function LandingPage() {
@@ -14,12 +47,7 @@ export default function LandingPage() {
     <div className="h-screen w-full flex flex-col bg-[#fafbfc] overflow-hidden">
       {/* Header */}
       <header className="shrink-0 w-full flex items-center justify-between px-4 md:px-8 lg:px-16 py-6 max-w-[1280px] mx-auto">
-        <div className="flex items-center gap-2.5">
-          <div className="w-9 h-9 rounded-xl bg-primary flex items-center justify-center shrink-0">
-            <span className="text-white font-bold text-[15px]">D</span>
-          </div>
-          <span className="font-bold text-on-surface text-[18px]">DUDC 로고</span>
-        </div>
+        <img src="/img1.png" alt="DUDC" className="h-10 w-auto object-contain" />
         <div className="flex items-center gap-6">
           <button
             onClick={() => setAuthMode("login")}
@@ -37,7 +65,7 @@ export default function LandingPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 flex items-center overflow-y-auto lg:overflow-hidden py-8 lg:py-0 px-4 md:px-8 lg:px-16 max-w-[1280px] mx-auto w-full">
+      <main className="flex-1 flex items-start lg:items-center overflow-y-auto lg:overflow-hidden py-8 lg:py-0 px-4 md:px-8 lg:px-16 max-w-[1280px] mx-auto w-full">
         <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
           {/* Left: Hero copy */}
           <div>
@@ -63,17 +91,26 @@ export default function LandingPage() {
           </div>
 
           {/* Right: Mascot cards */}
-          <div className="flex flex-wrap justify-center lg:justify-start gap-4 lg:gap-5">
+          <div className="flex flex-wrap justify-center lg:justify-start gap-5">
             {MASCOTS.map((mascot) => (
               <div
-                key={mascot.name}
-                className="w-[110px] sm:w-[140px] bg-white rounded-3xl shadow-xl shadow-black/5 border border-outline-variant/20 flex flex-col items-center py-8 px-4"
+                key={mascot.nameKo}
+                className="w-[200px] bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-6"
               >
-                <div className="w-16 h-16 flex items-center justify-center text-[40px] mb-4">
-                  {mascot.emoji}
+                <img src={mascot.image} alt={mascot.nameKo} className="w-28 h-28 object-contain mb-4" />
+                <p className="font-bold text-on-surface text-[20px]">{mascot.nameKo}</p>
+                <p className="text-outline text-[12px] mb-4">{mascot.nameEn}</p>
+                <div className="w-full space-y-2">
+                  {mascot.details.map((detail) => (
+                    <div
+                      key={detail.label}
+                      className="flex items-start justify-between gap-2 border-b border-outline-variant/10 pb-2 text-[12px]"
+                    >
+                      <span className="text-outline shrink-0">{detail.label}</span>
+                      <span className="text-on-surface font-medium text-right">{detail.value}</span>
+                    </div>
+                  ))}
                 </div>
-                <p className="font-bold text-on-surface text-[16px]">{mascot.name}</p>
-                <p className="text-outline text-[11px] mt-1 text-center leading-snug">{mascot.role}</p>
               </div>
             ))}
           </div>
