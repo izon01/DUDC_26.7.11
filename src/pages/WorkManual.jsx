@@ -582,16 +582,22 @@ export default function WorkManual() {
                 </button>
 
                 <div className="relative max-w-[1400px] w-full h-full max-h-[820px]">
-                  {/* Layered pages behind the cover for a thick, stacked-paper look */}
-                  <div className="absolute -left-3 -right-3 top-2 bottom-2 bg-gray-100 rounded-l-md rounded-r-xl shadow-sm z-0" />
-                  <div className="absolute -left-1.5 -right-1.5 top-1 bottom-1 bg-gray-100 rounded-l-md rounded-r-xl shadow-sm z-[1]" />
+                  {/* Layered pages behind the cover — staggered, not concentric, so it
+                      reads as loosely stacked paper rather than a single outline */}
+                  <div className="absolute -left-4 -right-2 top-4 bottom-1 bg-gray-100 rounded-l-md rounded-r-xl shadow-sm z-0 rotate-[0.3deg]" />
+                  <div className="absolute -left-2.5 -right-3.5 top-2.5 bottom-2.5 bg-gray-100 rounded-l-md rounded-r-xl shadow-sm z-[1] -rotate-[0.2deg]" />
+                  <div className="absolute -left-1 -right-1.5 top-1 bottom-1.5 bg-gray-50 rounded-l-md rounded-r-xl shadow-sm z-[2]" />
 
-                  <div className="relative z-10 shadow-2xl rounded-l-md rounded-r-xl overflow-hidden flex bg-surface-container-lowest h-full">
-                    {/* Center spine shadow — pages curving softly into the binding */}
-                    <div className="absolute left-1/2 top-0 bottom-0 w-20 -ml-10 z-20 pointer-events-none flex">
-                      <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-black/[0.08]" />
-                      <div className="w-1/2 h-full bg-gradient-to-l from-transparent to-black/[0.08]" />
+                  <div className="relative z-10 shadow-2xl rounded-l-md rounded-r-xl overflow-hidden flex bg-[#faf9f6] h-full">
+                    {/* Outer edge shadows — the spread reads as gently convex/curved */}
+                    <div className="absolute left-0 top-0 bottom-0 w-6 z-20 pointer-events-none bg-gradient-to-r from-black/[0.06] to-transparent" />
+                    <div className="absolute right-0 top-0 bottom-0 w-6 z-20 pointer-events-none bg-gradient-to-l from-black/[0.06] to-transparent" />
+                    {/* Center spine — pages dipping concave into the binding */}
+                    <div className="absolute left-1/2 top-0 bottom-0 w-28 -ml-14 z-20 pointer-events-none flex">
+                      <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-black/[0.12]" />
+                      <div className="w-1/2 h-full bg-gradient-to-l from-transparent to-black/[0.12]" />
                     </div>
+                    <div className="absolute left-1/2 top-0 bottom-0 w-px -ml-px z-20 pointer-events-none bg-black/10" />
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
                         <BookPageEditor
