@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import Toast from "../components/Toast";
+import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 import { highlightHtml, highlightText } from "../searchHighlight";
+import { getCache, setCache } from "../utils/resourceCache";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+
+const CACHE_KEY = "culture-posts";
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -110,14 +115,23 @@ export default function CultureManual() {
   const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  const [guides, setGuides] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [guides, setGuidesState] = useState(() => getCache(CACHE_KEY) ?? []);
+  const [isLoading, setIsLoading] = useState(() => !getCache(CACHE_KEY));
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedGuideId, setSelectedGuideId] = useState(null);
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  const [selectedGuideId, setSelectedGuideId] = useState(() => getCache(CACHE_KEY)?.[0]?.id ?? null);
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState("create");
+
+  const setGuides = useCallback((updater) => {
+    setGuidesState((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      setCache(CACHE_KEY, next);
+      return next;
+    });
+  }, []);
 
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
@@ -126,6 +140,11 @@ export default function CultureManual() {
   const originalGuidesRef = useRef(null);
 
   useEffect(() => {
+    if (getCache(CACHE_KEY)) {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function loadGuides() {
@@ -150,10 +169,10 @@ export default function CultureManual() {
   }, []);
 
   const filteredGuides = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = debouncedSearchTerm.trim().toLowerCase();
     if (!term) return guides;
     return guides.filter((g) => guideSearchText(g).includes(term));
-  }, [guides, searchTerm]);
+  }, [guides, debouncedSearchTerm]);
 
   const selectedGuide = guides.find((g) => g.id === selectedGuideId) ?? null;
 
@@ -375,12 +394,13 @@ export default function CultureManual() {
           )}
 
           <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+            {isLoading && <SkeletonList count={4} itemClassName="h-16" />}
             {!isLoading && filteredGuides.length === 0 && (
               <p className="px-2 py-6 text-center text-[12px] text-on-surface-variant">
                 {guides.length === 0 ? "등록된 포스트가 없습니다." : "검색 결과가 없습니다."}
               </p>
             )}
-            {filteredGuides.map((guide, idx) => {
+            {!isLoading && filteredGuides.map((guide, idx) => {
               const isActive = guide.id === selectedGuideId;
               return (
                 <div

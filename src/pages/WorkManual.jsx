@@ -1,11 +1,16 @@
-import { useEffect, useMemo, useRef, useState } from "react";
+import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import Toast from "../components/Toast";
+import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 import { highlightHtml, highlightText } from "../searchHighlight";
+import { getCache, setCache } from "../utils/resourceCache";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+
+const CACHE_KEY = "work-manuals";
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -89,13 +94,22 @@ export default function WorkManual() {
   const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
 
-  const [manuals, setManuals] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [manuals, setManualsState] = useState(() => getCache(CACHE_KEY) ?? []);
+  const [isLoading, setIsLoading] = useState(() => !getCache(CACHE_KEY));
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
-  const [selectedManualId, setSelectedManualId] = useState(null);
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  const [selectedManualId, setSelectedManualId] = useState(() => getCache(CACHE_KEY)?.[0]?.id ?? null);
   const [spreadIndex, setSpreadIndex] = useState(0);
+
+  const setManuals = useCallback((updater) => {
+    setManualsState((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      setCache(CACHE_KEY, next);
+      return next;
+    });
+  }, []);
 
   const [isEditMode, setIsEditMode] = useState(false);
   const [editSessionKey, setEditSessionKey] = useState(0);
@@ -109,6 +123,11 @@ export default function WorkManual() {
   const originalManualsRef = useRef(null);
 
   useEffect(() => {
+    if (getCache(CACHE_KEY)) {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function loadManuals() {
@@ -133,10 +152,10 @@ export default function WorkManual() {
   }, []);
 
   const filteredManuals = useMemo(() => {
-    const term = searchTerm.trim().toLowerCase();
+    const term = debouncedSearchTerm.trim().toLowerCase();
     if (!term) return manuals;
     return manuals.filter((m) => manualSearchText(m).includes(term));
-  }, [manuals, searchTerm]);
+  }, [manuals, debouncedSearchTerm]);
 
   const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
   const currentSpread = selectedManual ? selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0] : null;
@@ -428,48 +447,50 @@ export default function WorkManual() {
               </div>
             )}
 
-            {!isLoading && filteredManuals.length === 0 && (
+            {isLoading ? (
+              <SkeletonList count={5} />
+            ) : filteredManuals.length === 0 ? (
               <p className="px-2 py-6 text-center text-label-sm text-on-surface-variant">
                 {manuals.length === 0 ? "등록된 매뉴얼이 없습니다." : "검색 결과가 없습니다."}
               </p>
-            )}
-
-            {filteredManuals.map((manual, idx) => (
-              <div
-                key={manual.id}
-                draggable={isReorderMode}
-                onDragStart={() => handleDragStart(idx)}
-                onDragOver={(e) => handleDragOver(e, idx)}
-                onDragEnd={handleDragEnd}
-                className={
-                  isReorderMode
-                    ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
-                        dragIndex === idx ? "opacity-40" : "opacity-100"
-                      }`
-                    : "flex items-center"
-                }
-              >
-                {isReorderMode && (
-                  <span
-                    className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
-                    style={{ fontSize: "18px" }}
-                  >
-                    drag_indicator
-                  </span>
-                )}
-                <button
-                  onClick={() => handleSelectManual(manual.id)}
-                  disabled={isEditMode || isReorderMode}
-                  className={`flex-1 min-w-0 text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
-                    manual.id === selectedManualId
-                      ? "bg-primary text-on-primary font-bold shadow-sm"
-                      : "hover:bg-surface-container-highest text-on-surface-variant"
-                  } ${isEditMode ? "opacity-40" : ""}`}
+            ) : (
+              filteredManuals.map((manual, idx) => (
+                <div
+                  key={manual.id}
+                  draggable={isReorderMode}
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  className={
+                    isReorderMode
+                      ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
+                          dragIndex === idx ? "opacity-40" : "opacity-100"
+                        }`
+                      : "flex items-center"
+                  }
                 >
-                  {highlightText(manual.title || "(제목 없음)", searchTerm)}
-                </button>
-              </div>
-            ))}
+                  {isReorderMode && (
+                    <span
+                      className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
+                      style={{ fontSize: "18px" }}
+                    >
+                      drag_indicator
+                    </span>
+                  )}
+                  <button
+                    onClick={() => handleSelectManual(manual.id)}
+                    disabled={isEditMode || isReorderMode}
+                    className={`flex-1 min-w-0 text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
+                      manual.id === selectedManualId
+                        ? "bg-primary text-on-primary font-bold shadow-sm"
+                        : "hover:bg-surface-container-highest text-on-surface-variant"
+                    } ${isEditMode ? "opacity-40" : ""}`}
+                  >
+                    {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                  </button>
+                </div>
+              ))
+            )}
           </div>
         </aside>
 

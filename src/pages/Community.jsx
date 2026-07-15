@@ -1,7 +1,12 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
+import { SkeletonGrid } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
+import { getCache, setCache } from "../utils/resourceCache";
+import { useDebouncedValue } from "../hooks/useDebouncedValue";
+
+const CACHE_KEY = "community-posts";
 
 const CATEGORY_STYLES = {
   공지사항: "bg-red-100 text-red-700",
@@ -271,14 +276,23 @@ function PostDetailModal({
 export default function Community() {
   const { user, token } = useAuth();
 
-  const [posts, setPosts] = useState([]);
-  const [isLoading, setIsLoading] = useState(true);
+  const [posts, setPostsState] = useState(() => getCache(CACHE_KEY) ?? []);
+  const [isLoading, setIsLoading] = useState(() => !getCache(CACHE_KEY));
   const [loadError, setLoadError] = useState("");
   const [isWriteModalOpen, setIsWriteModalOpen] = useState(false);
   const [isSubmittingPost, setIsSubmittingPost] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
   const [searchTerm, setSearchTerm] = useState("");
+  const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
   const [selectedCategory, setSelectedCategory] = useState("전체");
+
+  const setPosts = useCallback((updater) => {
+    setPostsState((prev) => {
+      const next = typeof updater === "function" ? updater(prev) : updater;
+      setCache(CACHE_KEY, next);
+      return next;
+    });
+  }, []);
 
   const [selectedPostId, setSelectedPostId] = useState(null);
   const [selectedPostDetail, setSelectedPostDetail] = useState(null);
@@ -286,6 +300,11 @@ export default function Community() {
   const [isSubmittingComment, setIsSubmittingComment] = useState(false);
 
   useEffect(() => {
+    if (getCache(CACHE_KEY)) {
+      setIsLoading(false);
+      return;
+    }
+
     let cancelled = false;
 
     async function loadPosts() {
@@ -339,7 +358,7 @@ export default function Community() {
 
   const filteredPosts = posts.filter((post) => {
     const matchesCategory = selectedCategory === "전체" || post.category === selectedCategory;
-    const query = searchTerm.trim().toLowerCase();
+    const query = debouncedSearchTerm.trim().toLowerCase();
     const matchesSearch =
       !query || post.title.toLowerCase().includes(query) || post.content.toLowerCase().includes(query);
     return matchesCategory && matchesSearch;
@@ -350,7 +369,7 @@ export default function Community() {
 
   useEffect(() => {
     setCurrentPage(1);
-  }, [searchTerm, selectedCategory]);
+  }, [debouncedSearchTerm, selectedCategory]);
 
   async function handleCreatePost({ title, category, content }) {
     setIsSubmittingPost(true);
@@ -491,7 +510,7 @@ export default function Community() {
         {/* Post Grid */}
         <div className="w-full pt-4 pb-4">
           {isLoading ? (
-            <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
+            <SkeletonGrid count={9} />
           ) : loadError ? (
             <p className="text-center text-error py-10">{loadError}</p>
           ) : filteredPosts.length === 0 ? (
