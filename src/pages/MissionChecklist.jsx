@@ -70,7 +70,7 @@ export default function MissionChecklist() {
     <div className="h-screen w-full flex flex-col bg-background text-on-surface overflow-hidden font-body-md">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center justify-start relative overflow-y-auto bg-[#F9FAFB] py-gutter pb-16 px-4 md:px-8">
+      <main className="flex-1 flex flex-col items-center justify-start relative overflow-y-auto bg-[#F9FAFB] py-gutter pb-16 px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
           title="온보딩 체크리스트"
@@ -81,7 +81,7 @@ export default function MissionChecklist() {
         />
 
         {/* Checklist Card */}
-        <div className="w-full max-w-7xl mx-auto shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
+        <div className="w-full shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
           {/* Tabs */}
           <div className="flex border-b border-outline-variant">
             {TABS.map((tab) => {

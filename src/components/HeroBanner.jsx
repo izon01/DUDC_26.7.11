@@ -1,7 +1,7 @@
 export default function HeroBanner({ title, subtitle, imageSrc, imageAlt = "", className = "" }) {
   return (
     <section
-      className={`w-full max-w-7xl mx-auto shrink-0 bg-blue-50 border border-gray-200 rounded-2xl flex flex-col md:flex-row items-center justify-between px-8 py-10 gap-8 ${className}`}
+      className={`w-full max-w-container_max_width mx-auto shrink-0 bg-blue-50 border border-gray-200 rounded-2xl flex flex-col md:flex-row items-center justify-between px-8 py-10 gap-8 ${className}`}
     >
       <div className="text-center md:text-left">
         <h1 className="text-3xl md:text-4xl font-bold text-on-surface leading-tight">{title}</h1>
