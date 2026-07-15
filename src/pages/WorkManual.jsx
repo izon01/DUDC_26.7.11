@@ -35,12 +35,12 @@ function manualSearchText(manual) {
     .toLowerCase();
 }
 
-function BookPage({ page, searchTerm }) {
+function BookPage({ page, searchTerm, side }) {
   const hasContent = Boolean(page.heading?.trim() || stripHtml(page.html || "").trim());
   return (
     <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
       <div className="space-y-6">
-        <h2 className="text-center text-[24px] font-bold text-on-surface pb-6 border-b-2 border-primary/10">
+        <h2 className="text-center font-serif text-[27px] font-bold text-on-surface pb-6 border-b-2 border-primary/10 tracking-tight">
           {highlightText(page.heading || "제목 없음", searchTerm)}
         </h2>
         {hasContent ? (
@@ -52,8 +52,12 @@ function BookPage({ page, searchTerm }) {
           <p className="text-center text-body-lg text-outline">아직 작성된 내용이 없습니다.</p>
         )}
       </div>
-      <div className="absolute bottom-8 left-0 w-full text-center text-body-md text-outline">
-        — {page.pageNum} —
+      <div
+        className={`absolute bottom-6 text-[11px] font-light tracking-wide text-outline/60 ${
+          side === "left" ? "left-9" : "right-9"
+        }`}
+      >
+        {page.pageNum}
       </div>
     </div>
   );
@@ -62,7 +66,7 @@ function BookPage({ page, searchTerm }) {
 // In-place page editor — mirrors BookPage's size/padding/typography exactly
 // (same px-14/pt-6/pb-16 page box, same heading classes) so flipping between
 // read and edit mode never changes the book's apparent size or font ratio.
-function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChange, onHtmlChange, editorKey }) {
+function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChange, onHtmlChange, editorKey, side }) {
   return (
     <div className="w-full h-full min-h-full px-14 pt-6 pb-16 relative break-keep flex flex-col">
       <input
@@ -70,7 +74,7 @@ function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChang
         value={heading}
         onChange={(e) => onHeadingChange(e.target.value)}
         placeholder="제목을 입력하세요"
-        className="w-full text-center text-[24px] font-bold text-on-surface bg-transparent outline-none placeholder:text-outline/40 pb-6 mb-8 border-b-2 border-primary/10 focus:border-primary/40 transition-colors shrink-0"
+        className="w-full text-center font-serif text-[27px] font-bold text-on-surface bg-transparent outline-none placeholder:text-outline/40 pb-6 mb-8 border-b-2 border-primary/10 focus:border-primary/40 transition-colors shrink-0 tracking-tight"
       />
       <div className="flex-1 min-h-0">
         <div className="dudc-ckeditor dudc-ckeditor-lg h-full">
@@ -83,8 +87,12 @@ function BookPageEditor({ heading, html, pageNum, ckeditorConfig, onHeadingChang
           />
         </div>
       </div>
-      <div className="absolute bottom-8 left-0 w-full text-center text-body-md text-outline pointer-events-none">
-        — {pageNum} —
+      <div
+        className={`absolute bottom-6 text-[11px] font-light tracking-wide text-outline/60 pointer-events-none ${
+          side === "left" ? "left-9" : "right-9"
+        }`}
+      >
+        {pageNum}
       </div>
     </div>
   );
@@ -574,14 +582,17 @@ export default function WorkManual() {
                 </button>
 
                 <div className="relative max-w-[1400px] w-full h-full max-h-[820px]">
-                  <div className="absolute -left-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-l-lg shadow-sm z-0" />
-                  <div className="absolute -left-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-l-lg shadow-sm z-0" />
-                  <div className="absolute -right-2 top-2 bottom-2 w-4 bg-surface-container-highest rounded-r-lg shadow-sm z-0" />
-                  <div className="absolute -right-1 top-1 bottom-1 w-4 bg-surface-container-high rounded-r-lg shadow-sm z-0" />
+                  {/* Layered pages behind the cover for a thick, stacked-paper look */}
+                  <div className="absolute -left-3 -right-3 top-2 bottom-2 bg-gray-100 rounded-l-md rounded-r-xl shadow-sm z-0" />
+                  <div className="absolute -left-1.5 -right-1.5 top-1 bottom-1 bg-gray-100 rounded-l-md rounded-r-xl shadow-sm z-[1]" />
 
-                  <div className="relative z-10 shadow-2xl rounded-lg overflow-hidden flex bg-surface-container-lowest h-full">
-                    <div className="absolute left-1/2 top-0 bottom-0 w-8 -ml-4 bg-gradient-to-r from-black/5 via-black/10 to-black/5 z-20 pointer-events-none border-x border-outline-variant/10" />
-                    <div className="w-1/2 border-r border-outline-variant/20 relative overflow-y-auto custom-scrollbar">
+                  <div className="relative z-10 shadow-2xl rounded-l-md rounded-r-xl overflow-hidden flex bg-surface-container-lowest h-full">
+                    {/* Center spine shadow — pages curving softly into the binding */}
+                    <div className="absolute left-1/2 top-0 bottom-0 w-20 -ml-10 z-20 pointer-events-none flex">
+                      <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-black/[0.08]" />
+                      <div className="w-1/2 h-full bg-gradient-to-l from-transparent to-black/[0.08]" />
+                    </div>
+                    <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
                         <BookPageEditor
                           editorKey={`${selectedManualId}-${spreadIndex}-left-${editSessionKey}`}
@@ -591,9 +602,10 @@ export default function WorkManual() {
                           ckeditorConfig={ckeditorConfig}
                           onHeadingChange={(v) => updatePageField("left", "heading", v)}
                           onHtmlChange={(v) => updatePageField("left", "html", v)}
+                          side="left"
                         />
                       ) : (
-                        <BookPage page={currentSpread.left} searchTerm={searchTerm} />
+                        <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" />
                       )}
                     </div>
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
@@ -606,9 +618,10 @@ export default function WorkManual() {
                           ckeditorConfig={ckeditorConfig}
                           onHeadingChange={(v) => updatePageField("right", "heading", v)}
                           onHtmlChange={(v) => updatePageField("right", "html", v)}
+                          side="right"
                         />
                       ) : (
-                        <BookPage page={currentSpread.right} searchTerm={searchTerm} />
+                        <BookPage page={currentSpread.right} searchTerm={searchTerm} side="right" />
                       )}
                     </div>
                   </div>
