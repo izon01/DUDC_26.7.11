@@ -17,11 +17,11 @@ const CHECKLIST_PROGRESS = 65;
 
 export default function Home() {
   return (
-    <div className="h-screen w-full flex flex-col bg-background overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col bg-background">
       <Header />
 
-      <main className="flex-1 w-full flex flex-col items-center overflow-y-auto lg:overflow-hidden">
-        <div className="w-full max-w-container_max_width min-h-full lg:h-full flex flex-col gap-6 py-6 px-4 md:px-8 lg:px-16 box-border lg:overflow-hidden">
+      <main className="flex-1 w-full flex flex-col items-center">
+        <div className="w-full max-w-container_max_width flex flex-col gap-6 pt-6 pb-16 px-4 md:px-8 lg:px-16 box-border">
           {/* Hero Banner */}
           <HeroBanner
             title={
@@ -66,9 +66,9 @@ export default function Home() {
           </section>
 
           {/* Bottom Layout: Culture & Checklist */}
-          <section className="flex flex-col md:flex-row gap-6 grow lg:overflow-hidden pb-4 lg:min-h-0">
+          <section className="flex flex-col md:flex-row gap-6">
             {/* Culture Posts Card */}
-            <div className="w-full md:w-1/2 flex-1 lg:min-h-0 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6 lg:overflow-hidden">
+            <div className="w-full md:w-1/2 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6">
               <div className="flex justify-between items-center mb-4 border-b-2 border-outline-variant pb-4">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-tertiary">theater_comedy</span>
@@ -76,7 +76,7 @@ export default function Home() {
                 </div>
                 <span className="material-symbols-outlined text-on-surface-variant cursor-pointer">add</span>
               </div>
-              <div className="grow overflow-y-auto custom-scroll space-y-4 pr-2">
+              <div className="space-y-4">
                 {CULTURE_POSTS.map((post, idx) => (
                   <div key={post.title}>
                     {idx > 0 && <div className="border-t-2 border-outline-variant mb-4" />}
@@ -93,7 +93,7 @@ export default function Home() {
             </div>
 
             {/* Progress Checklist Card */}
-            <div className="w-full md:w-1/2 flex-1 lg:min-h-0 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6 lg:overflow-hidden">
+            <div className="w-full md:w-1/2 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">task_alt</span>

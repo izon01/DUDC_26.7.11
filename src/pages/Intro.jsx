@@ -30,10 +30,10 @@ const CORE_VALUES = [
 
 export default function Intro() {
   return (
-    <div className="h-screen w-full flex flex-col bg-background text-on-surface overflow-hidden">
+    <div className="min-h-screen w-full flex flex-col bg-background text-on-surface">
       <Header />
 
-      <main className="flex-1 overflow-y-auto">
+      <main className="flex-1">
         <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-8 pb-16">
           {/* Hero Banner */}
           <HeroBanner

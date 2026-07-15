@@ -67,10 +67,10 @@ export default function MissionChecklist() {
   }
 
   return (
-    <div className="h-screen w-full flex flex-col bg-background text-on-surface overflow-hidden font-body-md">
+    <div className="min-h-screen w-full flex flex-col bg-background text-on-surface font-body-md">
       <Header />
 
-      <main className="flex-1 flex flex-col items-center justify-start relative overflow-y-auto bg-[#F9FAFB] py-gutter pb-16 px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
+      <main className="flex-1 flex flex-col items-center justify-start relative bg-[#F9FAFB] py-gutter pb-16 px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
           title="온보딩 체크리스트"
