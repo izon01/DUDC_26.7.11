@@ -2,6 +2,7 @@ import { useCallback, useEffect, useMemo, useRef, useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
+import HeroBanner from "../components/HeroBanner";
 import Toast from "../components/Toast";
 import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
@@ -48,6 +49,13 @@ const BOOK_SHADOW =
   "shadow-[0_10px_15px_-8px_rgba(0,0,0,0.35),inset_10px_0_15px_-8px_rgba(0,0,0,0.35),inset_-4px_0_8px_-2px_rgba(255,255,255,0.5)]";
 const BOOK_SHADOW_HOVER =
   "hover:shadow-[0_25px_25px_-10px_rgba(0,0,0,0.25),inset_10px_0_15px_-8px_rgba(0,0,0,0.35),inset_-4px_0_8px_-2px_rgba(255,255,255,0.5)]";
+
+// Fine repeating-diagonal-line overlay, blended with mix-blend-overlay, so the
+// cover reads as textured cloth/paper instead of a flat CSS gradient.
+const BOOK_TEXTURE_STYLE = {
+  backgroundImage:
+    "repeating-linear-gradient(115deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 4px)",
+};
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -149,37 +157,74 @@ function BookPageEditor({
 // front-end entry point — selecting a part just reveals the existing
 // sidebar + book viewer below; it doesn't filter which manuals load.
 function Bookshelf({ onSelect }) {
+  const [shelfSearchTerm, setShelfSearchTerm] = useState("");
+  const query = shelfSearchTerm.trim().toLowerCase();
+
   return (
     <div className="flex-1 overflow-y-auto bg-background">
-      <div className="max-w-container_max_width mx-auto px-6 md:px-10 py-10 md:py-16">
-        <div className="mb-12 text-center">
-          <h1 className="font-serif text-[32px] font-bold text-on-surface mb-2">업무 첫걸음 서재</h1>
-          <p className="text-on-surface-variant text-body-md">필요한 파트를 선택해서 매뉴얼을 펼쳐보세요.</p>
+      <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-6">
+        {/* Champion Hero Banner — same component/regs as every other page */}
+        <HeroBanner
+          title="업무 첫걸음 서재"
+          subtitle="필요한 파트를 선택해서 매뉴얼을 펼쳐보세요."
+          imageSrc="/img2.png"
+          imageAlt="업무 첫걸음 서재"
+        />
+
+        {/* Search bar */}
+        <div className="w-full max-w-xl mx-auto mt-8 mb-12">
+          <div className="relative">
+            <input
+              type="text"
+              value={shelfSearchTerm}
+              onChange={(e) => setShelfSearchTerm(e.target.value)}
+              placeholder="매뉴얼 내용 검색..."
+              className="w-full pl-5 pr-12 py-3 rounded-full border border-outline-variant bg-white focus:border-primary focus:ring-0 text-body-md transition-all shadow-sm"
+            />
+            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
+              search
+            </span>
+          </div>
         </div>
 
         {/* Books resting on the shelf */}
         <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14">
-          {BOOKSHELF_PARTS.map((part) => (
-            <button
-              key={part.id}
-              type="button"
-              onClick={() => onSelect(part.id)}
-              className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER}`}
-            >
-              <div className="relative h-full flex flex-col items-center justify-between p-5 md:p-6 text-center">
-                <span className="font-serif text-white text-xl md:text-2xl font-bold leading-snug mt-4 md:mt-6">
-                  {part.title}
-                </span>
-                <span className="text-white/80 text-[11px] md:text-[12px] leading-relaxed mb-4 md:mb-6">
+          {BOOKSHELF_PARTS.map((part) => {
+            const isMatch =
+              !query || part.title.toLowerCase().includes(query) || part.subtitle.toLowerCase().includes(query);
+            return (
+              <button
+                key={part.id}
+                type="button"
+                onClick={() => onSelect(part.id)}
+                className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md border-r-[3px] border-b-[3px] border-gray-100 overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER} ${isMatch ? "opacity-100" : "opacity-30"}`}
+              >
+                {/* Paper-grain texture */}
+                <div
+                  className="absolute inset-0 opacity-[0.18] mix-blend-overlay pointer-events-none"
+                  style={BOOK_TEXTURE_STYLE}
+                />
+
+                {/* Series-unifying obi band, with the title sitting on it */}
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 py-3.5 px-4 bg-white/15 border-y border-white/25">
+                  <span className="block font-serif text-white text-lg md:text-xl font-bold text-center leading-snug">
+                    {part.title}
+                  </span>
+                </div>
+
+                <span className="absolute bottom-5 md:bottom-6 inset-x-4 text-white/80 text-[11px] md:text-[12px] leading-relaxed text-center">
                   {part.subtitle}
                 </span>
-              </div>
-            </button>
-          ))}
+              </button>
+            );
+          })}
         </div>
 
-        {/* Shelf board */}
-        <div className="w-full h-4 bg-white rounded-sm shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]" />
+        {/* Shelf board — top face + shaded front face read as real depth */}
+        <div className="w-full">
+          <div className="h-1.5 bg-white rounded-t-sm border-b border-gray-200/80" />
+          <div className="h-3 bg-gray-50 rounded-b-sm shadow-[0_10px_15px_-3px_rgba(0,0,0,0.15)]" />
+        </div>
       </div>
     </div>
   );
