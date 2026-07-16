@@ -95,37 +95,23 @@ export default function LandingPage() {
             {MASCOTS.map((mascot) => (
               <div
                 key={mascot.nameKo}
-                className="w-[200px] bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-6"
+                className="w-[248px] bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-5"
               >
                 <img src={mascot.image} alt={mascot.nameKo} className="w-28 h-28 object-contain mb-4" />
                 <p className="font-bold text-on-surface text-[20px]">{mascot.nameKo}</p>
                 <p className="text-outline text-[12px] mb-4">{mascot.nameEn}</p>
                 <div className="w-full space-y-2">
-                  {mascot.details.map((detail) => {
-                    const isMbti = detail.label === "MBTI";
-                    const spaceIdx = isMbti ? detail.value.indexOf(" ") : -1;
-                    const mbtiCode = isMbti ? detail.value.slice(0, spaceIdx) : "";
-                    const mbtiDesc = isMbti ? detail.value.slice(spaceIdx + 1) : "";
-                    return (
-                      <div
-                        key={detail.label}
-                        className="flex items-start justify-start gap-2 border-b border-outline-variant/10 pb-2 text-[12px]"
-                      >
-                        <span className="text-primary text-[9px] shrink-0 mt-[3px]">▶</span>
-                        <span className="text-outline shrink-0 w-14">{detail.label}</span>
-                        {isMbti ? (
-                          <span className="text-on-surface font-medium flex-1 flex flex-col text-right">
-                            <span>{mbtiCode}</span>
-                            <span className="break-keep">{mbtiDesc}</span>
-                          </span>
-                        ) : (
-                          <span className="text-on-surface font-medium text-left break-keep flex-1">
-                            {detail.value}
-                          </span>
-                        )}
-                      </div>
-                    );
-                  })}
+                  {mascot.details.map((detail) => (
+                    <div
+                      key={detail.label}
+                      className="flex flex-row items-center gap-3 border-b border-outline-variant/10 pb-2 text-[12px]"
+                    >
+                      <span className="text-outline shrink-0 w-12">{detail.label}</span>
+                      <span className="text-on-surface font-medium whitespace-nowrap text-[12px]">
+                        {detail.value}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               </div>
             ))}
