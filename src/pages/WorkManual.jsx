@@ -16,28 +16,38 @@ const BOOKSHELF_PARTS = [
   {
     id: "mindset",
     title: "마음가짐",
-    subtitle: "신입사원이 가져야 할 기본 마인드셋, 공사의 미션·비전",
+    subtitle: "신입사원이 가져야 할 기본 마인드셋, 공사의 미션·비전 등",
     gradient: "from-blue-500 to-indigo-600",
   },
   {
     id: "organization",
-    title: "조직·직무",
-    subtitle: "부서별 업무 안내, 성과관리, 승진, 교육훈련",
+    title: "조직·직무 이해",
+    subtitle: "회사 업무 안내, 성과관리, 승진, 교육 등",
     gradient: "from-sky-400 to-cyan-600",
   },
   {
     id: "compensation",
     title: "경제적 보상",
-    subtitle: "보수, 수당, 여비, 선택형복지제도",
+    subtitle: "보수, 수당, 여비, 복지제도",
     gradient: "from-amber-300 to-orange-400",
   },
   {
-    id: "culture",
-    title: "DUDC 문화",
-    subtitle: "휴가·복무제도, 업무 체크리스트, 선배들의 노하우 등",
+    id: "leave",
+    title: "휴가·복무제도",
+    subtitle: "연차, 휴직, 유연근무, 징계 등",
     gradient: "from-violet-400 to-purple-600",
   },
 ];
+
+// Compound shadows for the hardcover book effect: an outer "resting on the
+// shelf" drop shadow, an inset shadow hugging the left edge to read as the
+// spine hinge crease, and a thin inset highlight near the right edge to read
+// as a paper-stack edge. Hover widens/lightens only the outer shadow so the
+// book looks like it's lifting off the shelf rather than glowing uniformly.
+const BOOK_SHADOW =
+  "shadow-[0_10px_15px_-8px_rgba(0,0,0,0.35),inset_10px_0_15px_-8px_rgba(0,0,0,0.35),inset_-4px_0_8px_-2px_rgba(255,255,255,0.5)]";
+const BOOK_SHADOW_HOVER =
+  "hover:shadow-[0_25px_25px_-10px_rgba(0,0,0,0.25),inset_10px_0_15px_-8px_rgba(0,0,0,0.35),inset_-4px_0_8px_-2px_rgba(255,255,255,0.5)]";
 
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
@@ -141,31 +151,35 @@ function BookPageEditor({
 function Bookshelf({ onSelect }) {
   return (
     <div className="flex-1 overflow-y-auto bg-background">
-      <div className="max-w-5xl mx-auto px-6 md:px-10 py-10 md:py-16">
-        <div className="mb-8 text-center">
+      <div className="max-w-container_max_width mx-auto px-6 md:px-10 py-10 md:py-16">
+        <div className="mb-12 text-center">
           <h1 className="font-serif text-[32px] font-bold text-on-surface mb-2">업무 첫걸음 서재</h1>
           <p className="text-on-surface-variant text-body-md">필요한 파트를 선택해서 매뉴얼을 펼쳐보세요.</p>
         </div>
 
-        <div className="bg-white rounded-2xl shadow-md p-6 md:p-12">
-          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
-            {BOOKSHELF_PARTS.map((part) => (
-              <button
-                key={part.id}
-                type="button"
-                onClick={() => onSelect(part.id)}
-                className={`group relative aspect-[3/4] rounded-xl shadow-lg overflow-hidden bg-gradient-to-br ${part.gradient} flex flex-col items-center justify-center p-5 text-center transition-transform duration-300 hover:-translate-y-4 hover:shadow-2xl`}
-              >
-                <span className="font-serif text-white text-xl md:text-2xl font-bold leading-snug mb-3 tracking-tight">
+        {/* Books resting on the shelf */}
+        <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14">
+          {BOOKSHELF_PARTS.map((part) => (
+            <button
+              key={part.id}
+              type="button"
+              onClick={() => onSelect(part.id)}
+              className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER}`}
+            >
+              <div className="relative h-full flex flex-col items-center justify-between p-5 md:p-6 text-center">
+                <span className="font-serif text-white text-xl md:text-2xl font-bold leading-snug mt-4 md:mt-6">
                   {part.title}
                 </span>
-                <span className="text-white/80 text-[11px] md:text-[12px] leading-relaxed px-2">
+                <span className="text-white/80 text-[11px] md:text-[12px] leading-relaxed mb-4 md:mb-6">
                   {part.subtitle}
                 </span>
-              </button>
-            ))}
-          </div>
+              </div>
+            </button>
+          ))}
         </div>
+
+        {/* Shelf board */}
+        <div className="w-full h-4 bg-white rounded-sm shadow-[0_10px_15px_-3px_rgba(0,0,0,0.1)]" />
       </div>
     </div>
   );
