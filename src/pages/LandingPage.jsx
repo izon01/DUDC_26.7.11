@@ -22,7 +22,7 @@ const MASCOTS = [
       { label: "동물", value: "두더지" },
       { label: "직업", value: "개발담당" },
       { label: "상징", value: "측량 / 설계 / 공사" },
-      { label: "성격", value: "뚝딱뚝딱 만드는 것을 좋아함" },
+      { label: "성격", value: "만드는 것을 좋아함" },
       { label: "MBTI", value: "ISTJ (청렴결백 논리주의자)" },
     ],
   },
@@ -34,7 +34,7 @@ const MASCOTS = [
       { label: "동물", value: "오리" },
       { label: "직업", value: "홍보담당" },
       { label: "상징", value: "소통 / 홍보" },
-      { label: "성격", value: "호기심이 많고 책임감이 강함" },
+      { label: "성격", value: "책임감이 강함" },
       { label: "MBTI", value: "ESFJ (사교적인 외교관)" },
     ],
   },
@@ -101,27 +101,37 @@ export default function LandingPage() {
                 <p className="font-bold text-on-surface text-[20px]">{mascot.nameKo}</p>
                 <p className="text-outline text-[12px] mb-4">{mascot.nameEn}</p>
                 <div className="w-full space-y-2">
-                  {mascot.details.map((detail) => (
-                    <div
-                      key={detail.label}
-                      className="flex items-start justify-between gap-2 border-b border-outline-variant/10 pb-2 text-[12px]"
-                    >
-                      <span className="text-outline shrink-0">{detail.label}</span>
-                      <span className="text-on-surface font-medium text-right">{detail.value}</span>
-                    </div>
-                  ))}
+                  {mascot.details.map((detail) => {
+                    const isMbti = detail.label === "MBTI";
+                    const spaceIdx = isMbti ? detail.value.indexOf(" ") : -1;
+                    const mbtiCode = isMbti ? detail.value.slice(0, spaceIdx) : "";
+                    const mbtiDesc = isMbti ? detail.value.slice(spaceIdx + 1) : "";
+                    return (
+                      <div
+                        key={detail.label}
+                        className="flex items-start justify-start gap-2 border-b border-outline-variant/10 pb-2 text-[12px]"
+                      >
+                        <span className="text-primary text-[9px] shrink-0 mt-[3px]">▶</span>
+                        <span className="text-outline shrink-0 w-14">{detail.label}</span>
+                        {isMbti ? (
+                          <span className="text-on-surface font-medium flex-1 flex flex-col text-right">
+                            <span>{mbtiCode}</span>
+                            <span className="break-keep">{mbtiDesc}</span>
+                          </span>
+                        ) : (
+                          <span className="text-on-surface font-medium text-left break-keep flex-1">
+                            {detail.value}
+                          </span>
+                        )}
+                      </div>
+                    );
+                  })}
                 </div>
               </div>
             ))}
           </div>
         </div>
       </main>
-
-      {/* Footer */}
-      <footer className="shrink-0 w-full flex items-center justify-between px-4 md:px-8 lg:px-16 py-6 max-w-[1280px] mx-auto text-[12px] text-outline">
-        <span>© Daegu Urban Development Corporation</span>
-        <span>Onboard Hub · Mockup Preview</span>
-      </footer>
 
       {authMode && <AuthModal initialMode={authMode} onClose={() => setAuthMode(null)} />}
     </div>
