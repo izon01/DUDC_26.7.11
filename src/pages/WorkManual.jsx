@@ -12,6 +12,33 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const CACHE_KEY = "work-manuals";
 
+const BOOKSHELF_PARTS = [
+  {
+    id: "mindset",
+    title: "마음가짐",
+    subtitle: "신입사원이 가져야 할 기본 마인드셋, 공사의 미션·비전",
+    gradient: "from-blue-500 to-indigo-600",
+  },
+  {
+    id: "organization",
+    title: "조직·직무",
+    subtitle: "부서별 업무 안내, 성과관리, 승진, 교육훈련",
+    gradient: "from-sky-400 to-cyan-600",
+  },
+  {
+    id: "compensation",
+    title: "경제적 보상",
+    subtitle: "보수, 수당, 여비, 선택형복지제도",
+    gradient: "from-amber-300 to-orange-400",
+  },
+  {
+    id: "culture",
+    title: "DUDC 문화",
+    subtitle: "휴가·복무제도, 업무 체크리스트, 선배들의 노하우 등",
+    gradient: "from-violet-400 to-purple-600",
+  },
+];
+
 function stripHtml(html) {
   return html.replace(/<[^>]*>/g, " ");
 }
@@ -108,9 +135,47 @@ function BookPageEditor({
   );
 }
 
+// Apple Books-style landing shelf shown before a book is opened. Purely a
+// front-end entry point — selecting a part just reveals the existing
+// sidebar + book viewer below; it doesn't filter which manuals load.
+function Bookshelf({ onSelect }) {
+  return (
+    <div className="flex-1 overflow-y-auto bg-background">
+      <div className="max-w-5xl mx-auto px-6 md:px-10 py-10 md:py-16">
+        <div className="mb-8 text-center">
+          <h1 className="font-serif text-[32px] font-bold text-on-surface mb-2">업무 첫걸음 서재</h1>
+          <p className="text-on-surface-variant text-body-md">필요한 파트를 선택해서 매뉴얼을 펼쳐보세요.</p>
+        </div>
+
+        <div className="bg-white rounded-2xl shadow-md p-6 md:p-12">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 lg:gap-10">
+            {BOOKSHELF_PARTS.map((part) => (
+              <button
+                key={part.id}
+                type="button"
+                onClick={() => onSelect(part.id)}
+                className={`group relative aspect-[3/4] rounded-xl shadow-lg overflow-hidden bg-gradient-to-br ${part.gradient} flex flex-col items-center justify-center p-5 text-center transition-transform duration-300 hover:-translate-y-4 hover:shadow-2xl`}
+              >
+                <span className="font-serif text-white text-xl md:text-2xl font-bold leading-snug mb-3 tracking-tight">
+                  {part.title}
+                </span>
+                <span className="text-white/80 text-[11px] md:text-[12px] leading-relaxed px-2">
+                  {part.subtitle}
+                </span>
+              </button>
+            ))}
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function WorkManual() {
   const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
+
+  const [selectedPartId, setSelectedPartId] = useState(null);
 
   const [manuals, setManualsState] = useState(() => getCache(CACHE_KEY) ?? []);
   const [isLoading, setIsLoading] = useState(() => !getCache(CACHE_KEY));
@@ -388,9 +453,29 @@ export default function WorkManual() {
     );
   }
 
+  if (selectedPartId === null) {
+    return (
+      <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
+        <Header />
+        <Bookshelf onSelect={setSelectedPartId} />
+      </div>
+    );
+  }
+
   return (
     <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
       <Header />
+
+      {/* Top bar: return to the bookshelf */}
+      <div className="shrink-0 px-6 py-3 border-b border-outline-variant bg-surface-container-low">
+        <button
+          onClick={() => setSelectedPartId(null)}
+          className="flex items-center gap-1.5 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors"
+        >
+          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+          서재로 돌아가기
+        </button>
+      </div>
 
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar */}
