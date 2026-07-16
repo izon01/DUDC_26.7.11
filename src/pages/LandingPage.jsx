@@ -68,7 +68,7 @@ export default function LandingPage() {
       <main className="flex-1 flex items-start lg:items-center overflow-y-auto lg:overflow-hidden py-8 lg:py-0 px-4 md:px-8 lg:px-16 max-w-[1280px] mx-auto w-full">
         <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
           {/* Left: Hero copy */}
-          <div>
+          <div className="w-full lg:w-[400px] shrink-0">
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-fixed text-primary text-[13px] font-bold mb-6">
               DUDC Onboard Hub
             </span>
@@ -95,7 +95,7 @@ export default function LandingPage() {
             {MASCOTS.map((mascot) => (
               <div
                 key={mascot.nameKo}
-                className="w-[248px] bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-5"
+                className="w-64 shrink-0 bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-5"
               >
                 <img src={mascot.image} alt={mascot.nameKo} className="w-28 h-28 object-contain mb-4" />
                 <p className="font-bold text-on-surface text-[20px]">{mascot.nameKo}</p>
@@ -104,10 +104,10 @@ export default function LandingPage() {
                   {mascot.details.map((detail) => (
                     <div
                       key={detail.label}
-                      className="flex flex-row items-center gap-3 border-b border-outline-variant/10 pb-2 text-[12px]"
+                      className="flex flex-row items-center gap-2 border-b border-outline-variant/10 pb-2 text-[13px]"
                     >
                       <span className="text-outline shrink-0 w-12">{detail.label}</span>
-                      <span className="text-on-surface font-medium whitespace-nowrap text-[12px]">
+                      <span className="text-on-surface font-medium whitespace-nowrap text-[13px]">
                         {detail.value}
                       </span>
                     </div>
