@@ -46,7 +46,7 @@ export default function LandingPage() {
   return (
     <div className="h-screen w-full flex flex-col bg-[#fafbfc] overflow-hidden">
       {/* Header */}
-      <header className="shrink-0 w-full flex items-center justify-between px-4 md:px-8 lg:px-16 py-6 max-w-[1280px] mx-auto">
+      <header className="shrink-0 w-full flex items-center justify-between px-4 md:px-8 lg:px-16 py-6 max-w-[1440px] mx-auto">
         <img src="/img1.png" alt="DUDC" className="h-10 w-auto object-contain" />
         <div className="flex items-center gap-6">
           <button
@@ -65,8 +65,8 @@ export default function LandingPage() {
       </header>
 
       {/* Main */}
-      <main className="flex-1 flex items-start lg:items-center overflow-y-auto lg:overflow-hidden py-8 lg:py-0 px-4 md:px-8 lg:px-16 max-w-[1280px] mx-auto w-full">
-        <div className="w-full grid grid-cols-1 lg:grid-cols-[1fr_auto] gap-10 lg:gap-16 items-center">
+      <main className="flex-1 flex items-start lg:items-center overflow-y-auto lg:overflow-hidden py-8 lg:py-0 px-4 md:px-8 lg:px-16 max-w-[1440px] mx-auto w-full">
+        <div className="w-full grid grid-cols-1 lg:grid-cols-[400px_1fr] gap-10 lg:gap-16 items-center">
           {/* Left: Hero copy */}
           <div className="w-full lg:w-[400px] shrink-0">
             <span className="inline-block px-4 py-1.5 rounded-full bg-primary-fixed text-primary text-[13px] font-bold mb-6">
@@ -91,11 +91,11 @@ export default function LandingPage() {
           </div>
 
           {/* Right: Mascot cards */}
-          <div className="flex flex-wrap justify-center lg:justify-start gap-5">
+          <div className="grid grid-cols-3 gap-6">
             {MASCOTS.map((mascot) => (
               <div
                 key={mascot.nameKo}
-                className="w-64 shrink-0 bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-5"
+                className="w-full min-w-0 bg-white rounded-2xl shadow-md border border-outline-variant/20 flex flex-col items-center p-5"
               >
                 <img src={mascot.image} alt={mascot.nameKo} className="w-28 h-28 object-contain mb-4" />
                 <p className="font-bold text-on-surface text-[20px]">{mascot.nameKo}</p>
