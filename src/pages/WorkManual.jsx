@@ -23,7 +23,7 @@ const BOOKSHELF_PARTS = [
   {
     id: "organization",
     title: "조직·직무 이해",
-    subtitle: "회사 업무 안내, 성과관리, 승진, 교육 등",
+    subtitle: "회사 업무 안내, 성과관리, 승진, 교육",
     gradient: "from-sky-400 to-cyan-600",
   },
   {
@@ -206,13 +206,13 @@ function Bookshelf({ onSelect }) {
                 />
 
                 {/* Series-unifying obi band, with the title sitting on it */}
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 py-3.5 px-4 bg-white/15 border-y border-white/25">
-                  <span className="block font-serif text-white text-lg md:text-xl font-bold text-center leading-snug">
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 min-h-[3.25rem] py-3 px-4 bg-white/15 border-y border-white/25 flex flex-col items-center justify-center">
+                  <span className="font-serif text-white text-lg md:text-xl font-bold text-center leading-snug">
                     {part.title}
                   </span>
                 </div>
 
-                <span className="absolute bottom-5 md:bottom-6 inset-x-4 text-white/80 text-[11px] md:text-[12px] leading-relaxed text-center">
+                <span className="absolute bottom-5 md:bottom-6 inset-x-4 text-white/80 text-[11px] md:text-[12px] leading-relaxed text-center break-keep">
                   {part.subtitle}
                 </span>
               </button>
