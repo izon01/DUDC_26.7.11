@@ -115,7 +115,7 @@ export default function MissionChecklist() {
           </div>
 
           {/* List Content */}
-          <div className="flex-1 min-h-[520px] p-8 relative">
+          <div className="flex-1 min-h-[340px] px-8 py-6 relative">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 relative z-10">
               {activeTab.items.map((item, idx) => {
                 const isChecked = activeChecked[idx];
