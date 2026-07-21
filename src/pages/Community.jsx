@@ -471,7 +471,7 @@ export default function Community() {
           }
           imageSrc="/img5.png"
           imageAlt="커뮤니티"
-          className="mt-4 border border-blue-100/50 shadow-sm"
+          className="mt-4"
         />
 
         {/* Stats Banner */}
