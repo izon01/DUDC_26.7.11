@@ -79,17 +79,17 @@ export default function Intro() {
             /* 미션 및 비전: 전체 너비 */
             <section className="mt-12 max-w-5xl mx-auto">
               {/* Mission & Vision text boxes */}
-              <div className="flex flex-col md:flex-row gap-6 mb-14">
-                <div className="flex-1 border-l-4 border-r-4 border-gray-100 px-8 py-6 text-center">
-                  <p className="text-base font-bold text-primary mb-3">• 미션 •</p>
-                  <p className="text-gray-700 text-base break-keep leading-relaxed">
+              <div className="flex flex-col gap-12 mb-14">
+                <div className="border-l-[6px] border-r-[6px] border-gray-100 px-12 py-8 text-center">
+                  <p className="text-base font-bold text-blue-800 mb-3">• 미션 •</p>
+                  <p className="text-gray-700 text-xl font-bold break-keep leading-relaxed">
                     산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
                     이바지한다.
                   </p>
                 </div>
-                <div className="flex-1 border-l-4 border-r-4 border-gray-100 px-8 py-6 text-center">
-                  <p className="text-base font-bold text-teal-700 mb-3">• 비전 •</p>
-                  <p className="font-bold text-gray-900 text-lg mb-3 break-keep">
+                <div className="border-l-[6px] border-r-[6px] border-gray-100 px-12 py-8 text-center">
+                  <p className="text-base font-bold text-teal-600 mb-3">• 비전 •</p>
+                  <p className="text-gray-900 text-2xl font-extrabold mb-3 break-keep">
                     시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
                   </p>
                   <p className="text-gray-600 text-sm break-keep leading-relaxed">
@@ -101,6 +101,10 @@ export default function Intro() {
 
               {/* 핵심가치 pills: 1x4, 넉넉한 크기 */}
               <div className="mb-14">
+                <div
+                  className="w-[400px] max-w-full h-16 bg-gradient-to-t from-gray-100/80 to-transparent mx-auto mb-2"
+                  style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
+                />
                 <h3 className="text-center font-bold text-xl text-gray-900 mb-6">핵심가치</h3>
                 <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
                   {CORE_VALUE_PILLS.map((value) => (
