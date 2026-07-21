@@ -16,16 +16,16 @@ const STRATEGIC_DIRECTIONS = [
 ];
 
 const BUSINESS_UNITS = [
-  { title: "택지개발사업", desc: "쾌적하고 안정적인 대규모 주택 건설 용지 조성" },
-  { title: "산업단지사업", desc: "기업 유치 및 지역 경제 활성화를 위한 맞춤형 산단 개발" },
-  { title: "도시개발사업", desc: "주거·상업·문화가 융합된 자족형 미래 신도시 조성" },
-  { title: "스마트도시사업", desc: "첨단 ICT 기술을 접목한 편리하고 안전한 스마트시티 구축" },
-  { title: "공원조성사업", desc: "시민의 삶의 질을 높이는 친환경 휴식 공간 조성" },
-  { title: "보상사업", desc: "공익사업 추진을 위한 투명하고 신속한 손실 보상 업무" },
-  { title: "공영주택건설", desc: "무주택 서민의 주거 안정을 위한 고품질 공공주택 건설" },
-  { title: "주거환경개선", desc: "노후 주거 지역을 정비하여 안전한 정주 여건 조성" },
-  { title: "주거복지", desc: "청년 및 취약계층을 위한 맞춤형 임대주택 제공" },
-  { title: "유니버시아드레포츠센터", desc: "대구 시민 건강 증진을 위한 종합 체육 시설 운영" },
+  { title: "🚜 택지개발사업", desc: "쾌적하고 안정적인 대규모 주택 건설 용지 조성" },
+  { title: "🏭 산업단지사업", desc: "기업 유치 및 지역 경제 활성화를 위한 맞춤형 산단 개발" },
+  { title: "🏙️ 도시개발사업", desc: "주거·상업·문화가 융합된 자족형 미래 신도시 조성" },
+  { title: "🌐 스마트도시사업", desc: "첨단 ICT 기술을 접목한 편리하고 안전한 스마트시티 구축" },
+  { title: "🌳 공원조성사업", desc: "시민의 삶의 질을 높이는 친환경 휴식 공간 조성" },
+  { title: "⚖️ 보상사업", desc: "공익사업 추진을 위한 투명하고 신속한 손실 보상 업무" },
+  { title: "🏢 공영주택건설", desc: "무주택 서민의 주거 안정을 위한 고품질 공공주택 건설" },
+  { title: "✨ 주거환경개선", desc: "노후 주거 지역을 정비하여 안전한 정주 여건 조성" },
+  { title: "💖 주거복지", desc: "청년 및 취약계층을 위한 맞춤형 임대주택 제공" },
+  { title: "🏊‍♂️ 유니버시아드레포츠센터", desc: "대구 시민 건강 증진을 위한 종합 체육 시설 운영" },
 ];
 
 export default function Intro() {
@@ -51,7 +51,7 @@ export default function Intro() {
           {/* 좌: 미션/비전 다이어그램, 우: 사업부 안내 */}
           <div className="mt-16 md:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
             {/* 왼쪽 단: 미션 및 비전 */}
-            <section>
+            <section className="lg:border-r lg:border-gray-200 lg:pr-10">
               <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-8">
                 미션 및 비전
               </h2>
@@ -90,15 +90,15 @@ export default function Intro() {
                 ))}
               </div>
 
-              {/* 전략방향 circles: 2x2 */}
-              <div className="bg-gray-50 rounded-[2rem] p-6 grid grid-cols-2 gap-4 justify-items-center">
+              {/* 전략방향 circles: 1x4 */}
+              <div className="bg-gray-50 rounded-full p-5 grid grid-cols-4 gap-2 justify-items-center">
                 {STRATEGIC_DIRECTIONS.map((strategy) => (
                   <div
                     key={strategy.no}
-                    className="aspect-square w-28 md:w-32 rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-3 gap-1"
+                    className="aspect-square w-24 h-24 rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-2 gap-0.5"
                   >
-                    <span className="text-primary font-bold text-xs">전략방향 {strategy.no}</span>
-                    <span className="text-gray-700 text-xs font-semibold break-keep leading-snug">
+                    <span className="text-primary font-bold text-[10px]">전략방향 {strategy.no}</span>
+                    <span className="text-gray-700 text-[10px] font-semibold break-keep leading-snug">
                       {strategy.title}
                     </span>
                   </div>
@@ -107,7 +107,7 @@ export default function Intro() {
             </section>
 
             {/* 오른쪽 단: 사업부 안내 */}
-            <section>
+            <section className="lg:pl-10">
               <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-8">
                 사업부 안내
               </h2>
