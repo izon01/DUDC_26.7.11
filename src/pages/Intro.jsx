@@ -85,14 +85,14 @@ export default function Intro() {
               <div className="flex flex-col gap-12 mb-14">
                 <div className="border-l-[6px] border-r-[6px] border-gray-100 px-12 py-8 text-center">
                   <p className="text-base font-bold text-blue-800 mb-3">• 미션 •</p>
-                  <p className="text-gray-700 text-2xl font-extrabold break-keep leading-relaxed">
+                  <p className="text-gray-700 text-xl font-bold break-keep leading-relaxed">
                     산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
                     이바지한다.
                   </p>
                 </div>
                 <div className="border-l-[6px] border-r-[6px] border-gray-100 px-12 py-8 text-center">
                   <p className="text-base font-bold text-teal-600 mb-3">• 비전 •</p>
-                  <p className="text-gray-900 text-2xl font-extrabold mb-3 break-keep leading-relaxed">
+                  <p className="text-gray-900 text-xl font-bold mb-3 break-keep leading-relaxed">
                     시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
                   </p>
                   <p className="text-gray-600 text-sm break-keep leading-relaxed">
@@ -105,7 +105,7 @@ export default function Intro() {
               {/* 핵심가치 pills: 1x4, 넉넉한 크기 */}
               <div className="mb-14">
                 <div
-                  className="w-[400px] max-w-full h-16 bg-gradient-to-t from-gray-100/80 to-transparent mx-auto mb-2"
+                  className="w-[400px] max-w-full h-16 bg-gradient-to-t from-gray-300 to-transparent drop-shadow-md mx-auto mb-2"
                   style={{ clipPath: "polygon(50% 0%, 0% 100%, 100% 100%)" }}
                 />
                 <h3 className="text-center font-bold text-xl text-gray-900 mb-6">핵심가치</h3>
@@ -113,7 +113,7 @@ export default function Intro() {
                   {CORE_VALUE_PILLS.map((value) => (
                     <div
                       key={value.label}
-                      className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-6 py-8`}
+                      className={`${value.color} rounded-full text-white shadow-md flex flex-col items-center justify-center text-center px-6 py-8`}
                     >
                       <span className="text-sm opacity-90 break-keep mb-1">{value.desc}</span>
                       <span className="font-bold text-xl">{value.label}</span>
@@ -127,7 +127,7 @@ export default function Intro() {
                 {STRATEGIC_DIRECTIONS.map((strategy) => (
                   <div
                     key={strategy.no}
-                    className="aspect-square w-40 rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-4 gap-1"
+                    className="aspect-square w-40 rounded-full bg-white border-2 border-blue-500 shadow-md flex flex-col items-center justify-center text-center p-4 gap-1"
                   >
                     <span className="text-primary font-bold text-sm">전략방향 {strategy.no}</span>
                     <span className="text-gray-700 text-sm font-semibold break-keep leading-snug">
