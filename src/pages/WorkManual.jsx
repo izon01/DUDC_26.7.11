@@ -1,15 +1,17 @@
-import { useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { CKEditor } from "@ckeditor/ckeditor5-react";
+import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import Toast from "../components/Toast";
 import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
-import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
+
+// CKEditor (~1MB) only loads once an admin actually enters edit mode, not for
+// every visitor reading a manual.
+const BookPageEditor = lazy(() => import("../components/BookPageEditor"));
 
 const CACHE_KEY = "work-manuals";
 
@@ -80,6 +82,14 @@ function manualSearchText(manual) {
     .toLowerCase();
 }
 
+function PageEditorLoading() {
+  return (
+    <div className="w-full h-full min-h-full flex items-center justify-center">
+      <span className="material-symbols-outlined animate-spin text-primary text-[28px]">progress_activity</span>
+    </div>
+  );
+}
+
 function BookPage({ page, searchTerm, side, totalPages }) {
   const hasContent = Boolean(stripHtml(page.html || "").trim());
   return (
@@ -100,34 +110,6 @@ function BookPage({ page, searchTerm, side, totalPages }) {
         }`}
       >
         {page.pageNum} / {totalPages}
-      </div>
-    </div>
-  );
-}
-
-// In-place page editor — mirrors BookPage's size/padding/typography exactly
-// (same px-14/pt-10/pb-16 page box) so flipping between read and edit mode
-// never changes the book's apparent size or font ratio.
-function BookPageEditor({ html, pageNum, ckeditorConfig, onHtmlChange, editorKey, side, totalPages }) {
-  return (
-    <div className="w-full h-full min-h-full px-14 pt-10 pb-16 relative break-keep flex flex-col">
-      <div className="flex-1 min-h-0">
-        <div className="dudc-ckeditor dudc-ckeditor-lg h-full">
-          <CKEditor
-            key={editorKey}
-            editor={ClassicEditor}
-            data={html}
-            config={ckeditorConfig}
-            onChange={(_event, editor) => onHtmlChange(editor.getData())}
-          />
-        </div>
-      </div>
-      <div
-        className={`absolute bottom-6 text-[11px] font-light tracking-wide text-outline/60 pointer-events-none ${
-          side === "left" ? "left-9" : "right-9"
-        }`}
-      >
-        {pageNum} / {totalPages}
       </div>
     </div>
   );
@@ -248,7 +230,6 @@ export default function WorkManual() {
   const [isEditMode, setIsEditMode] = useState(false);
   const [editSessionKey, setEditSessionKey] = useState(0);
   const editSnapshotRef = useRef(null);
-  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문을 작성해보세요."));
 
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
@@ -742,30 +723,32 @@ export default function WorkManual() {
                     <div className="absolute left-1/2 top-0 bottom-0 w-px -ml-px z-20 pointer-events-none bg-gray-100" />
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
-                        <BookPageEditor
-                          editorKey={`${selectedManualId}-${spreadIndex}-left-${editSessionKey}`}
-                          html={currentSpread.left.html}
-                          pageNum={currentSpread.left.pageNum}
-                          ckeditorConfig={ckeditorConfig}
-                          onHtmlChange={(v) => updatePageField("left", "html", v)}
-                          side="left"
-                          totalPages={totalPages}
-                        />
+                        <Suspense fallback={<PageEditorLoading />}>
+                          <BookPageEditor
+                            editorKey={`${selectedManualId}-${spreadIndex}-left-${editSessionKey}`}
+                            html={currentSpread.left.html}
+                            pageNum={currentSpread.left.pageNum}
+                            onHtmlChange={(v) => updatePageField("left", "html", v)}
+                            side="left"
+                            totalPages={totalPages}
+                          />
+                        </Suspense>
                       ) : (
                         <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" totalPages={totalPages} />
                       )}
                     </div>
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
-                        <BookPageEditor
-                          editorKey={`${selectedManualId}-${spreadIndex}-right-${editSessionKey}`}
-                          html={currentSpread.right.html}
-                          pageNum={currentSpread.right.pageNum}
-                          ckeditorConfig={ckeditorConfig}
-                          onHtmlChange={(v) => updatePageField("right", "html", v)}
-                          side="right"
-                          totalPages={totalPages}
-                        />
+                        <Suspense fallback={<PageEditorLoading />}>
+                          <BookPageEditor
+                            editorKey={`${selectedManualId}-${spreadIndex}-right-${editSessionKey}`}
+                            html={currentSpread.right.html}
+                            pageNum={currentSpread.right.pageNum}
+                            onHtmlChange={(v) => updatePageField("right", "html", v)}
+                            side="right"
+                            totalPages={totalPages}
+                          />
+                        </Suspense>
                       ) : (
                         <BookPage page={currentSpread.right} searchTerm={searchTerm} side="right" totalPages={totalPages} />
                       )}
