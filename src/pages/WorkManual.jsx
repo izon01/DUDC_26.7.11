@@ -521,7 +521,7 @@ export default function WorkManual() {
           <div className="px-4 pt-4">
             <button
               onClick={() => setSelectedPartId(null)}
-              className="flex items-center gap-2 border border-gray-200 bg-white rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors w-fit"
+              className="w-full flex items-center gap-2 border border-gray-200 bg-white rounded-lg px-3 py-2 text-sm font-semibold text-gray-700 no-underline shadow-sm hover:bg-gray-100 hover:border-gray-300 transition-all"
             >
               <span className="material-symbols-outlined text-[18px]">arrow_back</span>
               서재로 돌아가기
