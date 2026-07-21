@@ -52,22 +52,25 @@ export default function Intro() {
           <div className="mt-16 md:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
             {/* 왼쪽 단: 미션 및 비전 */}
             <section className="lg:border-r lg:border-gray-200 lg:pr-10 flex flex-col lg:h-full">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-8">
+              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-2">
                 미션 및 비전
               </h2>
+              <div className="flex justify-center mb-8">
+                <span className="w-[1px] h-6 bg-blue-700" />
+              </div>
 
               <div className="flex-1 flex flex-col justify-between gap-8">
                 {/* Mission & Vision text boxes */}
                 <div className="flex flex-col gap-4">
-                  <div className="border-l-4 border-r-4 border-gray-200 px-6 py-5 text-center">
-                    <p className="text-xs font-bold text-primary tracking-[0.2em] mb-2">MISSION</p>
+                  <div className="border-l-4 border-r-4 border-gray-100 px-6 py-5 text-center">
+                    <p className="text-sm font-bold text-primary mb-2">• 미션 •</p>
                     <p className="text-gray-700 text-sm md:text-base break-keep leading-relaxed">
                       산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
                       이바지한다.
                     </p>
                   </div>
-                  <div className="border-l-4 border-r-4 border-gray-200 px-6 py-5 text-center">
-                    <p className="text-xs font-bold text-primary tracking-[0.2em] mb-2">VISION</p>
+                  <div className="border-l-4 border-r-4 border-gray-100 px-6 py-5 text-center">
+                    <p className="text-sm font-bold text-teal-700 mb-2">• 비전 •</p>
                     <p className="font-bold text-gray-900 text-base md:text-lg mb-2 break-keep">
                       시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
                     </p>
@@ -78,17 +81,20 @@ export default function Intro() {
                   </div>
                 </div>
 
-                {/* 핵심가치 pills: 2x2 */}
-                <div className="grid grid-cols-2 gap-3">
-                  {CORE_VALUE_PILLS.map((value) => (
-                    <div
-                      key={value.label}
-                      className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-4 py-6`}
-                    >
-                      <span className="font-bold text-base mb-1">{value.label}</span>
-                      <span className="text-[11px] opacity-90 break-keep">{value.desc}</span>
-                    </div>
-                  ))}
+                {/* 핵심가치 pills: 1x4 */}
+                <div>
+                  <h3 className="text-center font-bold text-gray-900 mb-3">핵심가치</h3>
+                  <div className="grid grid-cols-4 gap-2">
+                    {CORE_VALUE_PILLS.map((value) => (
+                      <div
+                        key={value.label}
+                        className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-2 py-4`}
+                      >
+                        <span className="text-[10px] opacity-90 break-keep mb-1">{value.desc}</span>
+                        <span className="font-bold text-xs">{value.label}</span>
+                      </div>
+                    ))}
+                  </div>
                 </div>
 
                 {/* 전략방향 circles: 1x4 */}
@@ -96,10 +102,10 @@ export default function Intro() {
                   {STRATEGIC_DIRECTIONS.map((strategy) => (
                     <div
                       key={strategy.no}
-                      className="aspect-square w-full rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-2 gap-0.5"
+                      className="aspect-square w-full rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-1.5 gap-0.5 tracking-tighter"
                     >
-                      <span className="text-primary font-medium text-[11px]">전략방향 {strategy.no}</span>
-                      <span className="text-gray-700 text-[11px] font-normal break-keep leading-snug">
+                      <span className="text-primary font-medium text-[9px]">전략방향 {strategy.no}</span>
+                      <span className="text-gray-700 text-[9px] font-normal break-keep leading-snug">
                         {strategy.title}
                       </span>
                     </div>
