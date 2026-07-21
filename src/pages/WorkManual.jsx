@@ -81,13 +81,10 @@ function manualSearchText(manual) {
 }
 
 function BookPage({ page, searchTerm, side, totalPages }) {
-  const hasContent = Boolean(page.heading?.trim() || stripHtml(page.html || "").trim());
+  const hasContent = Boolean(stripHtml(page.html || "").trim());
   return (
-    <div className="w-full min-h-full px-14 pt-6 pb-16 relative break-keep">
+    <div className="w-full min-h-full px-14 pt-10 pb-16 relative break-keep">
       <div className="space-y-6">
-        <h2 className="text-left font-serif text-[27px] font-bold text-on-surface pb-1.5 border-b-2 border-primary/10 tracking-tight">
-          {highlightText(page.heading || "제목 없음", searchTerm)}
-        </h2>
         {hasContent ? (
           <div
             className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
@@ -109,28 +106,11 @@ function BookPage({ page, searchTerm, side, totalPages }) {
 }
 
 // In-place page editor — mirrors BookPage's size/padding/typography exactly
-// (same px-14/pt-6/pb-16 page box, same heading classes) so flipping between
-// read and edit mode never changes the book's apparent size or font ratio.
-function BookPageEditor({
-  heading,
-  html,
-  pageNum,
-  ckeditorConfig,
-  onHeadingChange,
-  onHtmlChange,
-  editorKey,
-  side,
-  totalPages,
-}) {
+// (same px-14/pt-10/pb-16 page box) so flipping between read and edit mode
+// never changes the book's apparent size or font ratio.
+function BookPageEditor({ html, pageNum, ckeditorConfig, onHtmlChange, editorKey, side, totalPages }) {
   return (
-    <div className="w-full h-full min-h-full px-14 pt-6 pb-16 relative break-keep flex flex-col">
-      <input
-        type="text"
-        value={heading}
-        onChange={(e) => onHeadingChange(e.target.value)}
-        placeholder="제목을 입력하세요"
-        className="w-full text-left font-serif text-[27px] font-bold text-on-surface bg-transparent outline-none placeholder:text-outline/40 pb-1.5 mb-8 border-b-2 border-primary/10 focus:border-primary/40 transition-colors shrink-0 tracking-tight"
-      />
+    <div className="w-full h-full min-h-full px-14 pt-10 pb-16 relative break-keep flex flex-col">
       <div className="flex-1 min-h-0">
         <div className="dudc-ckeditor dudc-ckeditor-lg h-full">
           <CKEditor
@@ -756,11 +736,9 @@ export default function WorkManual() {
                       {isEditMode ? (
                         <BookPageEditor
                           editorKey={`${selectedManualId}-${spreadIndex}-left-${editSessionKey}`}
-                          heading={currentSpread.left.heading}
                           html={currentSpread.left.html}
                           pageNum={currentSpread.left.pageNum}
                           ckeditorConfig={ckeditorConfig}
-                          onHeadingChange={(v) => updatePageField("left", "heading", v)}
                           onHtmlChange={(v) => updatePageField("left", "html", v)}
                           side="left"
                           totalPages={totalPages}
@@ -773,11 +751,9 @@ export default function WorkManual() {
                       {isEditMode ? (
                         <BookPageEditor
                           editorKey={`${selectedManualId}-${spreadIndex}-right-${editSessionKey}`}
-                          heading={currentSpread.right.heading}
                           html={currentSpread.right.html}
                           pageNum={currentSpread.right.pageNum}
                           ckeditorConfig={ckeditorConfig}
-                          onHeadingChange={(v) => updatePageField("right", "heading", v)}
                           onHtmlChange={(v) => updatePageField("right", "html", v)}
                           side="right"
                           totalPages={totalPages}
