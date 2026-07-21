@@ -521,10 +521,10 @@ export default function WorkManual() {
           <div className="px-4 pt-4">
             <button
               onClick={() => setSelectedPartId(null)}
-              title="서재로 돌아가기"
-              className="p-2 rounded-full hover:bg-gray-100 text-on-surface-variant hover:text-primary transition-colors"
+              className="flex items-center gap-2 border border-gray-200 bg-white rounded-md px-3 py-2 text-sm font-medium text-gray-700 hover:bg-gray-50 transition-colors w-fit"
             >
-              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+              <span className="material-symbols-outlined text-[18px]">arrow_back</span>
+              서재로 돌아가기
             </button>
           </div>
           <div className="px-6 pt-2 pb-4">
@@ -736,10 +736,10 @@ export default function WorkManual() {
                     <div className="absolute right-0 top-0 bottom-0 w-6 z-20 pointer-events-none bg-gradient-to-l from-black/[0.06] to-transparent" />
                     {/* Center spine — pages dipping concave into the binding */}
                     <div className="absolute left-1/2 top-0 bottom-0 w-28 -ml-14 z-20 pointer-events-none flex">
-                      <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-black/[0.12]" />
-                      <div className="w-1/2 h-full bg-gradient-to-l from-transparent to-black/[0.12]" />
+                      <div className="w-1/2 h-full bg-gradient-to-r from-transparent to-black/[0.03]" />
+                      <div className="w-1/2 h-full bg-gradient-to-l from-transparent to-black/[0.03]" />
                     </div>
-                    <div className="absolute left-1/2 top-0 bottom-0 w-px -ml-px z-20 pointer-events-none bg-black/10" />
+                    <div className="absolute left-1/2 top-0 bottom-0 w-px -ml-px z-20 pointer-events-none bg-black/[0.06]" />
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
                         <BookPageEditor
