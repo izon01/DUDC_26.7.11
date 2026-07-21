@@ -4,6 +4,7 @@ import HeroBanner from "../components/HeroBanner";
 import { SkeletonGrid } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { getCache, setCache } from "../utils/resourceCache";
+import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const CACHE_KEY = "community-posts";
@@ -24,14 +25,6 @@ function formatDateDot(date) {
   const m = String(date.getMonth() + 1).padStart(2, "0");
   const d = String(date.getDate()).padStart(2, "0");
   return `${y}.${m}.${d}`;
-}
-
-async function parseJsonSafely(res) {
-  try {
-    return await res.json();
-  } catch {
-    return {};
-  }
 }
 
 function formatRelativeDate(iso) {

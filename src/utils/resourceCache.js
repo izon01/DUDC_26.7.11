@@ -12,7 +12,3 @@ export function getCache(key) {
 export function setCache(key, data) {
   store.set(key, data);
 }
-
-export function clearCache(key) {
-  store.delete(key);
-}

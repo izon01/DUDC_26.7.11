@@ -1,10 +1,7 @@
 import { useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
-
-function stripHtml(html) {
-  return html.replace(/<[^>]*>/g, " ");
-}
+import { stripHtml } from "../utils/html";
 
 // Full-width, single-column editor canvas (Naver-blog-style) that replaces the
 // entire reading area while an admin creates or edits a culture post.

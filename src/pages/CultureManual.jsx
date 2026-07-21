@@ -6,6 +6,8 @@ import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
+import { stripHtml } from "../utils/html";
+import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const CACHE_KEY = "culture-posts";
@@ -14,21 +16,9 @@ const CACHE_KEY = "culture-posts";
 // every visitor reading a post.
 const CulturePostEditor = lazy(() => import("../components/CulturePostEditor"));
 
-function stripHtml(html) {
-  return html.replace(/<[^>]*>/g, " ");
-}
-
 function guideSearchText(guide) {
   const parts = [guide.title, stripHtml(guide.bodyHtml || ""), ...(guide.checkPoints || [])];
   return parts.filter(Boolean).join(" ").toLowerCase();
-}
-
-async function parseJsonSafely(res) {
-  try {
-    return await res.json();
-  } catch {
-    return {};
-  }
 }
 
 function EditorLoading() {

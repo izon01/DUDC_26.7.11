@@ -1,4 +1,5 @@
 import { createContext, useCallback, useContext, useEffect, useState } from "react";
+import { parseJsonSafely } from "../utils/http";
 
 const AuthContext = createContext(null);
 const STORAGE_KEY = "dudc_auth";
@@ -11,14 +12,6 @@ function readStoredAuth() {
     return { token: parsed.token ?? null, user: parsed.user ?? null };
   } catch {
     return { token: null, user: null };
-  }
-}
-
-async function parseJsonSafely(res) {
-  try {
-    return await res.json();
-  } catch {
-    return {};
   }
 }
 

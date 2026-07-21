@@ -7,6 +7,8 @@ import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
+import { stripHtml } from "../utils/html";
+import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 // CKEditor (~1MB) only loads once an admin actually enters edit mode, not for
@@ -58,18 +60,6 @@ const BOOK_TEXTURE_STYLE = {
   backgroundImage:
     "repeating-linear-gradient(115deg, rgba(255,255,255,0.35) 0px, rgba(255,255,255,0.35) 1px, transparent 1px, transparent 4px)",
 };
-
-function stripHtml(html) {
-  return html.replace(/<[^>]*>/g, " ");
-}
-
-async function parseJsonSafely(res) {
-  try {
-    return await res.json();
-  } catch {
-    return {};
-  }
-}
 
 function pageSearchText(page) {
   if (!page) return "";
