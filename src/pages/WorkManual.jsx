@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { Building2, Coins, Leaf, Umbrella } from "lucide-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
@@ -22,7 +23,7 @@ const BOOKSHELF_PARTS = [
     id: "mindset",
     title: "마음가짐",
     subtitle: "신입사원이 가져야 할 기본 마인드셋, 공사의 미션·비전 등",
-    icon: "💜",
+    icon: Leaf,
     gradient: "from-[#CFC4E8] to-[#E9E2F4]",
     accent: "#7E67C8",
   },
@@ -30,7 +31,7 @@ const BOOKSHELF_PARTS = [
     id: "organization",
     title: "조직·직무 이해",
     subtitle: "회사 업무 안내, 성과관리, 승진, 교육",
-    icon: "💙",
+    icon: Building2,
     gradient: "from-[#C9DDF0] to-[#E8F2FA]",
     accent: "#5E97C8",
   },
@@ -38,7 +39,7 @@ const BOOKSHELF_PARTS = [
     id: "compensation",
     title: "경제적 보상",
     subtitle: "보수, 수당, 여비, 복지제도",
-    icon: "💛",
+    icon: Coins,
     gradient: "from-[#F7DFC0] to-[#FFF3DE]",
     accent: "#E7A53A",
   },
@@ -46,7 +47,7 @@ const BOOKSHELF_PARTS = [
     id: "leave",
     title: "휴가·복무제도",
     subtitle: "연차, 휴직, 유연근무, 징계 등",
-    icon: "💗",
+    icon: Umbrella,
     gradient: "from-[#F5D4D7] to-[#FDECEE]",
     accent: "#D86A87",
   },
@@ -177,17 +178,19 @@ function Bookshelf({ onSelect }) {
                   style={BOOK_TEXTURE_STYLE}
                 />
 
-                {/* Icon badge + title, centered on the cover */}
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-4 flex flex-col items-center justify-center">
-                  <span className="w-12 h-12 rounded-full bg-white/30 flex items-center justify-center text-2xl mb-3 mx-auto">
-                    {part.icon}
+                {/* Icon badge + title band, centered on the cover */}
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
+                  <span className="w-12 h-12 rounded-full bg-white/70 flex items-center justify-center mx-auto mb-3">
+                    <part.icon className="w-6 h-6" style={{ color: part.accent }} />
                   </span>
-                  <span className="font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-md">
-                    {part.title}
-                  </span>
+                  <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
+                    <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                      {part.title}
+                    </span>
+                  </div>
                 </div>
 
-                <span className="absolute bottom-8 md:bottom-9 inset-x-4 text-white/90 text-[11px] md:text-[12px] leading-relaxed text-center break-keep drop-shadow-sm">
+                <span className="absolute bottom-8 md:bottom-9 inset-x-4 text-gray-700 text-[11px] md:text-[12px] leading-relaxed text-center break-keep">
                   {part.subtitle}
                 </span>
 
