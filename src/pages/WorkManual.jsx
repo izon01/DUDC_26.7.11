@@ -22,25 +22,33 @@ const BOOKSHELF_PARTS = [
     id: "mindset",
     title: "마음가짐",
     subtitle: "신입사원이 가져야 할 기본 마인드셋, 공사의 미션·비전 등",
-    gradient: "from-blue-500 to-indigo-600",
+    icon: "💜",
+    gradient: "from-[#CFC4E8] to-[#E9E2F4]",
+    accent: "#7E67C8",
   },
   {
     id: "organization",
     title: "조직·직무 이해",
     subtitle: "회사 업무 안내, 성과관리, 승진, 교육",
-    gradient: "from-sky-400 to-cyan-600",
+    icon: "💙",
+    gradient: "from-[#C9DDF0] to-[#E8F2FA]",
+    accent: "#5E97C8",
   },
   {
     id: "compensation",
     title: "경제적 보상",
     subtitle: "보수, 수당, 여비, 복지제도",
-    gradient: "from-amber-300 to-orange-400",
+    icon: "💛",
+    gradient: "from-[#F7DFC0] to-[#FFF3DE]",
+    accent: "#E7A53A",
   },
   {
     id: "leave",
     title: "휴가·복무제도",
     subtitle: "연차, 휴직, 유연근무, 징계 등",
-    gradient: "from-violet-400 to-purple-600",
+    icon: "💗",
+    gradient: "from-[#F5D4D7] to-[#FDECEE]",
+    accent: "#D86A87",
   },
 ];
 
@@ -169,16 +177,22 @@ function Bookshelf({ onSelect }) {
                   style={BOOK_TEXTURE_STYLE}
                 />
 
-                {/* Series-unifying obi band, with the title sitting on it */}
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 min-h-[3.25rem] py-3 px-4 bg-white/15 border-y border-white/25 flex flex-col items-center justify-center">
-                  <span className="font-serif text-white text-lg md:text-xl font-bold text-center leading-snug">
+                {/* Icon badge + title, centered on the cover */}
+                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 px-4 flex flex-col items-center justify-center">
+                  <span className="w-12 h-12 rounded-full bg-white/30 flex items-center justify-center text-2xl mb-3 mx-auto">
+                    {part.icon}
+                  </span>
+                  <span className="font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-md">
                     {part.title}
                   </span>
                 </div>
 
-                <span className="absolute bottom-5 md:bottom-6 inset-x-4 text-white/80 text-[11px] md:text-[12px] leading-relaxed text-center break-keep">
+                <span className="absolute bottom-8 md:bottom-9 inset-x-4 text-white/90 text-[11px] md:text-[12px] leading-relaxed text-center break-keep drop-shadow-sm">
                   {part.subtitle}
                 </span>
+
+                {/* Bottom accent band in the part's point color */}
+                <div className="absolute bottom-0 inset-x-0 h-2" style={{ backgroundColor: part.accent }} />
               </button>
             );
           })}
