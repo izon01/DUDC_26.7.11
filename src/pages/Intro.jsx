@@ -144,7 +144,7 @@ export default function Intro() {
                 {BUSINESS_UNITS.map((unit) => (
                   <div
                     key={unit.title}
-                    className="bg-white border border-gray-200 rounded-xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all"
+                    className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all"
                   >
                     <h3 className="font-bold text-blue-800 text-base tracking-tight whitespace-nowrap mb-2">
                       {unit.title}

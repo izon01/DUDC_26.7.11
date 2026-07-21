@@ -37,7 +37,7 @@ export default function Home() {
           />
 
           {/* Recent Work Manuals */}
-          <section className="w-full bg-[#ffdbc7]/30 rounded-xl border-2 border-outline-variant p-6 shrink-0">
+          <section className="w-full bg-[#ffdbc7]/30 rounded-xl border border-outline-variant shadow-sm p-6 shrink-0">
             <div className="flex justify-between items-center mb-4">
               <div className="flex items-center gap-2">
                 <span className="material-symbols-outlined text-secondary">menu_book</span>
@@ -51,7 +51,7 @@ export default function Home() {
               {RECENT_MANUALS.map((manual) => (
                 <div
                   key={manual.title}
-                  className="bg-surface-container-lowest p-4 rounded-lg border-2 border-outline-variant flex items-center gap-4 hover:shadow-sm transition-shadow cursor-pointer"
+                  className="bg-white p-4 rounded-xl border border-outline-variant shadow-sm flex items-center gap-4 hover:shadow-md transition-all cursor-pointer"
                 >
                   <div className="w-10 h-10 rounded-full bg-secondary-container flex items-center justify-center shrink-0">
                     <span className="material-symbols-outlined text-on-secondary-container">{manual.icon}</span>
@@ -68,7 +68,7 @@ export default function Home() {
           {/* Bottom Layout: Culture & Checklist */}
           <section className="flex flex-col md:flex-row gap-6">
             {/* Culture Posts Card */}
-            <div className="w-full md:w-1/2 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6">
+            <div className="w-full md:w-1/2 bg-white rounded-xl border border-outline-variant shadow-sm flex flex-col p-6">
               <div className="flex justify-between items-center mb-4 border-b-2 border-outline-variant pb-4">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-tertiary">theater_comedy</span>
@@ -93,7 +93,7 @@ export default function Home() {
             </div>
 
             {/* Progress Checklist Card */}
-            <div className="w-full md:w-1/2 bg-surface-container-lowest rounded-xl border-2 border-outline-variant flex flex-col p-6">
+            <div className="w-full md:w-1/2 bg-white rounded-xl border border-outline-variant shadow-sm flex flex-col p-6">
               <div className="flex justify-between items-center mb-6">
                 <div className="flex items-center gap-2">
                   <span className="material-symbols-outlined text-primary">task_alt</span>
