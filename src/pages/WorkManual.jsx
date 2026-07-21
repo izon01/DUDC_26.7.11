@@ -515,23 +515,19 @@ export default function WorkManual() {
 
   return (
     <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
-      <Header />
-
-      {/* Top bar: return to the bookshelf */}
-      <div className="shrink-0 px-6 py-3 border-b border-outline-variant bg-surface-container-low">
-        <button
-          onClick={() => setSelectedPartId(null)}
-          className="flex items-center gap-1.5 text-sm font-bold text-on-surface-variant hover:text-primary transition-colors"
-        >
-          <span className="material-symbols-outlined text-[18px]">arrow_back</span>
-          서재로 돌아가기
-        </button>
-      </div>
-
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar */}
         <aside className="w-full md:w-64 max-h-[40vh] md:max-h-none shrink-0 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low flex flex-col">
-          <div className="p-6 border-b border-outline-variant">
+          <div className="px-4 pt-4">
+            <button
+              onClick={() => setSelectedPartId(null)}
+              title="서재로 돌아가기"
+              className="p-2 rounded-full hover:bg-gray-100 text-on-surface-variant hover:text-primary transition-colors"
+            >
+              <span className="material-symbols-outlined text-[20px]">arrow_back</span>
+            </button>
+          </div>
+          <div className="px-6 pt-2 pb-4">
             <h2 className="font-headline-md text-base font-bold text-on-surface flex items-center gap-2">
               <span className="material-symbols-outlined text-secondary">menu_book</span>
               업무 매뉴얼 리스트
