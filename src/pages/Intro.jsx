@@ -1,3 +1,4 @@
+import { useState } from "react";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 
@@ -28,7 +29,14 @@ const BUSINESS_UNITS = [
   { title: "🏊‍♂️ 유니버시아드레포츠센터", desc: "대구 시민 건강 증진을 위한 종합 체육 시설 운영" },
 ];
 
+const TABS = [
+  { key: "mission", label: "미션 및 비전" },
+  { key: "business", label: "사업부 안내" },
+];
+
 export default function Intro() {
+  const [activeTab, setActiveTab] = useState("mission");
+
   return (
     <div className="min-h-screen w-full flex flex-col bg-background text-on-surface">
       <Header />
@@ -48,84 +56,90 @@ export default function Intro() {
             imageAlt="Welcome"
           />
 
-          {/* 좌: 미션/비전 다이어그램, 우: 사업부 안내 */}
-          <div className="mt-16 md:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
-            {/* 왼쪽 단: 미션 및 비전 */}
-            <section className="lg:border-r lg:border-gray-200 lg:pr-10 flex flex-col lg:h-full">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-2">
-                미션 및 비전
-              </h2>
-              <div className="flex justify-center mb-8">
-                <span className="w-[1px] h-6 bg-blue-700" />
+          {/* 탭 토글 */}
+          <div className="mt-16 md:mt-20 flex justify-center">
+            <div className="inline-flex bg-gray-100 rounded-full p-1 gap-1">
+              {TABS.map((tab) => (
+                <button
+                  key={tab.key}
+                  onClick={() => setActiveTab(tab.key)}
+                  className={
+                    tab.key === activeTab
+                      ? "px-8 py-3 rounded-full bg-primary text-white font-bold text-base transition-all"
+                      : "px-8 py-3 rounded-full text-gray-500 font-bold text-base hover:text-gray-700 transition-all"
+                  }
+                >
+                  {tab.label}
+                </button>
+              ))}
+            </div>
+          </div>
+
+          {activeTab === "mission" ? (
+            /* 미션 및 비전: 전체 너비 */
+            <section className="mt-12 max-w-5xl mx-auto">
+              {/* Mission & Vision text boxes */}
+              <div className="flex flex-col md:flex-row gap-6 mb-14">
+                <div className="flex-1 border-l-4 border-r-4 border-gray-100 px-8 py-6 text-center">
+                  <p className="text-base font-bold text-primary mb-3">• 미션 •</p>
+                  <p className="text-gray-700 text-base break-keep leading-relaxed">
+                    산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
+                    이바지한다.
+                  </p>
+                </div>
+                <div className="flex-1 border-l-4 border-r-4 border-gray-100 px-8 py-6 text-center">
+                  <p className="text-base font-bold text-teal-700 mb-3">• 비전 •</p>
+                  <p className="font-bold text-gray-900 text-lg mb-3 break-keep">
+                    시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
+                  </p>
+                  <p className="text-gray-600 text-sm break-keep leading-relaxed">
+                    시민의 삶의 질과 지속 가능한 미래가치를 실현하기 위한 혁신적 도시개발을 주도적으로 기획하고
+                    완수하는 공기업의 위상을 지향합니다.
+                  </p>
+                </div>
               </div>
 
-              <div className="flex-1 flex flex-col justify-between gap-8">
-                {/* Mission & Vision text boxes */}
-                <div className="flex flex-col gap-4">
-                  <div className="border-l-4 border-r-4 border-gray-100 px-6 py-5 text-center">
-                    <p className="text-sm font-bold text-primary mb-2">• 미션 •</p>
-                    <p className="text-gray-700 text-sm md:text-base break-keep leading-relaxed">
-                      산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
-                      이바지한다.
-                    </p>
-                  </div>
-                  <div className="border-l-4 border-r-4 border-gray-100 px-6 py-5 text-center">
-                    <p className="text-sm font-bold text-teal-700 mb-2">• 비전 •</p>
-                    <p className="font-bold text-gray-900 text-base md:text-lg mb-2 break-keep">
-                      시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
-                    </p>
-                    <p className="text-gray-600 text-sm break-keep leading-relaxed">
-                      시민의 삶의 질과 지속 가능한 미래가치를 실현하기 위한 혁신적 도시개발을 주도적으로 기획하고
-                      완수하는 공기업의 위상을 지향합니다.
-                    </p>
-                  </div>
-                </div>
-
-                {/* 핵심가치 pills: 1x4 */}
-                <div>
-                  <h3 className="text-center font-bold text-gray-900 mb-3">핵심가치</h3>
-                  <div className="grid grid-cols-4 gap-2">
-                    {CORE_VALUE_PILLS.map((value) => (
-                      <div
-                        key={value.label}
-                        className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-2 py-4`}
-                      >
-                        <span className="text-[10px] opacity-90 break-keep mb-1">{value.desc}</span>
-                        <span className="font-bold text-xs">{value.label}</span>
-                      </div>
-                    ))}
-                  </div>
-                </div>
-
-                {/* 전략방향 circles: 1x4 */}
-                <div className="bg-gray-50 rounded-full px-2 py-5 grid grid-cols-4 gap-2 justify-items-center">
-                  {STRATEGIC_DIRECTIONS.map((strategy) => (
+              {/* 핵심가치 pills: 1x4, 넉넉한 크기 */}
+              <div className="mb-14">
+                <h3 className="text-center font-bold text-xl text-gray-900 mb-6">핵심가치</h3>
+                <div className="grid grid-cols-2 sm:grid-cols-4 gap-4">
+                  {CORE_VALUE_PILLS.map((value) => (
                     <div
-                      key={strategy.no}
-                      className="aspect-square w-full rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-1.5 gap-0.5 tracking-tighter"
+                      key={value.label}
+                      className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-6 py-8`}
                     >
-                      <span className="text-primary font-medium text-[9px]">전략방향 {strategy.no}</span>
-                      <span className="text-gray-700 text-[9px] font-normal break-keep leading-snug">
-                        {strategy.title}
-                      </span>
+                      <span className="text-sm opacity-90 break-keep mb-1">{value.desc}</span>
+                      <span className="font-bold text-xl">{value.label}</span>
                     </div>
                   ))}
                 </div>
               </div>
-            </section>
 
-            {/* 오른쪽 단: 사업부 안내 */}
-            <section className="lg:pl-10">
-              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-8">
-                사업부 안내
-              </h2>
-              <div className="grid grid-cols-2 gap-4">
+              {/* 전략방향 circles: 1x4, 넉넉한 크기 */}
+              <div className="bg-gray-50 rounded-[3rem] px-6 py-10 grid grid-cols-2 sm:grid-cols-4 gap-6 justify-items-center">
+                {STRATEGIC_DIRECTIONS.map((strategy) => (
+                  <div
+                    key={strategy.no}
+                    className="aspect-square w-40 rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-4 gap-1"
+                  >
+                    <span className="text-primary font-bold text-sm">전략방향 {strategy.no}</span>
+                    <span className="text-gray-700 text-sm font-semibold break-keep leading-snug">
+                      {strategy.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
+          ) : (
+            /* 사업부 안내: 전체 너비 확장 그리드 */
+            <section className="mt-12">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
                 {BUSINESS_UNITS.map((unit) => (
                   <div
                     key={unit.title}
-                    className="h-full bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-center hover:-translate-y-1 hover:shadow-lg transition-all"
+                    className="bg-white border border-gray-200 rounded-xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all"
                   >
-                    <h3 className="font-bold text-blue-800 text-[15px] tracking-tighter whitespace-nowrap mb-1.5">
+                    <h3 className="font-bold text-blue-800 text-base tracking-tight whitespace-nowrap mb-2">
                       {unit.title}
                     </h3>
                     <p className="text-gray-600 text-sm break-keep leading-relaxed">{unit.desc}</p>
@@ -133,7 +147,7 @@ export default function Intro() {
                 ))}
               </div>
             </section>
-          </div>
+          )}
         </div>
       </main>
     </div>
