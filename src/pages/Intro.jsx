@@ -16,46 +16,16 @@ const STRATEGIC_DIRECTIONS = [
 ];
 
 const BUSINESS_UNITS = [
-  {
-    title: "택지개발사업",
-    desc: "시민들이 쾌적하고 안정적으로 거주할 수 있는 대규모 주택 건설 용지를 체계적으로 조성하고 공급합니다.",
-  },
-  {
-    title: "산업단지사업",
-    desc: "지역 경제 활성화와 우수 기업 유치를 위해 기반 시설이 완비된 맞춤형 산업단지를 개발합니다.",
-  },
-  {
-    title: "도시개발사업",
-    desc: "대구의 균형 발전을 목표로, 주거·상업·문화 인프라가 융합된 자족형 미래 신도시를 기획하고 조성합니다.",
-  },
-  {
-    title: "스마트도시사업",
-    desc: "최첨단 정보통신기술(ICT)을 도시 공간에 접목하여, 시민의 삶이 더욱 편리하고 안전해지는 스마트시티를 구축합니다.",
-  },
-  {
-    title: "공원조성사업",
-    desc: "도심 속에서도 자연을 누리며 삶의 질을 높일 수 있도록, 친환경적인 휴식 공간과 테마 공원을 조성합니다.",
-  },
-  {
-    title: "보상사업",
-    desc: "공익사업 추진 시 편입되는 토지와 지장물에 대해, 투명하고 정당한 기준을 바탕으로 신속한 손실 보상 업무를 수행합니다.",
-  },
-  {
-    title: "공영주택건설",
-    desc: "무주택 서민의 내 집 마련과 주거 안정을 위해, 튼튼하고 합리적인 가격의 고품질 공공주택을 직접 건설합니다.",
-  },
-  {
-    title: "주거환경개선",
-    desc: "기반 시설이 열악하고 낡은 노후 주거 지역을 체계적으로 정비하여, 안전하고 쾌적한 정주 여건으로 탈바꿈시킵니다.",
-  },
-  {
-    title: "주거복지",
-    desc: "청년, 신혼부부, 취약계층을 위한 맞춤형 임대주택을 제공하여 든든한 주거 안전망을 실현합니다.",
-  },
-  {
-    title: "유니버시아드레포츠센터",
-    desc: "수영, 골프, 헬스 등 다양한 체육 시설과 프로그램을 운영하여 대구 시민의 건강 증진과 건전한 여가 생활을 지원합니다.",
-  },
+  { title: "택지개발사업", desc: "쾌적하고 안정적인 대규모 주택 건설 용지 조성" },
+  { title: "산업단지사업", desc: "기업 유치 및 지역 경제 활성화를 위한 맞춤형 산단 개발" },
+  { title: "도시개발사업", desc: "주거·상업·문화가 융합된 자족형 미래 신도시 조성" },
+  { title: "스마트도시사업", desc: "첨단 ICT 기술을 접목한 편리하고 안전한 스마트시티 구축" },
+  { title: "공원조성사업", desc: "시민의 삶의 질을 높이는 친환경 휴식 공간 조성" },
+  { title: "보상사업", desc: "공익사업 추진을 위한 투명하고 신속한 손실 보상 업무" },
+  { title: "공영주택건설", desc: "무주택 서민의 주거 안정을 위한 고품질 공공주택 건설" },
+  { title: "주거환경개선", desc: "노후 주거 지역을 정비하여 안전한 정주 여건 조성" },
+  { title: "주거복지", desc: "청년 및 취약계층을 위한 맞춤형 임대주택 제공" },
+  { title: "유니버시아드레포츠센터", desc: "대구 시민 건강 증진을 위한 종합 체육 시설 운영" },
 ];
 
 export default function Intro() {
@@ -78,79 +48,82 @@ export default function Intro() {
             imageAlt="Welcome"
           />
 
-          {/* 미션 및 비전 다이어그램 */}
-          <section className="mt-16 md:mt-20">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-10">
-              미션 및 비전
-            </h2>
+          {/* 좌: 미션/비전 다이어그램, 우: 사업부 안내 */}
+          <div className="mt-16 md:mt-20 grid grid-cols-1 lg:grid-cols-2 gap-12 items-start">
+            {/* 왼쪽 단: 미션 및 비전 */}
+            <section>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-8">
+                미션 및 비전
+              </h2>
 
-            {/* Mission & Vision text boxes */}
-            <div className="max-w-3xl mx-auto flex flex-col gap-6 mb-12">
-              <div className="border-l-4 border-r-4 border-gray-200 px-8 py-6 text-center">
-                <p className="text-xs font-bold text-primary tracking-[0.2em] mb-2">MISSION</p>
-                <p className="text-gray-700 text-base md:text-lg break-keep leading-relaxed">
-                  산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
-                  이바지한다.
-                </p>
+              {/* Mission & Vision text boxes */}
+              <div className="flex flex-col gap-4 mb-8">
+                <div className="border-l-4 border-r-4 border-gray-200 px-6 py-5 text-center">
+                  <p className="text-xs font-bold text-primary tracking-[0.2em] mb-2">MISSION</p>
+                  <p className="text-gray-700 text-sm md:text-base break-keep leading-relaxed">
+                    산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
+                    이바지한다.
+                  </p>
+                </div>
+                <div className="border-l-4 border-r-4 border-gray-200 px-6 py-5 text-center">
+                  <p className="text-xs font-bold text-primary tracking-[0.2em] mb-2">VISION</p>
+                  <p className="font-bold text-gray-900 text-base md:text-lg mb-2 break-keep">
+                    시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
+                  </p>
+                  <p className="text-gray-600 text-sm break-keep leading-relaxed">
+                    시민의 삶의 질과 지속 가능한 미래가치를 실현하기 위한 혁신적 도시개발을 주도적으로 기획하고
+                    완수하는 공기업의 위상을 지향합니다.
+                  </p>
+                </div>
               </div>
-              <div className="border-l-4 border-r-4 border-gray-200 px-8 py-6 text-center">
-                <p className="text-xs font-bold text-primary tracking-[0.2em] mb-2">VISION</p>
-                <p className="font-bold text-gray-900 text-lg md:text-xl mb-3 break-keep">
-                  시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업
-                </p>
-                <p className="text-gray-600 text-sm md:text-base break-keep leading-relaxed">
-                  시민의 삶의 질과 지속 가능한 미래가치를 실현하기 위한 혁신적 도시개발을 주도적으로 기획하고
-                  완수하는 공기업의 위상을 지향합니다.
-                </p>
+
+              {/* 핵심가치 pills: 2x2 */}
+              <div className="grid grid-cols-2 gap-3 mb-8">
+                {CORE_VALUE_PILLS.map((value) => (
+                  <div
+                    key={value.label}
+                    className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-4 py-6`}
+                  >
+                    <span className="font-bold text-base mb-1">{value.label}</span>
+                    <span className="text-[11px] opacity-90 break-keep">{value.desc}</span>
+                  </div>
+                ))}
               </div>
-            </div>
 
-            {/* 핵심가치 pills */}
-            <div className="grid grid-cols-2 md:grid-cols-4 gap-4 max-w-4xl mx-auto mb-12">
-              {CORE_VALUE_PILLS.map((value) => (
-                <div
-                  key={value.label}
-                  className={`${value.color} rounded-full text-white flex flex-col items-center justify-center text-center px-6 py-8`}
-                >
-                  <span className="font-bold text-lg mb-1">{value.label}</span>
-                  <span className="text-xs opacity-90 break-keep">{value.desc}</span>
-                </div>
-              ))}
-            </div>
+              {/* 전략방향 circles: 2x2 */}
+              <div className="bg-gray-50 rounded-[2rem] p-6 grid grid-cols-2 gap-4 justify-items-center">
+                {STRATEGIC_DIRECTIONS.map((strategy) => (
+                  <div
+                    key={strategy.no}
+                    className="aspect-square w-28 md:w-32 rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-3 gap-1"
+                  >
+                    <span className="text-primary font-bold text-xs">전략방향 {strategy.no}</span>
+                    <span className="text-gray-700 text-xs font-semibold break-keep leading-snug">
+                      {strategy.title}
+                    </span>
+                  </div>
+                ))}
+              </div>
+            </section>
 
-            {/* 전략방향 circles */}
-            <div className="bg-gray-50 rounded-full px-10 py-8 max-w-4xl mx-auto flex flex-col md:flex-row items-center justify-center gap-8 md:gap-6">
-              {STRATEGIC_DIRECTIONS.map((strategy) => (
-                <div
-                  key={strategy.no}
-                  className="aspect-square w-32 md:w-36 rounded-full bg-white border-2 border-blue-500 flex flex-col items-center justify-center text-center p-4 gap-1 shrink-0"
-                >
-                  <span className="text-primary font-bold text-xs">전략방향 {strategy.no}</span>
-                  <span className="text-gray-700 text-xs font-semibold break-keep leading-snug">
-                    {strategy.title}
-                  </span>
-                </div>
-              ))}
-            </div>
-          </section>
-
-          {/* 10개 사업부 안내 */}
-          <section className="mt-20">
-            <h2 className="text-3xl md:text-4xl font-extrabold text-center text-gray-900 mb-10">
-              사업부 안내
-            </h2>
-            <div className="grid grid-cols-1 md:grid-cols-3 lg:grid-cols-5 gap-6">
-              {BUSINESS_UNITS.map((unit) => (
-                <div
-                  key={unit.title}
-                  className="bg-white border border-gray-200 rounded-xl p-6 hover:-translate-y-1 hover:shadow-lg transition-all"
-                >
-                  <h3 className="font-bold text-blue-800 text-lg mb-2">{unit.title}</h3>
-                  <p className="text-gray-600 text-sm break-keep leading-relaxed">{unit.desc}</p>
-                </div>
-              ))}
-            </div>
-          </section>
+            {/* 오른쪽 단: 사업부 안내 */}
+            <section>
+              <h2 className="text-2xl md:text-3xl font-extrabold text-center text-gray-900 mb-8">
+                사업부 안내
+              </h2>
+              <div className="grid grid-cols-2 gap-4">
+                {BUSINESS_UNITS.map((unit) => (
+                  <div
+                    key={unit.title}
+                    className="h-full bg-white border border-gray-200 rounded-xl p-5 flex flex-col justify-center hover:-translate-y-1 hover:shadow-lg transition-all"
+                  >
+                    <h3 className="font-bold text-blue-800 text-base mb-1.5">{unit.title}</h3>
+                    <p className="text-gray-600 text-sm break-keep leading-relaxed">{unit.desc}</p>
+                  </div>
+                ))}
+              </div>
+            </section>
+          </div>
         </div>
       </main>
     </div>
