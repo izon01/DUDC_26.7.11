@@ -9,10 +9,10 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 const CACHE_KEY = "community-posts";
 
 const CATEGORY_STYLES = {
-  공지사항: "bg-red-100 text-red-700",
-  사내소식: "bg-blue-100 text-blue-700",
-  자유게시판: "bg-green-100 text-green-700",
-  기타: "bg-purple-100 text-purple-700",
+  공지사항: "bg-red-200 text-red-800",
+  사내소식: "bg-blue-200 text-blue-800",
+  자유게시판: "bg-green-200 text-green-800",
+  기타: "bg-purple-200 text-purple-800",
 };
 
 const CATEGORIES = Object.keys(CATEGORY_STYLES);
@@ -471,11 +471,11 @@ export default function Community() {
           }
           imageSrc="/img5.png"
           imageAlt="커뮤니티"
-          className="mt-4"
+          className="mt-4 border border-blue-100/50 shadow-sm"
         />
 
         {/* Stats Banner */}
-        <div className="w-full mt-4 bg-gray-100 rounded-2xl p-6 flex items-center justify-between shrink-0">
+        <div className="w-full mt-4 bg-gray-100 rounded-xl p-6 flex items-center justify-between shrink-0">
           <div>
             <p className="text-label-sm font-label-sm text-on-surface-variant mb-1">전체 게시글</p>
             <div className="flex items-baseline gap-2">
@@ -499,7 +499,7 @@ export default function Community() {
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
               placeholder="제목 또는 내용으로 검색"
-              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-outline-variant bg-white focus:border-primary focus:ring-0 text-body-md transition-all"
+              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-white shadow-sm focus:border-primary focus:ring-0 text-body-md transition-all"
             />
           </div>
           <div className="flex flex-wrap gap-2 shrink-0">
@@ -509,8 +509,8 @@ export default function Community() {
                 onClick={() => setSelectedCategory(cat)}
                 className={
                   cat === selectedCategory
-                    ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white transition-colors"
-                    : "px-4 py-2 rounded-full text-label-sm font-bold bg-gray-200 text-gray-700 hover:bg-gray-300 transition-colors"
+                    ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white shadow-sm transition-colors"
+                    : "px-4 py-2 rounded-full text-label-sm font-bold bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
                 }
               >
                 {cat}
@@ -532,12 +532,12 @@ export default function Community() {
                 : "검색 결과가 없습니다."}
             </p>
           ) : (
-            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-3">
               {visiblePosts.map((post) => (
                 <div
                   key={post.id}
                   onClick={() => setSelectedPostId(post.id)}
-                  className="bg-surface-container-lowest rounded-xl p-5 border border-outline-variant card-shadow flex flex-col justify-between hover:border-primary/50 transition-colors cursor-pointer group"
+                  className="bg-white rounded-xl p-5 border border-gray-100 shadow-sm flex flex-col justify-between hover:shadow-md transition-all cursor-pointer group"
                 >
                   <div>
                     <div className="flex items-center gap-2 mb-3">
