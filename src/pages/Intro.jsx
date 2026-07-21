@@ -47,11 +47,14 @@ export default function Intro() {
           <HeroBanner
             title={
               <>
-                <span className="text-primary">DUDC</span>의 새로운 가족이
+                <span className="text-primary">DUDC</span>와 함께,
                 <br />
-                되신 것을 환영합니다
+                새로운 시작을
+                <br />
+                더 큰 성장으로 이어가세요.
               </>
             }
+            subtitle="당신의 첫걸음부터 업무 적응까지, DUDC가 함께하겠습니다."
             imageSrc="/img3.png"
             imageAlt="Welcome"
           />

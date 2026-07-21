@@ -73,8 +73,20 @@ export default function MissionChecklist() {
       <main className="flex-1 flex flex-col items-center justify-start relative bg-[#F9FAFB] py-gutter pb-16 px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
-          title="온보딩 체크리스트"
-          subtitle="DUDC의 일원이 되신 것을 축하드립니다. 차근차근 첫 단추를 꿰어보세요."
+          title={
+            <>
+              하나씩,
+              <br />
+              함께 시작해요.
+            </>
+          }
+          subtitle={
+            <>
+              온보딩 체크리스트를 따라
+              <br />
+              차근차근 첫걸음을 완성해 보세요.
+            </>
+          }
           imageSrc="/img4.png"
           imageAlt="Onboarding"
           className="mb-10"

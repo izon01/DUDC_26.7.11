@@ -145,8 +145,20 @@ function Bookshelf({ onSelect }) {
       <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-6">
         {/* Champion Hero Banner — same component/regs as every other page */}
         <HeroBanner
-          title="업무 첫걸음 서재"
-          subtitle="필요한 파트를 선택해서 매뉴얼을 펼쳐보세요."
+          title={
+            <>
+              하나씩 배우고,
+              <br />
+              자신 있게 시작하세요.
+            </>
+          }
+          subtitle={
+            <>
+              첫 업무부터 실무 적응까지,
+              <br />
+              필요한 정보를 한곳에서 찾아보세요.
+            </>
+          }
           imageSrc="/img2.png"
           imageAlt="업무 첫걸음 서재"
         />

@@ -455,8 +455,20 @@ export default function Community() {
       <main className="flex-1 pt-2 pb-16 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
-          title="커뮤니티 광장"
-          subtitle="동료들과 자유롭게 소통하며 새로운 소식을 확인하세요."
+          title={
+            <>
+              함께하면
+              <br />
+              더 멀리 성장합니다.
+            </>
+          }
+          subtitle={
+            <>
+              동료들과 소통하며
+              <br />
+              DUDC의 문화를 함께 만들어가세요.
+            </>
+          }
           imageSrc="/img5.png"
           imageAlt="커뮤니티"
           className="mt-4"
