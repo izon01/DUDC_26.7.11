@@ -93,7 +93,7 @@ export default function MissionChecklist() {
         />
 
         {/* Checklist Card */}
-        <div className="w-full shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col h-[520px]">
+        <div className="w-full shrink-0 bg-white border border-outline-variant rounded-2xl overflow-hidden shadow-sm flex flex-col">
           {/* Tabs */}
           <div className="flex border-b border-outline-variant">
             {TABS.map((tab) => {
@@ -115,7 +115,7 @@ export default function MissionChecklist() {
           </div>
 
           {/* List Content */}
-          <div className="flex-1 p-8 overflow-y-auto custom-scroll relative">
+          <div className="flex-1 min-h-[520px] p-8 relative">
             <div className="grid grid-cols-1 md:grid-cols-2 gap-x-12 gap-y-6 relative z-10">
               {activeTab.items.map((item, idx) => {
                 const isChecked = activeChecked[idx];
