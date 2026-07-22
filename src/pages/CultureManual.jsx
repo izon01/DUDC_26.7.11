@@ -272,44 +272,43 @@ export default function CultureManual() {
           </div>
 
           {isAdmin && (
-            <button
-              onClick={openCreateEditor}
-              disabled={isReorderMode}
-              className="w-full mb-4 shrink-0 flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-            >
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              신규 포스트 등록
-            </button>
-          )}
-
-          {isAdmin && filteredGuides.length > 1 && (
-            <div className="mb-3 shrink-0 flex justify-end">
-              {!isReorderMode ? (
+            <div className="mb-3 shrink-0 flex gap-2">
+              <button
+                onClick={openCreateEditor}
+                disabled={isReorderMode}
+                className="flex-[8] flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                신규 포스트 등록
+              </button>
+              {filteredGuides.length > 1 && !isReorderMode && (
                 <button
                   onClick={enterReorderMode}
-                  className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant text-[12px] font-bold hover:bg-surface-container-highest transition-colors"
+                  title="순서 변경"
+                  className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors"
                 >
-                  <span className="material-symbols-outlined text-[16px]">swap_vert</span>
-                  순서 변경
+                  <span className="material-symbols-outlined text-[18px]">swap_vert</span>
                 </button>
-              ) : (
-                <div className="flex items-center gap-3">
-                  <button
-                    onClick={cancelReorder}
-                    disabled={isSavingOrder}
-                    className="text-on-surface-variant text-[12px] font-bold hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    취소
-                  </button>
-                  <button
-                    onClick={saveOrderToDB}
-                    disabled={isSavingOrder}
-                    className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                  >
-                    {isSavingOrder ? "저장 중..." : "저장"}
-                  </button>
-                </div>
               )}
+            </div>
+          )}
+
+          {isAdmin && isReorderMode && (
+            <div className="mb-3 shrink-0 flex items-center justify-end gap-3">
+              <button
+                onClick={cancelReorder}
+                disabled={isSavingOrder}
+                className="text-on-surface-variant text-[12px] font-bold hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+              >
+                취소
+              </button>
+              <button
+                onClick={saveOrderToDB}
+                disabled={isSavingOrder}
+                className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+              >
+                {isSavingOrder ? "저장 중..." : "저장"}
+              </button>
             </div>
           )}
 

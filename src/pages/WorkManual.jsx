@@ -526,66 +526,59 @@ export default function WorkManual() {
             </h2>
           </div>
           <div className="flex-1 overflow-y-auto custom-scrollbar p-4 space-y-1">
-            {isAdmin && (
-              <button
-                onClick={beginCreate}
-                disabled={isEditMode || isReorderMode}
-                className="w-full mb-4 flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <span className="material-symbols-outlined">add_circle</span>
-                신규 매뉴얼 등록
-              </button>
-            )}
-
-            <div className="mb-4 px-1">
-              <div className="flex items-center gap-2 mb-2">
-                <span className="material-symbols-outlined text-[18px] text-on-surface-variant">search</span>
-                <span className="text-sm font-medium text-secondary">매뉴얼 검색</span>
-              </div>
-              <div className="relative flex items-center">
-                <input
-                  className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
-                  placeholder="제목, 본문 내용으로 검색..."
-                  type="text"
-                  value={searchTerm}
-                  onChange={(e) => setSearchTerm(e.target.value)}
-                  disabled={isReorderMode}
-                />
-                <span className="absolute right-2 flex items-center justify-center w-8 h-8 bg-primary text-on-primary rounded-md">
-                  <span className="material-symbols-outlined text-[20px]">search</span>
-                </span>
-              </div>
+            <div className="relative flex items-center mb-4">
+              <input
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-sm pl-3 pr-10 py-2 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                placeholder="제목, 본문 내용으로 검색..."
+                type="text"
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                disabled={isReorderMode}
+              />
+              <span className="absolute right-2 flex items-center justify-center w-8 h-8 bg-primary text-on-primary rounded-md">
+                <span className="material-symbols-outlined text-[20px]">search</span>
+              </span>
             </div>
 
-            {isAdmin && filteredManuals.length > 1 && (
-              <div className="mb-3 px-1 flex justify-end">
-                {!isReorderMode ? (
+            {isAdmin && (
+              <div className="mb-3 flex gap-2">
+                <button
+                  onClick={beginCreate}
+                  disabled={isEditMode || isReorderMode}
+                  className="flex-[8] flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined">add_circle</span>
+                  신규 매뉴얼 등록
+                </button>
+                {filteredManuals.length > 1 && !isReorderMode && (
                   <button
                     onClick={enterReorderMode}
                     disabled={isEditMode}
-                    className="flex items-center gap-1.5 px-3 py-1.5 rounded-lg bg-surface-container-high text-on-surface-variant text-[12px] font-bold hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="순서 변경"
+                    className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined text-[16px]">swap_vert</span>
-                    순서 변경
+                    <span className="material-symbols-outlined text-[18px]">swap_vert</span>
                   </button>
-                ) : (
-                  <div className="flex items-center gap-3">
-                    <button
-                      onClick={cancelReorder}
-                      disabled={isSavingOrder}
-                      className="text-on-surface-variant text-[12px] font-bold hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      취소
-                    </button>
-                    <button
-                      onClick={saveOrderToDB}
-                      disabled={isSavingOrder}
-                      className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
-                    >
-                      {isSavingOrder ? "저장 중..." : "저장"}
-                    </button>
-                  </div>
                 )}
+              </div>
+            )}
+
+            {isAdmin && isReorderMode && (
+              <div className="mb-3 flex items-center justify-end gap-3">
+                <button
+                  onClick={cancelReorder}
+                  disabled={isSavingOrder}
+                  className="text-on-surface-variant text-[12px] font-bold hover:underline disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  취소
+                </button>
+                <button
+                  onClick={saveOrderToDB}
+                  disabled={isSavingOrder}
+                  className="px-3 py-1.5 rounded-lg bg-primary text-on-primary text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all disabled:opacity-50 disabled:cursor-not-allowed"
+                >
+                  {isSavingOrder ? "저장 중..." : "저장"}
+                </button>
               </div>
             )}
 
