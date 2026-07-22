@@ -9,11 +9,16 @@ import { requireAdmin } from "./_lib/auth.js";
 // SPA rewrite instead of the function) — this form works identically in
 // local dev and production.
 export default async function handler(req, res) {
-  try {
-    await ensureSchema();
-  } catch (error) {
-    console.error("work-manuals schema error:", error);
-    return res.status(500).json({ message: "데이터베이스 초기화 중 오류가 발생했습니다." });
+  // Skip the migration check on reads — it's idempotent and only matters for
+  // a fresh/empty DB, so paying its round-trip cost on every page load (the
+  // hot path) instead of only on writes was adding ~1s to every GET.
+  if (req.method !== "GET") {
+    try {
+      await ensureSchema();
+    } catch (error) {
+      console.error("work-manuals schema error:", error);
+      return res.status(500).json({ message: "데이터베이스 초기화 중 오류가 발생했습니다." });
+    }
   }
 
   if (req.method === "GET") {
