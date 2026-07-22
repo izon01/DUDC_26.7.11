@@ -178,20 +178,25 @@ function Bookshelf({ onSelect }) {
                   style={BOOK_TEXTURE_STYLE}
                 />
 
-                {/* Brand mark + icon + title band, centered on the cover */}
-                <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
-                  <span className="text-sm font-bold tracking-[0.2em] text-white/80 mt-4 mb-6">DUDC</span>
-                  <part.icon className="w-16 h-16 text-white drop-shadow-md mb-3" />
-                  <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
-                    <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-                      {part.title}
-                    </span>
-                  </div>
-                </div>
+                {/* Full-height column: brand mark pinned to top, icon+title band
+                    vertically centered in the remaining space, subtitle pinned
+                    to the bottom — so nothing overlaps regardless of content length */}
+                <div className="absolute inset-0 flex flex-col items-center py-6">
+                  <span className="text-sm font-bold tracking-[0.2em] text-white/80">DUDC</span>
 
-                <span className="absolute bottom-8 md:bottom-9 inset-x-4 text-gray-700 text-[11px] md:text-[12px] leading-relaxed text-center break-keep">
-                  {part.subtitle}
-                </span>
+                  <div className="flex-1 flex flex-col items-center justify-center w-full">
+                    <part.icon className="w-16 h-16 text-white drop-shadow-md mb-3" />
+                    <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
+                      <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+                        {part.title}
+                      </span>
+                    </div>
+                  </div>
+
+                  <span className="text-gray-700 text-[11px] md:text-[12px] leading-relaxed text-center break-keep px-4">
+                    {part.subtitle}
+                  </span>
+                </div>
 
                 {/* Bottom accent band in the part's point color */}
                 <div className="absolute bottom-0 inset-x-0 h-2" style={{ backgroundColor: part.accent }} />
