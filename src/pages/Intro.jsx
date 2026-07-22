@@ -17,16 +17,46 @@ const STRATEGIC_DIRECTIONS = [
 ];
 
 const BUSINESS_UNITS = [
-  { title: "🚜 택지개발사업", desc: "쾌적하고 안정적인 대규모 주택 건설 용지 조성" },
-  { title: "🏭 산업단지사업", desc: "기업 유치 및 지역 경제 활성화를 위한 맞춤형 산단 개발" },
-  { title: "🏙️ 도시개발사업", desc: "주거·상업·문화가 융합된 자족형 미래 신도시 조성" },
-  { title: "🌐 스마트도시사업", desc: "첨단 ICT 기술을 접목한 편리하고 안전한 스마트시티 구축" },
-  { title: "🌳 공원조성사업", desc: "시민의 삶의 질을 높이는 친환경 휴식 공간 조성" },
-  { title: "⚖️ 보상사업", desc: "공익사업 추진을 위한 투명하고 신속한 손실 보상 업무" },
-  { title: "🏢 공영주택건설", desc: "무주택 서민의 주거 안정을 위한 고품질 공공주택 건설" },
-  { title: "✨ 주거환경개선", desc: "노후 주거 지역을 정비하여 안전한 정주 여건 조성" },
-  { title: "💖 주거복지", desc: "청년 및 취약계층을 위한 맞춤형 임대주택 제공" },
-  { title: "🏊‍♂️ 유니버시아드레포츠센터", desc: "대구 시민 건강 증진을 위한 종합 체육 시설 운영" },
+  {
+    title: "🚜 택지개발사업",
+    desc: "시민들이 쾌적하고 안정적으로 거주할 수 있는 대규모 주택 건설 용지를 체계적으로 조성하고 공급합니다.",
+  },
+  {
+    title: "🏭 산업단지사업",
+    desc: "지역 경제 활성화와 우수 기업 유치를 위해 기반 시설이 완비된 맞춤형 산업단지를 개발합니다.",
+  },
+  {
+    title: "🏙️ 도시개발사업",
+    desc: "대구의 균형 발전을 목표로, 주거·상업·문화 인프라가 융합된 자족형 미래 신도시를 기획하고 조성합니다.",
+  },
+  {
+    title: "🌐 스마트도시사업",
+    desc: "최첨단 정보통신기술(ICT)을 도시 공간에 접목하여, 시민의 삶이 더욱 편리하고 안전해지는 스마트시티를 구축합니다.",
+  },
+  {
+    title: "🌳 공원조성사업",
+    desc: "도심 속에서도 자연을 누리며 삶의 질을 높일 수 있도록, 친환경적인 휴식 공간과 테마 공원을 조성합니다.",
+  },
+  {
+    title: "⚖️ 보상사업",
+    desc: "공익사업 추진 시 편입되는 토지와 지장물에 대해, 투명하고 정당한 기준을 바탕으로 신속한 손실 보상 업무를 수행합니다.",
+  },
+  {
+    title: "🏢 공영주택건설",
+    desc: "무주택 서민의 내 집 마련과 주거 안정을 위해, 튼튼하고 합리적인 가격의 고품질 공공주택을 직접 건설합니다.",
+  },
+  {
+    title: "✨ 주거환경개선",
+    desc: "기반 시설이 열악하고 낡은 노후 주거 지역을 체계적으로 정비하여, 안전하고 쾌적한 정주 여건으로 탈바꿈시킵니다.",
+  },
+  {
+    title: "💖 주거복지",
+    desc: "청년, 신혼부부, 취약계층을 위한 맞춤형 임대주택을 제공하여 든든한 주거 안전망을 실현합니다.",
+  },
+  {
+    title: "🏊 유니버시아드레포츠센터",
+    desc: "수영, 골프, 헬스 등 다양한 체육 시설과 프로그램을 운영하여 대구 시민의 건강 증진과 건전한 여가 생활을 지원합니다.",
+  },
 ];
 
 const TABS = [
@@ -139,18 +169,25 @@ export default function Intro() {
           ) : (
             /* 사업부 안내: 전체 너비 확장 그리드 */
             <section className="mt-12">
-              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6">
+              <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {BUSINESS_UNITS.map((unit) => (
                   <div
                     key={unit.title}
-                    className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all"
+                    className="h-full bg-white border border-gray-100 rounded-xl shadow-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all"
                   >
-                    <h3 className="font-bold text-blue-800 text-base tracking-tight whitespace-nowrap mb-2">
-                      {unit.title}
-                    </h3>
+                    <h3 className="font-bold text-blue-800 text-base tracking-tight mb-2">{unit.title}</h3>
                     <p className="text-gray-600 text-sm break-keep leading-relaxed">{unit.desc}</p>
                   </div>
                 ))}
+
+                {/* Wide closing card spanning the last row's empty 2 columns */}
+                <div className="h-full lg:col-span-2 bg-blue-50/50 border border-gray-100 rounded-xl shadow-sm p-6 hover:-translate-y-1 hover:shadow-md transition-all">
+                  <h3 className="font-bold text-blue-800 text-base tracking-tight mb-2">대구도시개발공사</h3>
+                  <p className="text-gray-600 text-sm break-keep leading-relaxed">
+                    시민 행복과 공간 미래가치를 창출하는 도시혁신 주도 공기업으로서, 대구시의 지속 가능한 발전과
+                    시민의 더 나은 삶을 기획하고 완성합니다.
+                  </p>
+                </div>
               </div>
             </section>
           )}
