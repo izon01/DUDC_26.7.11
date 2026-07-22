@@ -178,11 +178,10 @@ function Bookshelf({ onSelect }) {
                   style={BOOK_TEXTURE_STYLE}
                 />
 
-                {/* Icon badge + title band, centered on the cover */}
+                {/* Brand mark + icon + title band, centered on the cover */}
                 <div className="absolute inset-x-0 top-1/2 -translate-y-1/2 flex flex-col items-center">
-                  <span className="w-12 h-12 rounded-full bg-white/70 flex items-center justify-center mx-auto mb-3">
-                    <part.icon className="w-6 h-6" style={{ color: part.accent }} />
-                  </span>
+                  <span className="text-sm font-bold tracking-[0.2em] text-white/80 mt-4 mb-6">DUDC</span>
+                  <part.icon className="w-16 h-16 text-white drop-shadow-md mb-3" />
                   <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
                     <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
                       {part.title}
