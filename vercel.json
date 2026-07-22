@@ -1,5 +1,9 @@
 {
+  "regions": ["icn1"],
   "rewrites": [
     { "source": "/(.*)", "destination": "/index.html" }
+  ],
+  "crons": [
+    { "path": "/api/cron/keep-warm", "schedule": "*/10 * * * *" }
   ]
 }
