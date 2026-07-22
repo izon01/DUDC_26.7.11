@@ -85,9 +85,8 @@ export default function Intro() {
               <div className="flex flex-col gap-12 mb-14">
                 <div className="border-l-[6px] border-r-[6px] border-gray-100 px-12 py-8 text-center">
                   <p className="text-xl font-bold text-blue-800 mb-3">• 미션 •</p>
-                  <p className="text-gray-700 text-2xl font-extrabold break-keep leading-relaxed">
-                    산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에
-                    이바지한다.
+                  <p className="text-gray-700 text-lg font-extrabold whitespace-nowrap">
+                    산업단지 조성·주택건설 공급 등 도시개발사업을 통하여 대구시 지역발전과 시민생활의 안정에 이바지한다.
                   </p>
                 </div>
                 <div className="border-l-[6px] border-r-[6px] border-gray-100 px-12 py-8 text-center">
