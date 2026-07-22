@@ -73,6 +73,17 @@ export function ensureSchema() {
           WHERE c.id = ranked.id AND c.sort_order IS NULL
         `,
       ]);
+
+      // Every list query filters/sorts by these columns; Postgres doesn't
+      // auto-index a foreign key's referencing column (only the referenced
+      // side), so community_comments.post_id needs one explicitly for the
+      // per-post comment lookup and the list page's COUNT(...) JOIN.
+      await Promise.all([
+        sql`CREATE INDEX IF NOT EXISTS idx_work_manuals_sort_order ON work_manuals (sort_order ASC NULLS LAST, created_at ASC)`,
+        sql`CREATE INDEX IF NOT EXISTS idx_culture_posts_sort_order ON culture_posts (sort_order ASC NULLS LAST, created_at ASC)`,
+        sql`CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON community_posts (created_at DESC)`,
+        sql`CREATE INDEX IF NOT EXISTS idx_community_comments_post_id ON community_comments (post_id)`,
+      ]);
     })().catch((error) => {
       schemaReady = null;
       throw error;
