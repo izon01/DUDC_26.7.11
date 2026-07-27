@@ -2,7 +2,7 @@ import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 
-const DASHBOARD_PATH = "/work-manual";
+const DASHBOARD_PATH = "/intro";
 
 const initialFields = { email: "", password: "", name: "", affiliation: "" };
 

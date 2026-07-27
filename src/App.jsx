@@ -2,7 +2,6 @@ import { Suspense, lazy } from "react";
 import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import LandingPage from "./pages/LandingPage";
-import Home from "./pages/Home";
 import Intro from "./pages/Intro";
 import MissionChecklist from "./pages/MissionChecklist";
 import Community from "./pages/Community";
@@ -15,7 +14,7 @@ const CultureManual = lazy(() => import("./pages/CultureManual"));
 
 function RequireAuth({ children }) {
   const { isAuthenticated } = useAuth();
-  return isAuthenticated ? children : <Navigate to="/" replace />;
+  return isAuthenticated ? children : <Navigate to="/login" replace />;
 }
 
 function PageLoading() {
@@ -31,7 +30,8 @@ export default function App() {
 
   return (
     <Routes>
-      <Route path="/" element={isAuthenticated ? <Home /> : <LandingPage />} />
+      <Route path="/" element={<Navigate to={isAuthenticated ? "/intro" : "/login"} replace />} />
+      <Route path="/login" element={isAuthenticated ? <Navigate to="/intro" replace /> : <LandingPage />} />
       <Route
         path="/intro"
         element={
