@@ -84,6 +84,11 @@ export function ensureSchema() {
         sql`CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON community_posts (created_at DESC)`,
         sql`CREATE INDEX IF NOT EXISTS idx_community_comments_post_id ON community_comments (post_id)`,
       ]);
+
+      // The `users` table predates this file and is managed outside of it,
+      // but the admin dashboard needs a signup date to show/sort by — add it
+      // defensively in case it isn't already there.
+      await sql`ALTER TABLE users ADD COLUMN IF NOT EXISTS created_at TIMESTAMPTZ NOT NULL DEFAULT now()`;
     })().catch((error) => {
       schemaReady = null;
       throw error;

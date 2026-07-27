@@ -12,12 +12,16 @@ const NAV_ITEMS = [
   { label: "커뮤니티", path: "/community" },
 ];
 
+const ADMIN_NAV_ITEM = { label: "관리", path: "/admin" };
+
 export default function Header() {
   const { pathname } = useLocation();
   const { user, logout } = useAuth();
   const [isAuthModalOpen, setIsAuthModalOpen] = useState(false);
   const [isProfileModalOpen, setIsProfileModalOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+
+  const navItems = user?.role === "admin" ? [...NAV_ITEMS, ADMIN_NAV_ITEM] : NAV_ITEMS;
 
   function closeMobileMenu() {
     setIsMobileMenuOpen(false);
@@ -33,7 +37,7 @@ export default function Header() {
 
         {/* Center: Navigation Links (desktop/tablet only) */}
         <nav className="flex-1 hidden md:flex items-center justify-center gap-8 lg:gap-10">
-          {NAV_ITEMS.map((item) => {
+          {navItems.map((item) => {
             const isActive = pathname === item.path;
             return (
               <Link
@@ -102,7 +106,7 @@ export default function Header() {
       {isMobileMenuOpen && (
         <div className="md:hidden fixed top-[72px] left-0 w-full bg-surface-container-lowest border-b border-outline-variant shadow-lg z-40">
           <nav className="flex flex-col px-4 sm:px-6 py-3">
-            {NAV_ITEMS.map((item) => {
+            {navItems.map((item) => {
               const isActive = pathname === item.path;
               return (
                 <Link

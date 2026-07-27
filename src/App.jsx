@@ -11,10 +11,18 @@ import Community from "./pages/Community";
 // only paid by visitors who actually open a manual or culture-post editor.
 const WorkManual = lazy(() => import("./pages/WorkManual"));
 const CultureManual = lazy(() => import("./pages/CultureManual"));
+const Admin = lazy(() => import("./pages/Admin"));
 
 function RequireAuth({ children }) {
   const { isAuthenticated } = useAuth();
   return isAuthenticated ? children : <Navigate to="/login" replace />;
+}
+
+function RequireAdmin({ children }) {
+  const { isAuthenticated, user } = useAuth();
+  if (!isAuthenticated) return <Navigate to="/login" replace />;
+  if (user?.role !== "admin") return <Navigate to="/intro" replace />;
+  return children;
 }
 
 function PageLoading() {
@@ -74,6 +82,16 @@ export default function App() {
           <RequireAuth>
             <Community />
           </RequireAuth>
+        }
+      />
+      <Route
+        path="/admin"
+        element={
+          <RequireAdmin>
+            <Suspense fallback={<PageLoading />}>
+              <Admin />
+            </Suspense>
+          </RequireAdmin>
         }
       />
       <Route path="*" element={<Navigate to="/" replace />} />
