@@ -15,14 +15,24 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString("ko-KR");
 }
 
-function StatCard({ icon, label, value }) {
+function StatCard({ icon, label, value, iconBg, iconColor }) {
   return (
     <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-      <div className="flex items-center gap-3 mb-2">
-        <span className="material-symbols-outlined text-primary">{icon}</span>
+      <div className="flex items-center gap-3 mb-4">
+        <span className={`${iconBg} ${iconColor} p-3 rounded-full flex items-center justify-center shrink-0`}>
+          <span className="material-symbols-outlined">{icon}</span>
+        </span>
         <p className="text-gray-600 text-sm font-medium">{label}</p>
       </div>
       <p className="text-3xl font-extrabold text-gray-900">{value}</p>
+    </div>
+  );
+}
+
+function Avatar({ name }) {
+  return (
+    <div className="w-9 h-9 rounded-full bg-gray-100 flex items-center justify-center text-sm font-bold text-gray-600 shrink-0">
+      {name?.charAt(0) ?? "?"}
     </div>
   );
 }
@@ -125,7 +135,7 @@ export default function Admin() {
   }
 
   return (
-    <div className="min-h-screen w-full flex flex-col bg-background text-on-surface">
+    <div className="min-h-screen w-full flex flex-col bg-gray-50 text-on-surface">
       <Header />
 
       <main className="flex-1">
@@ -170,10 +180,34 @@ export default function Admin() {
               ) : (
                 <>
                   <div className="grid grid-cols-2 lg:grid-cols-4 gap-6 mb-12">
-                    <StatCard icon="group" label="총 가입자 수" value={stats.totals.users} />
-                    <StatCard icon="menu_book" label="업무 매뉴얼" value={stats.totals.workManuals} />
-                    <StatCard icon="theater_comedy" label="문화 포스트" value={stats.totals.culturePosts} />
-                    <StatCard icon="forum" label="커뮤니티 게시글" value={stats.totals.communityPosts} />
+                    <StatCard
+                      icon="group"
+                      label="총 가입자 수"
+                      value={stats.totals.users}
+                      iconBg="bg-blue-50"
+                      iconColor="text-blue-600"
+                    />
+                    <StatCard
+                      icon="menu_book"
+                      label="업무 매뉴얼"
+                      value={stats.totals.workManuals}
+                      iconBg="bg-purple-50"
+                      iconColor="text-purple-600"
+                    />
+                    <StatCard
+                      icon="theater_comedy"
+                      label="문화 포스트"
+                      value={stats.totals.culturePosts}
+                      iconBg="bg-amber-50"
+                      iconColor="text-amber-600"
+                    />
+                    <StatCard
+                      icon="forum"
+                      label="커뮤니티 게시글"
+                      value={stats.totals.communityPosts}
+                      iconBg="bg-green-50"
+                      iconColor="text-green-600"
+                    />
                   </div>
 
                   <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
@@ -182,14 +216,15 @@ export default function Admin() {
                       {stats.recentUsers.length === 0 ? (
                         <p className="text-sm text-gray-500">아직 가입자가 없습니다.</p>
                       ) : (
-                        <ul className="space-y-3">
+                        <ul className="divide-y divide-gray-100">
                           {stats.recentUsers.map((u) => (
-                            <li key={u.id} className="flex items-center justify-between gap-2 text-sm">
-                              <div className="min-w-0">
+                            <li key={u.id} className="flex items-center gap-3 py-3 first:pt-0 last:pb-0 text-sm">
+                              <Avatar name={u.name} />
+                              <div className="min-w-0 flex-1">
                                 <p className="font-medium text-gray-900 truncate">{u.name}</p>
                                 <p className="text-gray-500 text-xs truncate">{u.email}</p>
                               </div>
-                              <span className="text-gray-400 text-xs shrink-0">{formatDate(u.createdAt)}</span>
+                              <span className="text-gray-500 text-xs shrink-0">{formatDate(u.createdAt)}</span>
                             </li>
                           ))}
                         </ul>
@@ -201,14 +236,14 @@ export default function Admin() {
                       {stats.recentCommunityPosts.length === 0 ? (
                         <p className="text-sm text-gray-500">아직 게시글이 없습니다.</p>
                       ) : (
-                        <ul className="space-y-3">
+                        <ul className="divide-y divide-gray-100">
                           {stats.recentCommunityPosts.map((p) => (
-                            <li key={p.id} className="flex items-center justify-between gap-2 text-sm">
+                            <li key={p.id} className="flex items-center justify-between gap-2 py-3 first:pt-0 last:pb-0 text-sm">
                               <div className="min-w-0">
                                 <p className="font-medium text-gray-900 truncate">{p.title}</p>
                                 <p className="text-gray-500 text-xs truncate">{p.authorName}</p>
                               </div>
-                              <span className="text-gray-400 text-xs shrink-0">{formatDate(p.createdAt)}</span>
+                              <span className="text-gray-500 text-xs shrink-0">{formatDate(p.createdAt)}</span>
                             </li>
                           ))}
                         </ul>
@@ -242,7 +277,10 @@ export default function Admin() {
                         const isPending = pendingUserId === u.id;
                         return (
                           <tr key={u.id} className="border-b border-gray-50 last:border-0 hover:bg-gray-50/50">
-                            <td className="px-6 py-3 font-medium text-gray-900 whitespace-nowrap">{u.name}</td>
+                            <td className="px-6 py-3 whitespace-nowrap">
+                              <p className="font-medium text-gray-900">{u.name}</p>
+                              {u.affiliation && <p className="text-sm text-gray-500">{u.affiliation}</p>}
+                            </td>
                             <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{u.email}</td>
                             <td className="px-6 py-3 whitespace-nowrap">
                               <span
