@@ -19,20 +19,34 @@ export default async function handler(req, res) {
   }
 
   try {
-    const [userCount, manualCount, culturePostCount, communityPostCount, recentUsers, recentCommunityPosts] =
-      await Promise.all([
-        sql`SELECT COUNT(*)::int AS count FROM users`,
-        sql`SELECT COUNT(*)::int AS count FROM work_manuals`,
-        sql`SELECT COUNT(*)::int AS count FROM culture_posts`,
-        sql`SELECT COUNT(*)::int AS count FROM community_posts`,
-        sql`SELECT id, name, email, role, created_at AS "createdAt" FROM users ORDER BY created_at DESC LIMIT 5`,
-        sql`
-          SELECT id, title, author_name AS "authorName", created_at AS "createdAt"
-          FROM community_posts
-          ORDER BY created_at DESC
-          LIMIT 5
-        `,
-      ]);
+    const [
+      userCount,
+      manualCount,
+      culturePostCount,
+      communityPostCount,
+      newUsersWeekly,
+      newManualsWeekly,
+      newCulturePostsWeekly,
+      newCommunityPostsWeekly,
+      recentUsers,
+      recentCommunityPosts,
+    ] = await Promise.all([
+      sql`SELECT COUNT(*)::int AS count FROM users`,
+      sql`SELECT COUNT(*)::int AS count FROM work_manuals`,
+      sql`SELECT COUNT(*)::int AS count FROM culture_posts`,
+      sql`SELECT COUNT(*)::int AS count FROM community_posts`,
+      sql`SELECT COUNT(*)::int AS count FROM users WHERE created_at >= now() - interval '7 days'`,
+      sql`SELECT COUNT(*)::int AS count FROM work_manuals WHERE created_at >= now() - interval '7 days'`,
+      sql`SELECT COUNT(*)::int AS count FROM culture_posts WHERE created_at >= now() - interval '7 days'`,
+      sql`SELECT COUNT(*)::int AS count FROM community_posts WHERE created_at >= now() - interval '7 days'`,
+      sql`SELECT id, name, email, role, created_at AS "createdAt" FROM users ORDER BY created_at DESC LIMIT 5`,
+      sql`
+        SELECT id, title, author_name AS "authorName", created_at AS "createdAt"
+        FROM community_posts
+        ORDER BY created_at DESC
+        LIMIT 5
+      `,
+    ]);
 
     return res.status(200).json({
       totals: {
@@ -40,6 +54,13 @@ export default async function handler(req, res) {
         workManuals: manualCount.rows[0].count,
         culturePosts: culturePostCount.rows[0].count,
         communityPosts: communityPostCount.rows[0].count,
+      },
+      // New rows in the last 7 days, per stat — powers each card's trend badge.
+      weekly: {
+        users: newUsersWeekly.rows[0].count,
+        workManuals: newManualsWeekly.rows[0].count,
+        culturePosts: newCulturePostsWeekly.rows[0].count,
+        communityPosts: newCommunityPostsWeekly.rows[0].count,
       },
       recentUsers: recentUsers.rows,
       recentCommunityPosts: recentCommunityPosts.rows,

@@ -1,4 +1,5 @@
 import { useEffect, useState } from "react";
+import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import { useAuth } from "../context/AuthContext";
@@ -15,16 +16,44 @@ function formatDate(iso) {
   return new Date(iso).toLocaleDateString("ko-KR");
 }
 
-function StatCard({ icon, label, value, iconBg, iconColor }) {
+function StatCard({ icon, label, value, unit, trendText, iconBg, iconColor, actionLabel = "자세히 보기 →", actionTo, onActionClick }) {
   return (
-    <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6">
-      <div className="flex items-center gap-3 mb-4">
+    <div className="bg-white border border-gray-100 rounded-xl shadow-sm p-6 flex flex-col">
+      {/* Top: icon + title */}
+      <div className="flex items-center gap-3">
         <span className={`${iconBg} ${iconColor} p-3 rounded-full flex items-center justify-center shrink-0`}>
           <span className="material-symbols-outlined">{icon}</span>
         </span>
         <p className="text-gray-600 text-sm font-medium">{label}</p>
       </div>
-      <p className="text-3xl font-extrabold text-gray-900">{value}</p>
+
+      {/* Bottom: number + unit, trend badge — pushed to the right */}
+      <div className="mt-4 flex flex-col items-end text-right">
+        <p className="text-3xl font-extrabold text-gray-900">
+          {value}
+          <span className="text-base font-medium text-gray-500 ml-1">{unit}</span>
+        </p>
+        <span className="text-emerald-600 bg-emerald-50 px-2 py-1 rounded-full text-xs font-medium inline-block mt-2">
+          {trendText}
+        </span>
+      </div>
+
+      {/* Action link */}
+      <div className="border-t border-gray-100 mt-4 pt-3 flex justify-end">
+        {actionTo ? (
+          <Link to={actionTo} className="text-xs text-gray-400 font-medium hover:text-gray-600 cursor-pointer">
+            {actionLabel}
+          </Link>
+        ) : (
+          <button
+            type="button"
+            onClick={onActionClick}
+            className="text-xs text-gray-400 font-medium hover:text-gray-600 cursor-pointer"
+          >
+            {actionLabel}
+          </button>
+        )}
+      </div>
     </div>
   );
 }
@@ -184,29 +213,41 @@ export default function Admin() {
                       icon="group"
                       label="총 가입자 수"
                       value={stats.totals.users}
+                      unit="명"
+                      trendText={`↑ 이번 주 ${stats.weekly.users}명 신규`}
                       iconBg="bg-blue-50"
                       iconColor="text-blue-600"
+                      onActionClick={() => setActiveTab("users")}
                     />
                     <StatCard
                       icon="menu_book"
                       label="업무 매뉴얼"
                       value={stats.totals.workManuals}
+                      unit="건"
+                      trendText={`↑ 최근 ${stats.weekly.workManuals}건 추가`}
                       iconBg="bg-purple-50"
                       iconColor="text-purple-600"
+                      actionTo="/work-manual"
                     />
                     <StatCard
                       icon="theater_comedy"
                       label="문화 포스트"
                       value={stats.totals.culturePosts}
+                      unit="건"
+                      trendText={`↑ 최근 ${stats.weekly.culturePosts}건 추가`}
                       iconBg="bg-amber-50"
                       iconColor="text-amber-600"
+                      actionTo="/culture-manual"
                     />
                     <StatCard
                       icon="forum"
                       label="커뮤니티 게시글"
                       value={stats.totals.communityPosts}
+                      unit="건"
+                      trendText={`↑ 최근 ${stats.weekly.communityPosts}건 추가`}
                       iconBg="bg-green-50"
                       iconColor="text-green-600"
+                      actionTo="/community"
                     />
                   </div>
 
