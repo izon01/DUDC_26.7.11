@@ -87,7 +87,29 @@ export default async function handler(req, res) {
       }
     }
 
-    const { title, bodyHtml, checkPoints } = req.body ?? {};
+    const { title, bodyHtml, checkPoints, type: rawType } = req.body ?? {};
+
+    if (rawType === "label") {
+      if (!title || typeof title !== "string" || !title.trim()) {
+        return res.status(400).json({ message: "대제목 텍스트가 필요합니다." });
+      }
+      try {
+        const result = await sql`
+          UPDATE culture_posts
+          SET title = ${title}
+          WHERE id = ${id} AND type = 'label'
+          RETURNING id, title, body_html AS "bodyHtml", check_points AS "checkPoints", type, created_at AS "createdAt"
+        `;
+        if (result.rows.length === 0) {
+          return res.status(404).json({ message: "대제목을 찾을 수 없습니다." });
+        }
+        return res.status(200).json({ post: result.rows[0] });
+      } catch (error) {
+        console.error("culture-posts label PUT error:", error);
+        return res.status(500).json({ message: "대제목 수정 중 오류가 발생했습니다." });
+      }
+    }
+
     if (!title || typeof title !== "string" || typeof bodyHtml !== "string" || !Array.isArray(checkPoints)) {
       return res.status(400).json({ message: "제목, 본문, 체크포인트가 필요합니다." });
     }

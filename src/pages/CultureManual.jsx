@@ -242,6 +242,24 @@ export default function CultureManual() {
     }
   }
 
+  async function handleEditLabel(id, currentTitle) {
+    const text = window.prompt("대제목 텍스트를 수정하세요", currentTitle);
+    if (!text || !text.trim() || text.trim() === currentTitle) return;
+
+    try {
+      const res = await fetch(`/api/culture-posts?id=${id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ type: "label", title: text.trim() }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "대제목 수정에 실패했습니다.");
+      setGuides((prev) => prev.map((g) => (g.id === id ? data.post : g)));
+    } catch (error) {
+      window.alert(error.message);
+    }
+  }
+
   async function handleDeleteLabel(id, title) {
     if (!window.confirm(`"${title}" 대제목을 삭제하시겠습니까?`)) return;
 
@@ -396,15 +414,26 @@ export default function CultureManual() {
                         {highlightText(guide.title || "(제목 없음)", searchTerm)}
                       </span>
                       {isAdmin && !isReorderMode && (
-                        <button
-                          onClick={() => handleDeleteLabel(guide.id, guide.title)}
-                          title="대제목 삭제"
-                          className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
-                        >
-                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-                            close
-                          </span>
-                        </button>
+                        <div className="shrink-0 flex items-center gap-0.5">
+                          <button
+                            onClick={() => handleEditLabel(guide.id, guide.title)}
+                            title="대제목 수정"
+                            className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                              edit
+                            </span>
+                          </button>
+                          <button
+                            onClick={() => handleDeleteLabel(guide.id, guide.title)}
+                            title="대제목 삭제"
+                            className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                              close
+                            </span>
+                          </button>
+                        </div>
                       )}
                     </div>
                   </div>
