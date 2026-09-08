@@ -703,13 +703,13 @@ export default function WorkManual() {
               // while pages within (and across) them are draggable. Headers
               // are plain text (not draggable, no card) so they read as
               // dividers rather than list items.
-              CHAPTERS.map((chapter) => (
+              CHAPTERS.map((chapter, chapterIdx) => (
                 <div key={chapter.id}>
                   <div
                     onDragOver={(e) => handleDragOverChapterHeader(e, chapter.id)}
-                    className="px-2.5 pt-4 pb-1.5"
+                    className={`px-2.5 pb-1.5 ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
                   >
-                    <span className="text-[13px] font-bold text-on-surface-variant tracking-wide">
+                    <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
                       {chapter.title}
                     </span>
                   </div>
@@ -745,28 +745,30 @@ export default function WorkManual() {
                 {manuals.length > 0 && filteredManuals.length === 0 && (
                   <p className="px-2 py-4 text-center text-label-sm text-on-surface-variant">검색 결과가 없습니다.</p>
                 )}
-                {CHAPTERS.map((chapter) => (
+                {CHAPTERS.map((chapter, chapterIdx) => (
                 <div key={chapter.id}>
-                  <div className="px-2.5 pt-4 pb-1.5">
-                    <span className="text-[13px] font-bold text-on-surface-variant tracking-wide">
+                  <div className={`px-2.5 pb-1.5 ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}>
+                    <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
                       {chapter.title}
                     </span>
                   </div>
-                  {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
-                    <button
-                      key={manual.id}
-                      data-manual-id={manual.id}
-                      onClick={() => handleSelectManual(manual.id)}
-                      disabled={isEditMode}
-                      className={`block w-full text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
-                        manual.id === selectedManualId
-                          ? "bg-primary text-on-primary font-bold shadow-sm"
-                          : "hover:bg-surface-container-highest text-on-surface-variant"
-                      } ${isEditMode ? "opacity-40" : ""}`}
-                    >
-                      {highlightText(manual.title || "(제목 없음)", searchTerm)}
-                    </button>
-                  ))}
+                  <div className="space-y-0.5">
+                    {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
+                      <button
+                        key={manual.id}
+                        data-manual-id={manual.id}
+                        onClick={() => handleSelectManual(manual.id)}
+                        disabled={isEditMode}
+                        className={`block w-full text-left py-1.5 pl-6 pr-2.5 rounded-md text-sm transition disabled:cursor-not-allowed ${
+                          manual.id === selectedManualId
+                            ? "bg-primary text-white font-bold"
+                            : "text-gray-700 hover:bg-gray-100"
+                        } ${isEditMode ? "opacity-40" : ""}`}
+                      >
+                        {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                      </button>
+                    ))}
+                  </div>
                 </div>
                 ))}
               </>
