@@ -65,6 +65,12 @@ export function ensureSchema() {
         sql`ALTER TABLE culture_posts ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'page'`,
       ]);
 
+      // Work manuals now belong to one of 8 fixed chapters (see CHAPTERS in
+      // WorkManual.jsx) instead of the free-form label rows above — category
+      // is a plain 1-8 integer so sidebar grouping is a cheap filter, not a
+      // position-inference walk over sort_order.
+      await sql`ALTER TABLE work_manuals ADD COLUMN IF NOT EXISTS category INTEGER NOT NULL DEFAULT 1`;
+
       // One-time backfill for any row inserted before sort_order existed —
       // WHERE ... IS NULL makes this a no-op once every row has a value.
       await Promise.all([

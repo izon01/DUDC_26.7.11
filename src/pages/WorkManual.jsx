@@ -1,5 +1,14 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
-import { Building2, Coins, Leaf, Umbrella } from "lucide-react";
+import {
+  FileText,
+  FolderKanban,
+  Wallet,
+  MessageCircle,
+  CalendarClock,
+  GraduationCap,
+  ShieldCheck,
+  LayoutGrid,
+} from "lucide-react";
 import "ckeditor5/ckeditor5.css";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
@@ -18,38 +27,73 @@ const BookPageEditor = lazy(() => import("../components/BookPageEditor"));
 
 const CACHE_KEY = "work-manuals";
 
-const BOOKSHELF_PARTS = [
+// The 8 fixed chapters — single source of truth for the bookshelf cards, the
+// sidebar's always-visible category headers, and the category picker in the
+// edit modal. `id` doubles as the manual's `category` value in the DB (1-8).
+const CHAPTERS = [
   {
-    id: "mindset",
-    title: "마음가짐",
-    subtitle: "신입사원이 가져야 할 기본 마인드셋, 공사의 미션·비전 등",
-    icon: Leaf,
+    id: 1,
+    title: "제1장 서무란 무엇인가",
+    subtitle: "서무 업무의 기본 개념과 역할",
+    icon: FileText,
     gradient: "from-[#CFC4E8] to-[#E9E2F4]",
     accent: "#7E67C8",
   },
   {
-    id: "organization",
-    title: "조직·직무 이해",
-    subtitle: "회사 업무 안내, 성과관리, 승진, 교육",
-    icon: Building2,
+    id: 2,
+    title: "제2장 사무관리",
+    subtitle: "문서의 작성·수발신·보관까지 사무관리 전반",
+    icon: FolderKanban,
     gradient: "from-[#C9DDF0] to-[#E8F2FA]",
     accent: "#5E97C8",
   },
   {
-    id: "compensation",
-    title: "경제적 보상",
-    subtitle: "보수, 수당, 여비, 복지제도",
-    icon: Coins,
+    id: 3,
+    title: "제3장 지출업무",
+    subtitle: "예산 집행과 지출 처리 실무 절차",
+    icon: Wallet,
     gradient: "from-[#F7DFC0] to-[#FFF3DE]",
     accent: "#E7A53A",
   },
   {
-    id: "leave",
-    title: "휴가·복무제도",
-    subtitle: "연차, 휴직, 유연근무, 징계 등",
-    icon: Umbrella,
+    id: 4,
+    title: "제4장 민원업무",
+    subtitle: "민원 접수와 응대, 처리 프로세스",
+    icon: MessageCircle,
     gradient: "from-[#F5D4D7] to-[#FDECEE]",
     accent: "#D86A87",
+  },
+  {
+    id: 5,
+    title: "제5장 복무관리",
+    subtitle: "근태·휴가 등 복무 규정 전반",
+    icon: CalendarClock,
+    gradient: "from-[#C3E4D8] to-[#E8F5EF]",
+    accent: "#4FA98A",
+  },
+  {
+    id: 6,
+    title: "제6장 교육·봉사활동 및 복지제도",
+    subtitle: "사내 교육, 봉사활동, 복지제도 활용법",
+    icon: GraduationCap,
+    gradient: "from-[#F5E3B3] to-[#FBF3DC]",
+    accent: "#D9A441",
+  },
+  {
+    id: 7,
+    title: "제7장 개인정보·보안 및 AI 활용",
+    subtitle: "개인정보 보호와 보안 수칙, AI 활용 가이드",
+    icon: ShieldCheck,
+    gradient: "from-[#C7CEEB] to-[#E5E9F8]",
+    accent: "#5468C4",
+  },
+  {
+    id: 8,
+    title: "제8장 기타업무",
+    subtitle: "그 외 알아두면 좋은 기타 업무 안내",
+    icon: LayoutGrid,
+    gradient: "from-[#DADFE3] to-[#EFF2F4]",
+    accent: "#7C8794",
   },
 ];
 
@@ -114,9 +158,10 @@ function BookPage({ page, searchTerm, side, totalPages }) {
   );
 }
 
-// Apple Books-style landing shelf shown before a book is opened. Purely a
-// front-end entry point — selecting a part just reveals the existing
-// sidebar + book viewer below; it doesn't filter which manuals load.
+// Apple Books-style landing shelf shown before a book is opened. Each card
+// is one of the 8 fixed chapters; selecting one deep-links straight into
+// that chapter's first manual in the sidebar/book viewer below (see
+// handleSelectChapter in the parent).
 function Bookshelf({ onSelect }) {
   const [shelfSearchTerm, setShelfSearchTerm] = useState("");
   const query = shelfSearchTerm.trim().toLowerCase();
@@ -162,7 +207,7 @@ function Bookshelf({ onSelect }) {
 
         {/* Books resting on the shelf */}
         <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14">
-          {BOOKSHELF_PARTS.map((part) => {
+          {CHAPTERS.map((part) => {
             const isMatch =
               !query || part.title.toLowerCase().includes(query) || part.subtitle.toLowerCase().includes(query);
             return (
@@ -227,9 +272,7 @@ export default function WorkManual() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
-  const [selectedManualId, setSelectedManualId] = useState(
-    () => getCache(CACHE_KEY)?.find((m) => m.type !== "label")?.id ?? null
-  );
+  const [selectedManualId, setSelectedManualId] = useState(() => getCache(CACHE_KEY)?.[0]?.id ?? null);
   const [spreadIndex, setSpreadIndex] = useState(0);
 
   const setManuals = useCallback((updater) => {
@@ -265,8 +308,7 @@ export default function WorkManual() {
         if (!res.ok) throw new Error(data.message || "매뉴얼을 불러오지 못했습니다.");
         if (cancelled) return;
         setManuals(data.manuals);
-        const firstPage = data.manuals.find((m) => m.type !== "label");
-        if (firstPage) setSelectedManualId(firstPage.id);
+        if (data.manuals.length > 0) setSelectedManualId(data.manuals[0].id);
       } catch (error) {
         if (!cancelled) setLoadError(error.message);
       } finally {
@@ -280,14 +322,31 @@ export default function WorkManual() {
     };
   }, []);
 
+  // Scrolls the deep-linked manual into view when entering a chapter from
+  // the bookshelf — only on that transition, not on every sidebar click.
+  useEffect(() => {
+    if (selectedPartId === null) return;
+    document.querySelector(`[data-manual-id="${selectedManualId}"]`)?.scrollIntoView({ block: "nearest" });
+  }, [selectedPartId]);
+
   const filteredManuals = useMemo(() => {
     const term = debouncedSearchTerm.trim().toLowerCase();
     if (!term) return manuals;
     return manuals.filter((m) => manualSearchText(m).includes(term));
   }, [manuals, debouncedSearchTerm]);
 
-  const rawSelectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
-  const selectedManual = rawSelectedManual && rawSelectedManual.type !== "label" ? rawSelectedManual : null;
+  // One O(n) grouping pass instead of filtering the list once per chapter on
+  // every render — recomputed only when the (already-filtered) list changes.
+  const manualsByChapter = useMemo(() => {
+    const map = new Map(CHAPTERS.map((c) => [c.id, []]));
+    for (const manual of filteredManuals) {
+      const bucket = map.get(manual.category) ?? map.get(1);
+      bucket.push(manual);
+    }
+    return map;
+  }, [filteredManuals]);
+
+  const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
   const currentSpread = selectedManual ? selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0] : null;
   const totalPages = selectedManual ? selectedManual.spreads.length * 2 : 0;
   const progressPercent = totalPages ? Math.round(((spreadIndex + 1) * 2 * 100) / totalPages) : 0;
@@ -296,6 +355,15 @@ export default function WorkManual() {
     if (isEditMode || isReorderMode) return;
     setSelectedManualId(id);
     setSpreadIndex(0);
+  }
+
+  // Deep link from a bookshelf card straight into that chapter's first
+  // manual — no extra click needed to find it in the sidebar.
+  function handleSelectChapter(chapterId) {
+    const firstInChapter = manuals.find((m) => m.category === chapterId);
+    setSelectedManualId(firstInChapter?.id ?? null);
+    setSpreadIndex(0);
+    setSelectedPartId(chapterId);
   }
 
   function goPrev() {
@@ -338,6 +406,7 @@ export default function WorkManual() {
     const newManual = {
       id: draftId,
       title: "",
+      category: selectedPartId ?? 1,
       spreads: [
         {
           left: { heading: "", html: "", pageNum: 1 },
@@ -382,7 +451,11 @@ export default function WorkManual() {
         const res = await fetch("/api/work-manuals", {
           method: "POST",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ title: selectedManual.title, spreads: selectedManual.spreads }),
+          body: JSON.stringify({
+            title: selectedManual.title,
+            spreads: selectedManual.spreads,
+            category: selectedManual.category,
+          }),
         });
         const data = await parseJsonSafely(res);
         if (!res.ok) throw new Error(data.message || "매뉴얼 생성에 실패했습니다.");
@@ -392,7 +465,11 @@ export default function WorkManual() {
         const res = await fetch(`/api/work-manuals?id=${selectedManualId}`, {
           method: "PUT",
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-          body: JSON.stringify({ title: selectedManual.title, spreads: selectedManual.spreads }),
+          body: JSON.stringify({
+            title: selectedManual.title,
+            spreads: selectedManual.spreads,
+            category: selectedManual.category,
+          }),
         });
         const data = await parseJsonSafely(res);
         if (!res.ok) throw new Error(data.message || "매뉴얼 수정에 실패했습니다.");
@@ -408,7 +485,7 @@ export default function WorkManual() {
   }
 
   async function handleDeleteManual() {
-    if (manuals.filter((m) => m.type !== "label").length <= 1) {
+    if (manuals.length <= 1) {
       window.alert("최소 1개의 매뉴얼은 남아 있어야 합니다.");
       return;
     }
@@ -424,60 +501,8 @@ export default function WorkManual() {
 
       const remaining = manuals.filter((m) => m.id !== selectedManualId);
       setManuals(remaining);
-      setSelectedManualId(remaining.find((m) => m.type !== "label")?.id ?? null);
+      setSelectedManualId(remaining[0]?.id ?? null);
       setSpreadIndex(0);
-    } catch (error) {
-      window.alert(error.message);
-    }
-  }
-
-  async function handleAddLabel() {
-    const text = window.prompt("대제목 텍스트를 입력하세요 (예: 제1장 서무란 무엇인가)");
-    if (!text || !text.trim()) return;
-
-    try {
-      const res = await fetch("/api/work-manuals", {
-        method: "POST",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ type: "label", title: text.trim() }),
-      });
-      const data = await parseJsonSafely(res);
-      if (!res.ok) throw new Error(data.message || "대제목 추가에 실패했습니다.");
-      setManuals((prev) => [...prev, data.manual]);
-    } catch (error) {
-      window.alert(error.message);
-    }
-  }
-
-  async function handleEditLabel(id, currentTitle) {
-    const text = window.prompt("대제목 텍스트를 수정하세요", currentTitle);
-    if (!text || !text.trim() || text.trim() === currentTitle) return;
-
-    try {
-      const res = await fetch(`/api/work-manuals?id=${id}`, {
-        method: "PUT",
-        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ type: "label", title: text.trim() }),
-      });
-      const data = await parseJsonSafely(res);
-      if (!res.ok) throw new Error(data.message || "대제목 수정에 실패했습니다.");
-      setManuals((prev) => prev.map((m) => (m.id === id ? data.manual : m)));
-    } catch (error) {
-      window.alert(error.message);
-    }
-  }
-
-  async function handleDeleteLabel(id, title) {
-    if (!window.confirm(`"${title}" 대제목을 삭제하시겠습니까?`)) return;
-
-    try {
-      const res = await fetch(`/api/work-manuals?id=${id}`, {
-        method: "DELETE",
-        headers: { Authorization: `Bearer ${token}` },
-      });
-      const data = await parseJsonSafely(res);
-      if (!res.ok) throw new Error(data.message || "대제목 삭제에 실패했습니다.");
-      setManuals((prev) => prev.filter((m) => m.id !== id));
     } catch (error) {
       window.alert(error.message);
     }
@@ -540,6 +565,12 @@ export default function WorkManual() {
     setManuals((prev) => prev.map((manual) => (manual.id === selectedManualId ? { ...manual, title: value } : manual)));
   }
 
+  function updateManualCategory(category) {
+    setManuals((prev) =>
+      prev.map((manual) => (manual.id === selectedManualId ? { ...manual, category } : manual))
+    );
+  }
+
   function updatePageField(side, field, value) {
     setManuals((prev) =>
       prev.map((manual) => {
@@ -556,7 +587,7 @@ export default function WorkManual() {
     return (
       <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
         <Header />
-        <Bookshelf onSelect={setSelectedPartId} />
+        <Bookshelf onSelect={handleSelectChapter} />
       </div>
     );
   }
@@ -597,35 +628,23 @@ export default function WorkManual() {
             </div>
 
             {isAdmin && (
-              <div className="mb-3 space-y-2">
-                <div className="flex gap-2">
+              <div className="mb-3 flex gap-2">
+                <button
+                  onClick={beginCreate}
+                  disabled={isEditMode || isReorderMode}
+                  className="flex-[8] flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
+                >
+                  <span className="material-symbols-outlined">add_circle</span>
+                  신규 매뉴얼 등록
+                </button>
+                {filteredManuals.length > 1 && !isReorderMode && (
                   <button
-                    onClick={beginCreate}
-                    disabled={isEditMode || isReorderMode}
-                    className="flex-[8] flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                  >
-                    <span className="material-symbols-outlined">add_circle</span>
-                    신규 매뉴얼 등록
-                  </button>
-                  {filteredManuals.length > 1 && !isReorderMode && (
-                    <button
-                      onClick={enterReorderMode}
-                      disabled={isEditMode}
-                      title="순서 변경"
-                      className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
-                    >
-                      <span className="material-symbols-outlined text-[18px]">swap_vert</span>
-                    </button>
-                  )}
-                </div>
-                {!isReorderMode && (
-                  <button
-                    onClick={handleAddLabel}
+                    onClick={enterReorderMode}
                     disabled={isEditMode}
-                    className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-[13px] hover:border-primary hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                    title="순서 변경"
+                    className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined text-[18px]">label</span>
-                    대제목 추가
+                    <span className="material-symbols-outlined text-[18px]">swap_vert</span>
                   </button>
                 )}
               </div>
@@ -652,93 +671,54 @@ export default function WorkManual() {
 
             {isLoading ? (
               <SkeletonList count={5} />
-            ) : filteredManuals.length === 0 ? (
-              <p className="px-2 py-6 text-center text-label-sm text-on-surface-variant">
-                {manuals.length === 0 ? "등록된 매뉴얼이 없습니다." : "검색 결과가 없습니다."}
-              </p>
-            ) : (
-              filteredManuals.map((manual, idx) => {
-                if (manual.type === "label") {
-                  return (
-                    <div
-                      key={manual.id}
-                      draggable={isReorderMode}
-                      onDragStart={() => handleDragStart(idx)}
-                      onDragOver={(e) => handleDragOver(e, idx)}
-                      onDragEnd={handleDragEnd}
-                      className={
-                        isReorderMode
-                          ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
-                              dragIndex === idx ? "opacity-40" : "opacity-100"
-                            }`
-                          : "flex items-center"
-                      }
-                    >
-                      {isReorderMode && (
-                        <span
-                          className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
-                          style={{ fontSize: "18px" }}
-                        >
-                          drag_indicator
-                        </span>
-                      )}
-                      <div className="flex-1 min-w-0 px-2.5 pt-4 pb-1.5 flex items-center justify-between gap-2">
-                        <span className="text-[13px] font-bold text-on-surface-variant tracking-wide truncate">
-                          {highlightText(manual.title || "(제목 없음)", searchTerm)}
-                        </span>
-                        {isAdmin && !isReorderMode && (
-                          <div className="shrink-0 flex items-center gap-0.5">
-                            <button
-                              onClick={() => handleEditLabel(manual.id, manual.title)}
-                              title="대제목 수정"
-                              className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-                                edit
-                              </span>
-                            </button>
-                            <button
-                              onClick={() => handleDeleteLabel(manual.id, manual.title)}
-                              title="대제목 삭제"
-                              className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
-                            >
-                              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-                                close
-                              </span>
-                            </button>
-                          </div>
-                        )}
-                      </div>
-                    </div>
-                  );
-                }
-                return (
-                  <div
-                    key={manual.id}
-                    draggable={isReorderMode}
-                    onDragStart={() => handleDragStart(idx)}
-                    onDragOver={(e) => handleDragOver(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    className={
-                      isReorderMode
-                        ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
-                            dragIndex === idx ? "opacity-40" : "opacity-100"
-                          }`
-                        : "flex items-center"
-                    }
+            ) : isReorderMode ? (
+              // Reorder mode: a flat draggable list (unwrapped from chapter
+              // headers) so drag indices map 1:1 onto the manuals array that
+              // handleDragStart/Over/End operate on.
+              filteredManuals.map((manual, idx) => (
+                <div
+                  key={manual.id}
+                  draggable
+                  onDragStart={() => handleDragStart(idx)}
+                  onDragOver={(e) => handleDragOver(e, idx)}
+                  onDragEnd={handleDragEnd}
+                  className={`flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
+                    dragIndex === idx ? "opacity-40" : "opacity-100"
+                  }`}
+                >
+                  <span
+                    className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
+                    style={{ fontSize: "18px" }}
                   >
-                    {isReorderMode && (
-                      <span
-                        className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
-                        style={{ fontSize: "18px" }}
-                      >
-                        drag_indicator
-                      </span>
-                    )}
+                    drag_indicator
+                  </span>
+                  <span className="flex-1 min-w-0 text-left p-2.5 text-sm text-on-surface-variant truncate">
+                    {manual.title || "(제목 없음)"}
+                  </span>
+                </div>
+              ))
+            ) : (
+              // Normal mode: the 8 chapters are always shown, in order, as
+              // fixed non-interactive headers — manuals list flat underneath
+              // whichever chapter they're assigned to.
+              <>
+                {manuals.length > 0 && filteredManuals.length === 0 && (
+                  <p className="px-2 py-4 text-center text-label-sm text-on-surface-variant">검색 결과가 없습니다.</p>
+                )}
+                {CHAPTERS.map((chapter) => (
+                <div key={chapter.id}>
+                  <div className="px-2.5 pt-4 pb-1.5">
+                    <span className="text-[13px] font-bold text-on-surface-variant tracking-wide">
+                      {chapter.title}
+                    </span>
+                  </div>
+                  {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
                     <button
+                      key={manual.id}
+                      data-manual-id={manual.id}
                       onClick={() => handleSelectManual(manual.id)}
-                      disabled={isEditMode || isReorderMode}
-                      className={`flex-1 min-w-0 text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
+                      disabled={isEditMode}
+                      className={`block w-full text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
                         manual.id === selectedManualId
                           ? "bg-primary text-on-primary font-bold shadow-sm"
                           : "hover:bg-surface-container-highest text-on-surface-variant"
@@ -746,9 +726,10 @@ export default function WorkManual() {
                     >
                       {highlightText(manual.title || "(제목 없음)", searchTerm)}
                     </button>
-                  </div>
-                );
-              })
+                  ))}
+                </div>
+                ))}
+              </>
             )}
           </div>
         </aside>
@@ -756,13 +737,26 @@ export default function WorkManual() {
         {/* Main Stage */}
         <main className="flex-1 min-h-0 flex flex-col relative bg-[#f1f4f9] overflow-hidden">
           {isAdmin && isEditMode && (
-            <input
-              type="text"
-              value={selectedManual.title}
-              onChange={(e) => updateManualTitle(e.target.value)}
-              placeholder="매뉴얼 제목을 입력하세요"
-              className="absolute top-6 left-1/2 -translate-x-1/2 z-20 w-[360px] px-4 py-2 rounded-full border-2 border-primary/30 bg-white text-center font-bold text-on-surface focus:border-primary focus:ring-0 outline-none transition-colors"
-            />
+            <div className="absolute top-6 left-1/2 -translate-x-1/2 z-20 flex items-center gap-2">
+              <select
+                value={selectedManual.category ?? 1}
+                onChange={(e) => updateManualCategory(Number(e.target.value))}
+                className="px-3 py-2 rounded-full border-2 border-primary/30 bg-white text-[13px] font-bold text-on-surface focus:border-primary focus:ring-0 outline-none transition-colors max-w-[180px]"
+              >
+                {CHAPTERS.map((chapter) => (
+                  <option key={chapter.id} value={chapter.id}>
+                    {chapter.title}
+                  </option>
+                ))}
+              </select>
+              <input
+                type="text"
+                value={selectedManual.title}
+                onChange={(e) => updateManualTitle(e.target.value)}
+                placeholder="매뉴얼 제목을 입력하세요"
+                className="w-[300px] px-4 py-2 rounded-full border-2 border-primary/30 bg-white text-center font-bold text-on-surface focus:border-primary focus:ring-0 outline-none transition-colors"
+              />
+            </div>
           )}
 
           {isAdmin && selectedManual && (

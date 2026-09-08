@@ -3,6 +3,13 @@ import { randomUUID } from "node:crypto";
 import { batchUpdateSortOrder, ensureSchema } from "./_lib/db.js";
 import { requireAdmin } from "./_lib/auth.js";
 
+const CHAPTER_COUNT = 8;
+
+function clampCategory(value) {
+  const num = Number(value);
+  return Number.isInteger(num) && num >= 1 && num <= CHAPTER_COUNT ? num : 1;
+}
+
 // PUT/DELETE target a single manual via ?id=<uuid> rather than a
 // /work-manuals/[id] dynamic route file, since vercel dev's local routing
 // on Windows fails to resolve nested bracket routes (falls through to the
@@ -24,7 +31,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     try {
       const result = await sql`
-        SELECT id, title, spreads, type, created_at AS "createdAt"
+        SELECT id, title, spreads, category, created_at AS "createdAt"
         FROM work_manuals
         ORDER BY sort_order ASC NULLS LAST, created_at ASC
       `;
@@ -39,26 +46,20 @@ export default async function handler(req, res) {
     const admin = requireAdmin(req, res);
     if (!admin) return;
 
-    const { title, spreads, type: rawType } = req.body ?? {};
-    const type = rawType === "label" ? "label" : "page";
-
-    if (type === "label") {
-      if (!title || typeof title !== "string" || !title.trim()) {
-        return res.status(400).json({ message: "대제목 텍스트가 필요합니다." });
-      }
-    } else if (!title || typeof title !== "string" || !Array.isArray(spreads)) {
+    const { title, spreads, category } = req.body ?? {};
+    if (!title || typeof title !== "string" || !Array.isArray(spreads)) {
       return res.status(400).json({ message: "제목과 스프레드 데이터가 필요합니다." });
     }
 
     try {
       const id = randomUUID();
       const result = await sql`
-        INSERT INTO work_manuals (id, title, spreads, type, sort_order)
+        INSERT INTO work_manuals (id, title, spreads, category, sort_order)
         VALUES (
-          ${id}, ${title}, ${JSON.stringify(type === "label" ? [] : spreads)}::jsonb, ${type},
+          ${id}, ${title}, ${JSON.stringify(spreads)}::jsonb, ${clampCategory(category)},
           COALESCE((SELECT MAX(sort_order) FROM work_manuals), -1) + 1
         )
-        RETURNING id, title, spreads, type, created_at AS "createdAt"
+        RETURNING id, title, spreads, category, created_at AS "createdAt"
       `;
       return res.status(201).json({ manual: result.rows[0] });
     } catch (error) {
@@ -87,29 +88,7 @@ export default async function handler(req, res) {
       }
     }
 
-    const { title, spreads, type: rawType } = req.body ?? {};
-
-    if (rawType === "label") {
-      if (!title || typeof title !== "string" || !title.trim()) {
-        return res.status(400).json({ message: "대제목 텍스트가 필요합니다." });
-      }
-      try {
-        const result = await sql`
-          UPDATE work_manuals
-          SET title = ${title}
-          WHERE id = ${id} AND type = 'label'
-          RETURNING id, title, spreads, type, created_at AS "createdAt"
-        `;
-        if (result.rows.length === 0) {
-          return res.status(404).json({ message: "대제목을 찾을 수 없습니다." });
-        }
-        return res.status(200).json({ manual: result.rows[0] });
-      } catch (error) {
-        console.error("work-manuals label PUT error:", error);
-        return res.status(500).json({ message: "대제목 수정 중 오류가 발생했습니다." });
-      }
-    }
-
+    const { title, spreads, category } = req.body ?? {};
     if (!title || typeof title !== "string" || !Array.isArray(spreads)) {
       return res.status(400).json({ message: "제목과 스프레드 데이터가 필요합니다." });
     }
@@ -117,9 +96,9 @@ export default async function handler(req, res) {
     try {
       const result = await sql`
         UPDATE work_manuals
-        SET title = ${title}, spreads = ${JSON.stringify(spreads)}::jsonb
+        SET title = ${title}, spreads = ${JSON.stringify(spreads)}::jsonb, category = ${clampCategory(category)}
         WHERE id = ${id}
-        RETURNING id, title, spreads, type, created_at AS "createdAt"
+        RETURNING id, title, spreads, category, created_at AS "createdAt"
       `;
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "매뉴얼을 찾을 수 없습니다." });
