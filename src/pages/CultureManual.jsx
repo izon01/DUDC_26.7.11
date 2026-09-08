@@ -295,6 +295,7 @@ export default function CultureManual() {
             }
             onCancel={closeEditor}
             onSave={handleSaveEditor}
+            uploadToken={token}
           />
         </Suspense>
       </div>

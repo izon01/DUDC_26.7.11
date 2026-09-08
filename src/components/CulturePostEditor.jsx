@@ -8,11 +8,11 @@ import { stripHtml } from "../utils/html";
 //
 // Lazy-loaded from CultureManual so CKEditor (~1MB) is only fetched once an
 // admin actually opens the editor, not by every visitor reading a post.
-export default function CulturePostEditor({ mode, initialValues, isSaving, onCancel, onSave }) {
+export default function CulturePostEditor({ mode, initialValues, isSaving, onCancel, onSave, uploadToken }) {
   const [title, setTitle] = useState(initialValues.title);
   const [bodyHtml, setBodyHtml] = useState(initialValues.bodyHtml);
   const [checkPointsText, setCheckPointsText] = useState(initialValues.checkPoints.join("\n"));
-  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문 내용을 자유롭게 작성해보세요."));
+  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문 내용을 자유롭게 작성해보세요.", uploadToken));
 
   function handleSubmit() {
     const trimmedTitle = title.trim();

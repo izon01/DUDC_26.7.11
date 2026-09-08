@@ -8,8 +8,8 @@ import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
 //
 // Lazy-loaded from WorkManual so CKEditor (~1MB) is only fetched once an
 // admin actually enters edit mode, not by every visitor reading a manual.
-export default function BookPageEditor({ html, pageNum, onHtmlChange, editorKey, side, totalPages }) {
-  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문을 작성해보세요."));
+export default function BookPageEditor({ html, pageNum, onHtmlChange, editorKey, side, totalPages, uploadToken }) {
+  const [ckeditorConfig] = useState(() => createCkeditorConfig("본문을 작성해보세요.", uploadToken));
 
   return (
     <div className="w-full h-full min-h-full px-14 pt-10 pb-16 relative break-keep flex flex-col">

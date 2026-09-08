@@ -21,7 +21,14 @@ import {
   BlockQuote,
   List,
   Link,
+  Image,
+  ImageUpload,
+  ImageToolbar,
+  ImageStyle,
+  ImageResize,
+  ImageTextAlternative,
 } from "ckeditor5";
+import { createUploadAdapterPlugin } from "./ckeditorUploadAdapter";
 
 export { ClassicEditor };
 
@@ -47,6 +54,12 @@ const CKEDITOR_PLUGINS = [
   BlockQuote,
   List,
   Link,
+  Image,
+  ImageUpload,
+  ImageToolbar,
+  ImageStyle,
+  ImageResize,
+  ImageTextAlternative,
 ];
 
 const CKEDITOR_TOOLBAR = [
@@ -70,6 +83,7 @@ const CKEDITOR_TOOLBAR = [
   "blockQuote",
   "insertTable",
   "link",
+  "uploadImage",
   "|",
   "undo",
   "redo",
@@ -77,11 +91,18 @@ const CKEDITOR_TOOLBAR = [
 
 // Self-hosted CKEditor 5 requires a licenseKey; "GPL" opts into the free,
 // open-source distribution (shows a small "Powered by CKEditor" badge).
-export function createCkeditorConfig(placeholder) {
+//
+// `uploadToken` is the admin's JWT — the upload adapter sends it as a Bearer
+// token to /api/upload-image, which is admin-gated the same way every other
+// write endpoint in this app is.
+export function createCkeditorConfig(placeholder, uploadToken) {
   return {
     licenseKey: "GPL",
-    plugins: CKEDITOR_PLUGINS,
+    plugins: [...CKEDITOR_PLUGINS, createUploadAdapterPlugin(uploadToken)],
     toolbar: CKEDITOR_TOOLBAR,
+    image: {
+      toolbar: ["imageStyle:inline", "imageStyle:wrapText", "imageStyle:breakText", "|", "imageTextAlternative"],
+    },
     fontFamily: {
       options: [
         "default",

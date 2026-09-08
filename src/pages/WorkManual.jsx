@@ -859,6 +859,7 @@ export default function WorkManual() {
                             onHtmlChange={(v) => updatePageField("left", "html", v)}
                             side="left"
                             totalPages={totalPages}
+                            uploadToken={token}
                           />
                         </Suspense>
                       ) : (
@@ -875,6 +876,7 @@ export default function WorkManual() {
                             onHtmlChange={(v) => updatePageField("right", "html", v)}
                             side="right"
                             totalPages={totalPages}
+                            uploadToken={token}
                           />
                         </Suspense>
                       ) : (
