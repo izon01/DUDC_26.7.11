@@ -178,9 +178,65 @@ function BookshelfCardTitle({ title }) {
   );
 }
 
+const TOP_ROW_CHAPTERS = CHAPTERS.slice(0, 4);
+const BOTTOM_ROW_CHAPTERS = CHAPTERS.slice(4, 8);
+
+function BookCard({ part, onSelect }) {
+  return (
+    <button
+      type="button"
+      onClick={() => onSelect(part.id)}
+      className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md border-r-[3px] border-b-[3px] border-gray-100 overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER}`}
+    >
+      {/* Paper-grain texture */}
+      <div
+        className="absolute inset-0 opacity-[0.18] mix-blend-overlay pointer-events-none"
+        style={BOOK_TEXTURE_STYLE}
+      />
+
+      {/* Full-height column: brand mark pinned to top, icon+title band
+          vertically centered in the remaining space, subtitle pinned
+          to the bottom — so nothing overlaps regardless of content length */}
+      <div className="absolute inset-0 flex flex-col items-center py-6">
+        <span className="text-sm font-bold tracking-[0.2em] text-white/80">DUDC</span>
+
+        <div className="flex-1 flex flex-col items-center justify-center w-full">
+          <part.icon className="w-16 h-16 text-white drop-shadow-md mb-3" />
+          <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
+            <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
+              <BookshelfCardTitle title={part.title} />
+            </span>
+          </div>
+        </div>
+
+        <span className="text-gray-700 text-[11px] md:text-[12px] leading-relaxed text-center break-keep px-4">
+          {part.subtitle}
+        </span>
+      </div>
+
+      {/* Bottom accent band in the part's point color */}
+      <div className="absolute bottom-0 inset-x-0 h-2" style={{ backgroundColor: part.accent }} />
+    </button>
+  );
+}
+
+// Clean white two-layer ledge (flat top face + a barely-shaded front face)
+// with a real drop shadow underneath — reads as a modern floating shelf
+// rather than a wood plank, and needs the shadow (not color) to carry the
+// 3D read since both faces are near-white.
+function ShelfBoard() {
+  return (
+    <div className="w-full mt-2">
+      <div className="h-2 bg-white rounded-t-md border border-gray-100 border-b-0" />
+      <div className="h-4 bg-gray-50 rounded-b-md shadow-md" />
+    </div>
+  );
+}
+
 // Apple Books-style landing shelf shown before a book is opened. Each card
-// is one of the 8 fixed chapters; selecting one deep-links straight into
-// that chapter's first manual in the sidebar/book viewer below (see
+// is one of the 8 fixed chapters, laid out as two explicit 4-book rows —
+// each row sits on its own shelf — selecting a book deep-links straight
+// into that chapter's first manual in the sidebar/book viewer below (see
 // handleSelectChapter in the parent).
 function Bookshelf({ onSelect }) {
   return (
@@ -206,55 +262,24 @@ function Bookshelf({ onSelect }) {
           imageAlt="업무 첫걸음 서재"
         />
 
-        {/* Books resting on the shelf */}
-        <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14 mt-14">
-          {CHAPTERS.map((part) => {
-            return (
-              <button
-                key={part.id}
-                type="button"
-                onClick={() => onSelect(part.id)}
-                className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md border-r-[3px] border-b-[3px] border-gray-100 overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER}`}
-              >
-                {/* Paper-grain texture */}
-                <div
-                  className="absolute inset-0 opacity-[0.18] mix-blend-overlay pointer-events-none"
-                  style={BOOK_TEXTURE_STYLE}
-                />
-
-                {/* Full-height column: brand mark pinned to top, icon+title band
-                    vertically centered in the remaining space, subtitle pinned
-                    to the bottom — so nothing overlaps regardless of content length */}
-                <div className="absolute inset-0 flex flex-col items-center py-6">
-                  <span className="text-sm font-bold tracking-[0.2em] text-white/80">DUDC</span>
-
-                  <div className="flex-1 flex flex-col items-center justify-center w-full">
-                    <part.icon className="w-16 h-16 text-white drop-shadow-md mb-3" />
-                    <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
-                      <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-                        <BookshelfCardTitle title={part.title} />
-                      </span>
-                    </div>
-                  </div>
-
-                  <span className="text-gray-700 text-[11px] md:text-[12px] leading-relaxed text-center break-keep px-4">
-                    {part.subtitle}
-                  </span>
-                </div>
-
-                {/* Bottom accent band in the part's point color */}
-                <div className="absolute bottom-0 inset-x-0 h-2" style={{ backgroundColor: part.accent }} />
-              </button>
-            );
-          })}
-        </div>
-
-        {/* Shelf board — light wood-tone top face + a noticeably deeper front
-            face and drop shadow, so the books read as resting on a real
-            physical ledge rather than floating over a faint line. */}
-        <div className="w-full mt-2">
-          <div className="h-2.5 bg-gradient-to-b from-[#F1E6D3] to-[#DFCBA6] rounded-t-sm border-b border-[#C3AB7C]" />
-          <div className="h-7 bg-gradient-to-b from-[#CBAF80] to-[#A78A5C] rounded-b-md shadow-[0_20px_28px_-8px_rgba(0,0,0,0.4)]" />
+        {/* Two shelves, 4 books each */}
+        <div className="mt-14 space-y-20">
+          <div>
+            <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14">
+              {TOP_ROW_CHAPTERS.map((part) => (
+                <BookCard key={part.id} part={part} onSelect={onSelect} />
+              ))}
+            </div>
+            <ShelfBoard />
+          </div>
+          <div>
+            <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14">
+              {BOTTOM_ROW_CHAPTERS.map((part) => (
+                <BookCard key={part.id} part={part} onSelect={onSelect} />
+              ))}
+            </div>
+            <ShelfBoard />
+          </div>
         </div>
       </div>
     </div>
