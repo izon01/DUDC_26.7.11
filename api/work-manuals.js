@@ -1,6 +1,6 @@
 import { sql } from "@vercel/postgres";
 import { randomUUID } from "node:crypto";
-import { batchUpdateSortOrder, ensureSchema } from "./_lib/db.js";
+import { batchUpdateWorkManualOrder, ensureSchema } from "./_lib/db.js";
 import { requireAdmin } from "./_lib/auth.js";
 
 const CHAPTER_COUNT = 8;
@@ -76,11 +76,12 @@ export default async function handler(req, res) {
 
     if (!id) {
       const { order } = req.body ?? {};
-      if (!Array.isArray(order) || order.length === 0) {
+      if (!Array.isArray(order) || order.length === 0 || order.some((item) => !item?.id)) {
         return res.status(400).json({ message: "순서 배열이 필요합니다." });
       }
+      const items = order.map((item) => ({ id: item.id, category: clampCategory(item.category) }));
       try {
-        await batchUpdateSortOrder("work_manuals", order);
+        await batchUpdateWorkManualOrder(items);
         return res.status(200).json({ message: "순서가 저장되었습니다." });
       } catch (error) {
         console.error("work-manuals reorder error:", error);

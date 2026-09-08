@@ -289,7 +289,7 @@ export default function WorkManual() {
 
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
-  const [dragIndex, setDragIndex] = useState(null);
+  const [dragManualId, setDragManualId] = useState(null);
   const [toastMessage, setToastMessage] = useState("");
   const originalManualsRef = useRef(null);
 
@@ -517,28 +517,54 @@ export default function WorkManual() {
   function cancelReorder() {
     if (originalManualsRef.current) setManuals(originalManualsRef.current);
     originalManualsRef.current = null;
-    setDragIndex(null);
+    setDragManualId(null);
     setIsReorderMode(false);
   }
 
-  function handleDragStart(index) {
-    setDragIndex(index);
+  // Moves `draggedId` to sit immediately before `beforeManualId` (or, if
+  // null, at the start of `category`'s block) and reassigns its category —
+  // this is the one place both sort_order and category change together, so
+  // dragging a page onto a different chapter's section actually moves it
+  // there instead of just visually overlapping.
+  function reorderManuals(prevManuals, draggedId, category, beforeManualId) {
+    const dragged = prevManuals.find((m) => m.id === draggedId);
+    if (!dragged) return prevManuals;
+    const rest = prevManuals.filter((m) => m.id !== draggedId);
+    const updatedDragged = { ...dragged, category };
+
+    let insertAt;
+    if (beforeManualId) {
+      insertAt = rest.findIndex((m) => m.id === beforeManualId);
+      if (insertAt === -1) insertAt = rest.length;
+    } else {
+      // Dropped on a chapter header, not a specific manual — insert at the
+      // top of that chapter's block (relies on the array always being kept
+      // category-ordered by this same function).
+      insertAt = rest.findIndex((m) => m.category >= category);
+      if (insertAt === -1) insertAt = rest.length;
+    }
+    rest.splice(insertAt, 0, updatedDragged);
+    return rest;
   }
 
-  function handleDragOver(e, index) {
+  function handleDragStart(manualId) {
+    setDragManualId(manualId);
+  }
+
+  function handleDragOverManual(e, targetManual) {
     e.preventDefault();
-    if (dragIndex === null || dragIndex === index) return;
-    setManuals((prev) => {
-      const next = [...prev];
-      const [moved] = next.splice(dragIndex, 1);
-      next.splice(index, 0, moved);
-      return next;
-    });
-    setDragIndex(index);
+    if (dragManualId === null || dragManualId === targetManual.id) return;
+    setManuals((prev) => reorderManuals(prev, dragManualId, targetManual.category, targetManual.id));
+  }
+
+  function handleDragOverChapterHeader(e, chapterId) {
+    e.preventDefault();
+    if (dragManualId === null) return;
+    setManuals((prev) => reorderManuals(prev, dragManualId, chapterId, null));
   }
 
   function handleDragEnd() {
-    setDragIndex(null);
+    setDragManualId(null);
   }
 
   async function saveOrderToDB() {
@@ -547,7 +573,7 @@ export default function WorkManual() {
       const res = await fetch("/api/work-manuals", {
         method: "PUT",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ order: manuals.map((m) => m.id) }),
+        body: JSON.stringify({ order: manuals.map((m) => ({ id: m.id, category: m.category })) }),
       });
       const data = await parseJsonSafely(res);
       if (!res.ok) throw new Error(data.message || "순서 저장에 실패했습니다.");
@@ -672,29 +698,43 @@ export default function WorkManual() {
             {isLoading ? (
               <SkeletonList count={5} />
             ) : isReorderMode ? (
-              // Reorder mode: a flat draggable list (unwrapped from chapter
-              // headers) so drag indices map 1:1 onto the manuals array that
-              // handleDragStart/Over/End operate on.
-              filteredManuals.map((manual, idx) => (
-                <div
-                  key={manual.id}
-                  draggable
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={(e) => handleDragOver(e, idx)}
-                  onDragEnd={handleDragEnd}
-                  className={`flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
-                    dragIndex === idx ? "opacity-40" : "opacity-100"
-                  }`}
-                >
-                  <span
-                    className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
-                    style={{ fontSize: "18px" }}
+              // Reorder mode: same chapter-grouped shape as normal mode, so
+              // the 8 headers stay visible as fixed drop-target boundaries
+              // while pages within (and across) them are draggable. Headers
+              // are plain text (not draggable, no card) so they read as
+              // dividers rather than list items.
+              CHAPTERS.map((chapter) => (
+                <div key={chapter.id}>
+                  <div
+                    onDragOver={(e) => handleDragOverChapterHeader(e, chapter.id)}
+                    className="px-2.5 pt-4 pb-1.5"
                   >
-                    drag_indicator
-                  </span>
-                  <span className="flex-1 min-w-0 text-left p-2.5 text-sm text-on-surface-variant truncate">
-                    {manual.title || "(제목 없음)"}
-                  </span>
+                    <span className="text-[13px] font-bold text-on-surface-variant tracking-wide">
+                      {chapter.title}
+                    </span>
+                  </div>
+                  {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
+                    <div
+                      key={manual.id}
+                      draggable
+                      onDragStart={() => handleDragStart(manual.id)}
+                      onDragOver={(e) => handleDragOverManual(e, manual)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
+                        dragManualId === manual.id ? "opacity-40" : "opacity-100"
+                      }`}
+                    >
+                      <span
+                        className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
+                        style={{ fontSize: "18px" }}
+                      >
+                        drag_indicator
+                      </span>
+                      <span className="flex-1 min-w-0 text-left p-2.5 text-sm text-on-surface-variant truncate">
+                        {manual.title || "(제목 없음)"}
+                      </span>
+                    </div>
+                  ))}
                 </div>
               ))
             ) : (

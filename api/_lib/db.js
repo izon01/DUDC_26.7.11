@@ -122,3 +122,15 @@ export async function batchUpdateSortOrder(table, ids) {
     params
   );
 }
+
+// Work-manual reorder also carries a (possibly changed) category per item —
+// dragging a page across a chapter boundary in the sidebar reassigns it, so
+// sort_order and category need to land in the same round trip.
+export async function batchUpdateWorkManualOrder(items) {
+  const valuesSql = items.map((_, i) => `($${i * 3 + 1}::text, $${i * 3 + 2}::int, $${i * 3 + 3}::int)`).join(", ");
+  const params = items.flatMap((item, index) => [item.id, index, item.category]);
+  await sql.query(
+    `UPDATE work_manuals AS t SET sort_order = v.ord, category = v.cat FROM (VALUES ${valuesSql}) AS v(id, ord, cat) WHERE t.id = v.id`,
+    params
+  );
+}
