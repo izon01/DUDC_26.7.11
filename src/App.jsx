@@ -3,7 +3,6 @@ import { Navigate, Route, Routes } from "react-router-dom";
 import { useAuth } from "./context/AuthContext";
 import LandingPage from "./pages/LandingPage";
 import Intro from "./pages/Intro";
-import MissionChecklist from "./pages/MissionChecklist";
 import Community from "./pages/Community";
 
 // WorkManual/CultureManual pull in CKEditor 5 (~1.2MB), which otherwise
@@ -65,14 +64,6 @@ export default function App() {
             <Suspense fallback={<PageLoading />}>
               <CultureManual />
             </Suspense>
-          </RequireAuth>
-        }
-      />
-      <Route
-        path="/mission-checklist"
-        element={
-          <RequireAuth>
-            <MissionChecklist />
           </RequireAuth>
         }
       />
