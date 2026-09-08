@@ -158,14 +158,31 @@ function BookPage({ page, searchTerm, side, totalPages }) {
   );
 }
 
+// A couple of chapter titles wrap awkwardly on the narrow bookshelf card at
+// their natural word boundary; this maps title -> forced two-line break for
+// just those. Doesn't touch `chapter.title` itself, which is still used
+// verbatim in the sidebar header, category picker, and search matching.
+const BOOKSHELF_TITLE_BREAKS = {
+  "제1장 서무란 무엇인가": ["제1장 서무란", "무엇인가"],
+};
+
+function BookshelfCardTitle({ title }) {
+  const lines = BOOKSHELF_TITLE_BREAKS[title];
+  if (!lines) return title;
+  return (
+    <>
+      {lines[0]}
+      <br />
+      {lines[1]}
+    </>
+  );
+}
+
 // Apple Books-style landing shelf shown before a book is opened. Each card
 // is one of the 8 fixed chapters; selecting one deep-links straight into
 // that chapter's first manual in the sidebar/book viewer below (see
 // handleSelectChapter in the parent).
 function Bookshelf({ onSelect }) {
-  const [shelfSearchTerm, setShelfSearchTerm] = useState("");
-  const query = shelfSearchTerm.trim().toLowerCase();
-
   return (
     <div className="flex-1 overflow-y-auto bg-background">
       <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-6">
@@ -189,33 +206,15 @@ function Bookshelf({ onSelect }) {
           imageAlt="업무 첫걸음 서재"
         />
 
-        {/* Search bar */}
-        <div className="w-full max-w-xl mx-auto mt-8 mb-12">
-          <div className="relative">
-            <input
-              type="text"
-              value={shelfSearchTerm}
-              onChange={(e) => setShelfSearchTerm(e.target.value)}
-              placeholder="매뉴얼 내용 검색..."
-              className="w-full pl-5 pr-12 py-3 rounded-full border border-outline-variant bg-white focus:border-primary focus:ring-0 text-body-md transition-all shadow-sm"
-            />
-            <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px] pointer-events-none">
-              search
-            </span>
-          </div>
-        </div>
-
         {/* Books resting on the shelf */}
-        <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14">
+        <div className="flex flex-wrap items-end justify-center gap-8 lg:gap-14 mt-14">
           {CHAPTERS.map((part) => {
-            const isMatch =
-              !query || part.title.toLowerCase().includes(query) || part.subtitle.toLowerCase().includes(query);
             return (
               <button
                 key={part.id}
                 type="button"
                 onClick={() => onSelect(part.id)}
-                className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md border-r-[3px] border-b-[3px] border-gray-100 overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER} ${isMatch ? "opacity-100" : "opacity-30"}`}
+                className={`relative w-44 h-64 md:w-56 md:h-80 shrink-0 rounded-l-sm rounded-r-md border-r-[3px] border-b-[3px] border-gray-100 overflow-hidden bg-gradient-to-br ${part.gradient} transition-all duration-300 hover:-translate-y-6 ${BOOK_SHADOW} ${BOOK_SHADOW_HOVER}`}
               >
                 {/* Paper-grain texture */}
                 <div
@@ -233,7 +232,7 @@ function Bookshelf({ onSelect }) {
                     <part.icon className="w-16 h-16 text-white drop-shadow-md mb-3" />
                     <div className="w-full bg-white/20 py-4 backdrop-blur-sm px-4">
                       <span className="block font-extrabold text-white text-[26px] text-center leading-snug drop-shadow-[0_2px_4px_rgba(0,0,0,0.3)]">
-                        {part.title}
+                        <BookshelfCardTitle title={part.title} />
                       </span>
                     </div>
                   </div>
@@ -250,10 +249,12 @@ function Bookshelf({ onSelect }) {
           })}
         </div>
 
-        {/* Shelf board — top face + shaded front face read as real depth */}
-        <div className="w-full">
-          <div className="h-1.5 bg-white rounded-t-sm border-b border-gray-200/80" />
-          <div className="h-3 bg-gray-50 rounded-b-sm shadow-[0_10px_15px_-3px_rgba(0,0,0,0.15)]" />
+        {/* Shelf board — light wood-tone top face + a noticeably deeper front
+            face and drop shadow, so the books read as resting on a real
+            physical ledge rather than floating over a faint line. */}
+        <div className="w-full mt-2">
+          <div className="h-2.5 bg-gradient-to-b from-[#F1E6D3] to-[#DFCBA6] rounded-t-sm border-b border-[#C3AB7C]" />
+          <div className="h-7 bg-gradient-to-b from-[#CBAF80] to-[#A78A5C] rounded-b-md shadow-[0_20px_28px_-8px_rgba(0,0,0,0.4)]" />
         </div>
       </div>
     </div>
