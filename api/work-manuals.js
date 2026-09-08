@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     try {
       const result = await sql`
-        SELECT id, title, spreads, created_at AS "createdAt"
+        SELECT id, title, spreads, type, created_at AS "createdAt"
         FROM work_manuals
         ORDER BY sort_order ASC NULLS LAST, created_at ASC
       `;
@@ -39,20 +39,26 @@ export default async function handler(req, res) {
     const admin = requireAdmin(req, res);
     if (!admin) return;
 
-    const { title, spreads } = req.body ?? {};
-    if (!title || typeof title !== "string" || !Array.isArray(spreads)) {
+    const { title, spreads, type: rawType } = req.body ?? {};
+    const type = rawType === "label" ? "label" : "page";
+
+    if (type === "label") {
+      if (!title || typeof title !== "string" || !title.trim()) {
+        return res.status(400).json({ message: "대제목 텍스트가 필요합니다." });
+      }
+    } else if (!title || typeof title !== "string" || !Array.isArray(spreads)) {
       return res.status(400).json({ message: "제목과 스프레드 데이터가 필요합니다." });
     }
 
     try {
       const id = randomUUID();
       const result = await sql`
-        INSERT INTO work_manuals (id, title, spreads, sort_order)
+        INSERT INTO work_manuals (id, title, spreads, type, sort_order)
         VALUES (
-          ${id}, ${title}, ${JSON.stringify(spreads)}::jsonb,
+          ${id}, ${title}, ${JSON.stringify(type === "label" ? [] : spreads)}::jsonb, ${type},
           COALESCE((SELECT MAX(sort_order) FROM work_manuals), -1) + 1
         )
-        RETURNING id, title, spreads, created_at AS "createdAt"
+        RETURNING id, title, spreads, type, created_at AS "createdAt"
       `;
       return res.status(201).json({ manual: result.rows[0] });
     } catch (error) {
@@ -91,7 +97,7 @@ export default async function handler(req, res) {
         UPDATE work_manuals
         SET title = ${title}, spreads = ${JSON.stringify(spreads)}::jsonb
         WHERE id = ${id}
-        RETURNING id, title, spreads, created_at AS "createdAt"
+        RETURNING id, title, spreads, type, created_at AS "createdAt"
       `;
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "매뉴얼을 찾을 수 없습니다." });

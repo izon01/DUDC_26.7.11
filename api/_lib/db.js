@@ -57,6 +57,14 @@ export function ensureSchema() {
         sql`ALTER TABLE culture_posts ADD COLUMN IF NOT EXISTS sort_order INTEGER`,
       ]);
 
+      // Section-label rows (type='label') are plain group headers mixed into
+      // the same sidebar list/sort order as real content rows (type='page');
+      // existing rows default to 'page' so they keep behaving as before.
+      await Promise.all([
+        sql`ALTER TABLE work_manuals ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'page'`,
+        sql`ALTER TABLE culture_posts ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'page'`,
+      ]);
+
       // One-time backfill for any row inserted before sort_order existed —
       // WHERE ... IS NULL makes this a no-op once every row has a value.
       await Promise.all([

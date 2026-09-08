@@ -24,7 +24,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     try {
       const result = await sql`
-        SELECT id, title, body_html AS "bodyHtml", check_points AS "checkPoints", created_at AS "createdAt"
+        SELECT id, title, body_html AS "bodyHtml", check_points AS "checkPoints", type, created_at AS "createdAt"
         FROM culture_posts
         ORDER BY sort_order ASC NULLS LAST, created_at ASC
       `;
@@ -39,20 +39,26 @@ export default async function handler(req, res) {
     const admin = requireAdmin(req, res);
     if (!admin) return;
 
-    const { title, bodyHtml, checkPoints } = req.body ?? {};
-    if (!title || typeof title !== "string" || typeof bodyHtml !== "string" || !Array.isArray(checkPoints)) {
+    const { title, bodyHtml, checkPoints, type: rawType } = req.body ?? {};
+    const type = rawType === "label" ? "label" : "page";
+
+    if (type === "label") {
+      if (!title || typeof title !== "string" || !title.trim()) {
+        return res.status(400).json({ message: "대제목 텍스트가 필요합니다." });
+      }
+    } else if (!title || typeof title !== "string" || typeof bodyHtml !== "string" || !Array.isArray(checkPoints)) {
       return res.status(400).json({ message: "제목, 본문, 체크포인트가 필요합니다." });
     }
 
     try {
       const id = randomUUID();
       const result = await sql`
-        INSERT INTO culture_posts (id, title, body_html, check_points, sort_order)
+        INSERT INTO culture_posts (id, title, body_html, check_points, type, sort_order)
         VALUES (
-          ${id}, ${title}, ${bodyHtml}, ${JSON.stringify(checkPoints)}::jsonb,
+          ${id}, ${title}, ${type === "label" ? "" : bodyHtml}, ${JSON.stringify(type === "label" ? [] : checkPoints)}::jsonb, ${type},
           COALESCE((SELECT MAX(sort_order) FROM culture_posts), -1) + 1
         )
-        RETURNING id, title, body_html AS "bodyHtml", check_points AS "checkPoints", created_at AS "createdAt"
+        RETURNING id, title, body_html AS "bodyHtml", check_points AS "checkPoints", type, created_at AS "createdAt"
       `;
       return res.status(201).json({ post: result.rows[0] });
     } catch (error) {
@@ -91,7 +97,7 @@ export default async function handler(req, res) {
         UPDATE culture_posts
         SET title = ${title}, body_html = ${bodyHtml}, check_points = ${JSON.stringify(checkPoints)}::jsonb
         WHERE id = ${id}
-        RETURNING id, title, body_html AS "bodyHtml", check_points AS "checkPoints", created_at AS "createdAt"
+        RETURNING id, title, body_html AS "bodyHtml", check_points AS "checkPoints", type, created_at AS "createdAt"
       `;
       if (result.rows.length === 0) {
         return res.status(404).json({ message: "포스트를 찾을 수 없습니다." });

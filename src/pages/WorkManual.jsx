@@ -227,7 +227,9 @@ export default function WorkManual() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
-  const [selectedManualId, setSelectedManualId] = useState(() => getCache(CACHE_KEY)?.[0]?.id ?? null);
+  const [selectedManualId, setSelectedManualId] = useState(
+    () => getCache(CACHE_KEY)?.find((m) => m.type !== "label")?.id ?? null
+  );
   const [spreadIndex, setSpreadIndex] = useState(0);
 
   const setManuals = useCallback((updater) => {
@@ -263,7 +265,8 @@ export default function WorkManual() {
         if (!res.ok) throw new Error(data.message || "매뉴얼을 불러오지 못했습니다.");
         if (cancelled) return;
         setManuals(data.manuals);
-        if (data.manuals.length > 0) setSelectedManualId(data.manuals[0].id);
+        const firstPage = data.manuals.find((m) => m.type !== "label");
+        if (firstPage) setSelectedManualId(firstPage.id);
       } catch (error) {
         if (!cancelled) setLoadError(error.message);
       } finally {
@@ -283,7 +286,8 @@ export default function WorkManual() {
     return manuals.filter((m) => manualSearchText(m).includes(term));
   }, [manuals, debouncedSearchTerm]);
 
-  const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
+  const rawSelectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
+  const selectedManual = rawSelectedManual && rawSelectedManual.type !== "label" ? rawSelectedManual : null;
   const currentSpread = selectedManual ? selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0] : null;
   const totalPages = selectedManual ? selectedManual.spreads.length * 2 : 0;
   const progressPercent = totalPages ? Math.round(((spreadIndex + 1) * 2 * 100) / totalPages) : 0;
@@ -404,7 +408,7 @@ export default function WorkManual() {
   }
 
   async function handleDeleteManual() {
-    if (manuals.length <= 1) {
+    if (manuals.filter((m) => m.type !== "label").length <= 1) {
       window.alert("최소 1개의 매뉴얼은 남아 있어야 합니다.");
       return;
     }
@@ -420,8 +424,42 @@ export default function WorkManual() {
 
       const remaining = manuals.filter((m) => m.id !== selectedManualId);
       setManuals(remaining);
-      setSelectedManualId(remaining[0].id);
+      setSelectedManualId(remaining.find((m) => m.type !== "label")?.id ?? null);
       setSpreadIndex(0);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  }
+
+  async function handleAddLabel() {
+    const text = window.prompt("대제목 텍스트를 입력하세요 (예: 제1장 서무란 무엇인가)");
+    if (!text || !text.trim()) return;
+
+    try {
+      const res = await fetch("/api/work-manuals", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ type: "label", title: text.trim() }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "대제목 추가에 실패했습니다.");
+      setManuals((prev) => [...prev, data.manual]);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  }
+
+  async function handleDeleteLabel(id, title) {
+    if (!window.confirm(`"${title}" 대제목을 삭제하시겠습니까?`)) return;
+
+    try {
+      const res = await fetch(`/api/work-manuals?id=${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "대제목 삭제에 실패했습니다.");
+      setManuals((prev) => prev.filter((m) => m.id !== id));
     } catch (error) {
       window.alert(error.message);
     }
@@ -541,23 +579,35 @@ export default function WorkManual() {
             </div>
 
             {isAdmin && (
-              <div className="mb-3 flex gap-2">
-                <button
-                  onClick={beginCreate}
-                  disabled={isEditMode || isReorderMode}
-                  className="flex-[8] flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-                >
-                  <span className="material-symbols-outlined">add_circle</span>
-                  신규 매뉴얼 등록
-                </button>
-                {filteredManuals.length > 1 && !isReorderMode && (
+              <div className="mb-3 space-y-2">
+                <div className="flex gap-2">
                   <button
-                    onClick={enterReorderMode}
-                    disabled={isEditMode}
-                    title="순서 변경"
-                    className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    onClick={beginCreate}
+                    disabled={isEditMode || isReorderMode}
+                    className="flex-[8] flex items-center justify-center gap-2 px-4 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-sm hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                   >
-                    <span className="material-symbols-outlined text-[18px]">swap_vert</span>
+                    <span className="material-symbols-outlined">add_circle</span>
+                    신규 매뉴얼 등록
+                  </button>
+                  {filteredManuals.length > 1 && !isReorderMode && (
+                    <button
+                      onClick={enterReorderMode}
+                      disabled={isEditMode}
+                      title="순서 변경"
+                      className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                    >
+                      <span className="material-symbols-outlined text-[18px]">swap_vert</span>
+                    </button>
+                  )}
+                </div>
+                {!isReorderMode && (
+                  <button
+                    onClick={handleAddLabel}
+                    disabled={isEditMode}
+                    className="w-full flex items-center justify-center gap-2 px-4 py-2 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-[13px] hover:border-primary hover:text-primary transition-all disabled:opacity-40 disabled:cursor-not-allowed"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">label</span>
+                    대제목 추가
                   </button>
                 )}
               </div>
@@ -589,42 +639,87 @@ export default function WorkManual() {
                 {manuals.length === 0 ? "등록된 매뉴얼이 없습니다." : "검색 결과가 없습니다."}
               </p>
             ) : (
-              filteredManuals.map((manual, idx) => (
-                <div
-                  key={manual.id}
-                  draggable={isReorderMode}
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={(e) => handleDragOver(e, idx)}
-                  onDragEnd={handleDragEnd}
-                  className={
-                    isReorderMode
-                      ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
-                          dragIndex === idx ? "opacity-40" : "opacity-100"
-                        }`
-                      : "flex items-center"
-                  }
-                >
-                  {isReorderMode && (
-                    <span
-                      className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
-                      style={{ fontSize: "18px" }}
+              filteredManuals.map((manual, idx) => {
+                if (manual.type === "label") {
+                  return (
+                    <div
+                      key={manual.id}
+                      draggable={isReorderMode}
+                      onDragStart={() => handleDragStart(idx)}
+                      onDragOver={(e) => handleDragOver(e, idx)}
+                      onDragEnd={handleDragEnd}
+                      className={
+                        isReorderMode
+                          ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
+                              dragIndex === idx ? "opacity-40" : "opacity-100"
+                            }`
+                          : "flex items-center"
+                      }
                     >
-                      drag_indicator
-                    </span>
-                  )}
-                  <button
-                    onClick={() => handleSelectManual(manual.id)}
-                    disabled={isEditMode || isReorderMode}
-                    className={`flex-1 min-w-0 text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
-                      manual.id === selectedManualId
-                        ? "bg-primary text-on-primary font-bold shadow-sm"
-                        : "hover:bg-surface-container-highest text-on-surface-variant"
-                    } ${isEditMode ? "opacity-40" : ""}`}
+                      {isReorderMode && (
+                        <span
+                          className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
+                          style={{ fontSize: "18px" }}
+                        >
+                          drag_indicator
+                        </span>
+                      )}
+                      <div className="flex-1 min-w-0 px-2.5 pt-4 pb-1.5 flex items-center justify-between gap-2">
+                        <span className="text-[13px] font-bold text-on-surface-variant tracking-wide truncate">
+                          {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                        </span>
+                        {isAdmin && !isReorderMode && (
+                          <button
+                            onClick={() => handleDeleteLabel(manual.id, manual.title)}
+                            title="대제목 삭제"
+                            className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
+                          >
+                            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                              close
+                            </span>
+                          </button>
+                        )}
+                      </div>
+                    </div>
+                  );
+                }
+                return (
+                  <div
+                    key={manual.id}
+                    draggable={isReorderMode}
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={
+                      isReorderMode
+                        ? `flex items-center gap-1 rounded-xl border border-outline-variant bg-surface-container-lowest transition-opacity ${
+                            dragIndex === idx ? "opacity-40" : "opacity-100"
+                          }`
+                        : "flex items-center"
+                    }
                   >
-                    {highlightText(manual.title || "(제목 없음)", searchTerm)}
-                  </button>
-                </div>
-              ))
+                    {isReorderMode && (
+                      <span
+                        className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0 pl-1.5"
+                        style={{ fontSize: "18px" }}
+                      >
+                        drag_indicator
+                      </span>
+                    )}
+                    <button
+                      onClick={() => handleSelectManual(manual.id)}
+                      disabled={isEditMode || isReorderMode}
+                      className={`flex-1 min-w-0 text-left p-2.5 rounded-xl text-sm transition-all disabled:cursor-not-allowed ${
+                        manual.id === selectedManualId
+                          ? "bg-primary text-on-primary font-bold shadow-sm"
+                          : "hover:bg-surface-container-highest text-on-surface-variant"
+                      } ${isEditMode ? "opacity-40" : ""}`}
+                    >
+                      {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                    </button>
+                  </div>
+                );
+              })
             )}
           </div>
         </aside>

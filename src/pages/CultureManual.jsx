@@ -39,7 +39,9 @@ export default function CultureManual() {
   const [isSaving, setIsSaving] = useState(false);
   const [searchTerm, setSearchTerm] = useState("");
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
-  const [selectedGuideId, setSelectedGuideId] = useState(() => getCache(CACHE_KEY)?.[0]?.id ?? null);
+  const [selectedGuideId, setSelectedGuideId] = useState(
+    () => getCache(CACHE_KEY)?.find((g) => g.type !== "label")?.id ?? null
+  );
   const [isEditorOpen, setIsEditorOpen] = useState(false);
   const [editorMode, setEditorMode] = useState("create");
 
@@ -72,7 +74,8 @@ export default function CultureManual() {
         if (!res.ok) throw new Error(data.message || "포스트를 불러오지 못했습니다.");
         if (cancelled) return;
         setGuides(data.posts);
-        if (data.posts.length > 0) setSelectedGuideId(data.posts[0].id);
+        const firstPage = data.posts.find((g) => g.type !== "label");
+        if (firstPage) setSelectedGuideId(firstPage.id);
       } catch (error) {
         if (!cancelled) setLoadError(error.message);
       } finally {
@@ -92,7 +95,8 @@ export default function CultureManual() {
     return guides.filter((g) => guideSearchText(g).includes(term));
   }, [guides, debouncedSearchTerm]);
 
-  const selectedGuide = guides.find((g) => g.id === selectedGuideId) ?? null;
+  const rawSelectedGuide = guides.find((g) => g.id === selectedGuideId) ?? null;
+  const selectedGuide = rawSelectedGuide && rawSelectedGuide.type !== "label" ? rawSelectedGuide : null;
 
   function selectGuide(id) {
     if (isReorderMode) return;
@@ -198,7 +202,7 @@ export default function CultureManual() {
   }
 
   async function handleDeleteGuide() {
-    if (guides.length <= 1) {
+    if (guides.filter((g) => g.type !== "label").length <= 1) {
       window.alert("최소 1개의 포스트는 남아 있어야 합니다.");
       return;
     }
@@ -214,7 +218,41 @@ export default function CultureManual() {
 
       const remaining = guides.filter((g) => g.id !== selectedGuideId);
       setGuides(remaining);
-      setSelectedGuideId(remaining[0].id);
+      setSelectedGuideId(remaining.find((g) => g.type !== "label")?.id ?? null);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  }
+
+  async function handleAddLabel() {
+    const text = window.prompt("대제목 텍스트를 입력하세요 (예: 제1장 서무란 무엇인가)");
+    if (!text || !text.trim()) return;
+
+    try {
+      const res = await fetch("/api/culture-posts", {
+        method: "POST",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ type: "label", title: text.trim() }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "대제목 추가에 실패했습니다.");
+      setGuides((prev) => [...prev, data.post]);
+    } catch (error) {
+      window.alert(error.message);
+    }
+  }
+
+  async function handleDeleteLabel(id, title) {
+    if (!window.confirm(`"${title}" 대제목을 삭제하시겠습니까?`)) return;
+
+    try {
+      const res = await fetch(`/api/culture-posts?id=${id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "대제목 삭제에 실패했습니다.");
+      setGuides((prev) => prev.filter((g) => g.id !== id));
     } catch (error) {
       window.alert(error.message);
     }
@@ -272,22 +310,33 @@ export default function CultureManual() {
           </div>
 
           {isAdmin && (
-            <div className="mb-3 shrink-0 flex gap-2">
-              <button
-                onClick={openCreateEditor}
-                disabled={isReorderMode}
-                className="flex-[8] flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
-              >
-                <span className="material-symbols-outlined text-[18px]">add_circle</span>
-                신규 포스트 등록
-              </button>
-              {filteredGuides.length > 1 && !isReorderMode && (
+            <div className="mb-3 shrink-0 space-y-2">
+              <div className="flex gap-2">
                 <button
-                  onClick={enterReorderMode}
-                  title="순서 변경"
-                  className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                  onClick={openCreateEditor}
+                  disabled={isReorderMode}
+                  className="flex-[8] flex items-center justify-center gap-2 px-3 py-2.5 bg-primary text-on-primary rounded-xl font-bold text-[13px] hover:opacity-90 active:scale-95 transition-all shadow-sm disabled:opacity-40 disabled:cursor-not-allowed"
                 >
-                  <span className="material-symbols-outlined text-[18px]">swap_vert</span>
+                  <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                  신규 포스트 등록
+                </button>
+                {filteredGuides.length > 1 && !isReorderMode && (
+                  <button
+                    onClick={enterReorderMode}
+                    title="순서 변경"
+                    className="flex-[2] flex items-center justify-center rounded-xl bg-surface-container-high text-on-surface-variant hover:bg-surface-container-highest transition-colors"
+                  >
+                    <span className="material-symbols-outlined text-[18px]">swap_vert</span>
+                  </button>
+                )}
+              </div>
+              {!isReorderMode && (
+                <button
+                  onClick={handleAddLabel}
+                  className="w-full flex items-center justify-center gap-2 px-3 py-2 rounded-xl border-2 border-dashed border-outline-variant text-on-surface-variant font-bold text-[12px] hover:border-primary hover:text-primary transition-all"
+                >
+                  <span className="material-symbols-outlined text-[16px]">label</span>
+                  대제목 추가
                 </button>
               )}
             </div>
@@ -320,6 +369,48 @@ export default function CultureManual() {
               </p>
             )}
             {!isLoading && filteredGuides.map((guide, idx) => {
+              if (guide.type === "label") {
+                return (
+                  <div
+                    key={guide.id}
+                    draggable={isReorderMode}
+                    onDragStart={() => handleDragStart(idx)}
+                    onDragOver={(e) => handleDragOver(e, idx)}
+                    onDragEnd={handleDragEnd}
+                    className={`flex items-center gap-1 rounded-xl transition-opacity ${
+                      isReorderMode
+                        ? `p-2 bg-white border border-outline-variant ${dragIndex === idx ? "opacity-40" : "opacity-100"}`
+                        : ""
+                    }`}
+                  >
+                    {isReorderMode && (
+                      <span
+                        className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0"
+                        style={{ fontSize: "18px" }}
+                      >
+                        drag_indicator
+                      </span>
+                    )}
+                    <div className="flex-1 min-w-0 px-2.5 pt-4 pb-1.5 flex items-center justify-between gap-2">
+                      <span className="text-[13px] font-bold text-on-surface-variant tracking-wide truncate">
+                        {highlightText(guide.title || "(제목 없음)", searchTerm)}
+                      </span>
+                      {isAdmin && !isReorderMode && (
+                        <button
+                          onClick={() => handleDeleteLabel(guide.id, guide.title)}
+                          title="대제목 삭제"
+                          className="shrink-0 w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
+                        >
+                          <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                            close
+                          </span>
+                        </button>
+                      )}
+                    </div>
+                  </div>
+                );
+              }
+
               const isActive = guide.id === selectedGuideId;
               return (
                 <div
