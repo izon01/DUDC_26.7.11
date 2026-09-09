@@ -8,19 +8,88 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const CACHE_KEY = "manual-documents";
 
-const DEPARTMENTS = [
-  "기획혁신실",
-  "안전관리실",
-  "경영지원처",
-  "미래공간개발처",
-  "도시개발처",
-  "공공건축처",
-  "보상판매처",
-  "주거복지처",
-  "U레포츠센터",
-  "청렴감사실",
+// Tailwind's JIT scanner needs each class name to appear as a literal
+// substring somewhere in this file — building them as `bg-${color}-500`
+// would silently produce no CSS in production. So every color's classes
+// are spelled out in full here rather than interpolated from `color`.
+// First 6 render as row one, remaining 5 as row two (see the two-row split
+// in the filter bar below).
+const FILTER_CATEGORIES = [
+  {
+    name: "전체",
+    emoji: "🌐",
+    active: "bg-blue-500 border-blue-500 text-white",
+    inactive: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100",
+  },
+  {
+    name: "기획혁신실",
+    emoji: "💡",
+    active: "bg-indigo-500 border-indigo-500 text-white",
+    inactive: "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100",
+  },
+  {
+    name: "안전관리실",
+    emoji: "🛡️",
+    active: "bg-orange-500 border-orange-500 text-white",
+    inactive: "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100",
+  },
+  {
+    name: "경영지원처",
+    emoji: "🤝",
+    active: "bg-blue-500 border-blue-500 text-white",
+    inactive: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100",
+  },
+  {
+    name: "미래공간개발처",
+    emoji: "🚀",
+    active: "bg-purple-500 border-purple-500 text-white",
+    inactive: "bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100",
+  },
+  {
+    name: "도시개발처",
+    emoji: "🏙️",
+    active: "bg-teal-500 border-teal-500 text-white",
+    inactive: "bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100",
+  },
+  {
+    name: "공공건축처",
+    emoji: "🏗️",
+    active: "bg-amber-500 border-amber-500 text-white",
+    inactive: "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100",
+  },
+  {
+    name: "보상판매처",
+    emoji: "💰",
+    active: "bg-green-500 border-green-500 text-white",
+    inactive: "bg-green-50 border-green-200 text-green-700 hover:bg-green-100",
+  },
+  {
+    name: "주거복지처",
+    emoji: "🏠",
+    active: "bg-rose-500 border-rose-500 text-white",
+    inactive: "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100",
+  },
+  {
+    name: "U레포츠센터",
+    emoji: "⚽",
+    active: "bg-sky-500 border-sky-500 text-white",
+    inactive: "bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100",
+  },
+  {
+    name: "청렴감사실",
+    emoji: "⚖️",
+    active: "bg-slate-500 border-slate-500 text-white",
+    inactive: "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100",
+  },
 ];
-const FILTER_CATEGORIES = ["전체", ...DEPARTMENTS];
+
+const CATEGORY_FILTER_ROW_1 = FILTER_CATEGORIES.slice(0, 6);
+const CATEGORY_FILTER_ROW_2 = FILTER_CATEGORIES.slice(6);
+
+// The upload form's department picker doesn't include "전체" (a document
+// must belong to one specific department), and stays plain-styled — only
+// the filter bar above the list gets the color/emoji treatment.
+const DEPARTMENTS = FILTER_CATEGORIES.slice(1).map((c) => c.name);
 
 const ALLOWED_EXTENSIONS = ["pdf", "hwp", "docx", "xlsx"];
 const MAX_FILE_BYTES = 1 * 1024 * 1024;
@@ -304,21 +373,38 @@ export default function ManualBoard() {
           </div>
         </div>
 
-        {/* Category filter — wraps to as many rows as it needs below the search */}
-        <div className="w-full mt-4 flex flex-wrap justify-center gap-2 shrink-0">
-          {FILTER_CATEGORIES.map((cat) => (
-            <button
-              key={cat}
-              onClick={() => setSelectedCategory(cat)}
-              className={
-                cat === selectedCategory
-                  ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white shadow-sm transition-colors"
-                  : "px-4 py-2 rounded-full text-label-sm font-bold bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
-              }
-            >
-              {cat}
-            </button>
-          ))}
+        {/* Category filter — two explicit rows (6 + 5) so the second row
+            centers on its own 5 items instead of trailing off left-aligned
+            under a single flex-wrap run. */}
+        <div className="w-full mt-4 max-w-5xl mx-auto flex flex-col items-center gap-2.5 shrink-0">
+          <div className="flex flex-wrap justify-center gap-2.5">
+            {CATEGORY_FILTER_ROW_1.map((cat) => (
+              <button
+                key={cat.name}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-label-sm font-bold border-2 shadow-sm transition-colors ${
+                  cat.name === selectedCategory ? cat.active : cat.inactive
+                }`}
+              >
+                <span>{cat.emoji}</span>
+                {cat.name}
+              </button>
+            ))}
+          </div>
+          <div className="flex flex-wrap justify-center gap-2.5">
+            {CATEGORY_FILTER_ROW_2.map((cat) => (
+              <button
+                key={cat.name}
+                onClick={() => setSelectedCategory(cat.name)}
+                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-label-sm font-bold border-2 shadow-sm transition-colors ${
+                  cat.name === selectedCategory ? cat.active : cat.inactive
+                }`}
+              >
+                <span>{cat.emoji}</span>
+                {cat.name}
+              </button>
+            ))}
+          </div>
         </div>
 
         {/* Document List */}
