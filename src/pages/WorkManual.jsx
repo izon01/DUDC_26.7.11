@@ -319,6 +319,10 @@ export default function WorkManual() {
   const [toastMessage, setToastMessage] = useState("");
   const originalManualsRef = useRef(null);
 
+  // Which of the 8 chapter accordions are expanded — independent per
+  // chapter, so more than one can be open at once.
+  const [openChapterIds, setOpenChapterIds] = useState(() => new Set());
+
   useEffect(() => {
     if (getCache(CACHE_KEY)) {
       setIsLoading(false);
@@ -376,6 +380,26 @@ export default function WorkManual() {
   const currentSpread = selectedManual ? selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0] : null;
   const totalPages = selectedManual ? selectedManual.spreads.length * 2 : 0;
   const progressPercent = totalPages ? Math.round(((spreadIndex + 1) * 2 * 100) / totalPages) : 0;
+
+  // Expands the chapter the active manual lives in — once the sidebar is
+  // actually on screen (selectedPartId set), so the reader lands on just
+  // that one chapter open rather than whatever manual loaded first while
+  // they were still looking at the bookshelf. Fires again on every later
+  // chapter change (e.g. a bookshelf deep link) and only ever adds to the
+  // open set, so it never fights a chapter the admin opened by hand.
+  useEffect(() => {
+    if (selectedPartId === null || !selectedManual) return;
+    setOpenChapterIds((prev) => (prev.has(selectedManual.category) ? prev : new Set(prev).add(selectedManual.category)));
+  }, [selectedPartId, selectedManual?.category]);
+
+  function toggleChapter(chapterId) {
+    setOpenChapterIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(chapterId)) next.delete(chapterId);
+      else next.add(chapterId);
+      return next;
+    });
+  }
 
   function handleSelectManual(id) {
     if (isEditMode || isReorderMode) return;
@@ -765,38 +789,58 @@ export default function WorkManual() {
               ))
             ) : (
               // Normal mode: the 8 chapters are always shown, in order, as
-              // fixed non-interactive headers — manuals list flat underneath
-              // whichever chapter they're assigned to.
+              // collapsible accordion headers — manuals list underneath
+              // whichever chapter they're assigned to, shown when open.
               <>
                 {manuals.length > 0 && filteredManuals.length === 0 && (
                   <p className="px-2 py-4 text-center text-label-sm text-on-surface-variant">검색 결과가 없습니다.</p>
                 )}
-                {CHAPTERS.map((chapter, chapterIdx) => (
-                <div key={chapter.id}>
-                  <div className={`px-2.5 pb-1.5 ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}>
-                    <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
-                      {chapter.title}
-                    </span>
-                  </div>
-                  <div className="space-y-0.5">
-                    {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
+                {CHAPTERS.map((chapter, chapterIdx) => {
+                  // A search in progress bypasses collapse state entirely —
+                  // a match hidden inside a closed chapter would defeat the
+                  // point of searching.
+                  const isOpen = debouncedSearchTerm.trim() ? true : openChapterIds.has(chapter.id);
+                  return (
+                    <div key={chapter.id}>
                       <button
-                        key={manual.id}
-                        data-manual-id={manual.id}
-                        onClick={() => handleSelectManual(manual.id)}
-                        disabled={isEditMode}
-                        className={`block w-full text-left py-1.5 pl-6 pr-2.5 rounded-md text-sm transition disabled:cursor-not-allowed ${
-                          manual.id === selectedManualId
-                            ? "bg-primary text-white font-bold"
-                            : "text-gray-700 hover:bg-gray-100"
-                        } ${isEditMode ? "opacity-40" : ""}`}
+                        type="button"
+                        onClick={() => toggleChapter(chapter.id)}
+                        className={`w-full flex items-center justify-between gap-2 px-2.5 pb-1.5 cursor-pointer hover:text-primary transition-colors ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
                       >
-                        {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                        <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
+                          {chapter.title}
+                        </span>
+                        <span
+                          className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`}
+                          style={{ fontSize: "18px" }}
+                        >
+                          chevron_right
+                        </span>
                       </button>
-                    ))}
-                  </div>
-                </div>
-                ))}
+                      <div
+                        className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                      >
+                        <div className="min-h-0 space-y-0.5">
+                          {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
+                            <button
+                              key={manual.id}
+                              data-manual-id={manual.id}
+                              onClick={() => handleSelectManual(manual.id)}
+                              disabled={isEditMode}
+                              className={`block w-full text-left py-1.5 pl-6 pr-2.5 rounded-md text-sm transition disabled:cursor-not-allowed ${
+                                manual.id === selectedManualId
+                                  ? "bg-primary text-white font-bold"
+                                  : "text-gray-700 hover:bg-gray-100"
+                              } ${isEditMode ? "opacity-40" : ""}`}
+                            >
+                              {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
               </>
             )}
           </div>
