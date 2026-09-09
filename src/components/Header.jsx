@@ -8,6 +8,7 @@ const NAV_ITEMS = [
   { label: "DUDC소개", path: "/intro" },
   { label: "업무첫걸음", path: "/work-manual" },
   { label: "DUDC문화", path: "/culture-manual" },
+  { label: "업무매뉴얼", path: "/manual-board" },
   { label: "커뮤니티", path: "/community" },
 ];
 

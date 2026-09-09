@@ -46,6 +46,17 @@ export function ensureSchema() {
             created_at TIMESTAMPTZ NOT NULL DEFAULT now()
           )
         `,
+        sql`
+          CREATE TABLE IF NOT EXISTS manual_documents (
+            id TEXT PRIMARY KEY,
+            title TEXT NOT NULL,
+            category TEXT NOT NULL,
+            filename TEXT NOT NULL,
+            file_url TEXT NOT NULL,
+            file_size INTEGER NOT NULL DEFAULT 0,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+          )
+        `,
       ]);
 
       // Admin-managed sidebar reorder feature: both lists need a persisted
@@ -97,6 +108,7 @@ export function ensureSchema() {
         sql`CREATE INDEX IF NOT EXISTS idx_culture_posts_sort_order ON culture_posts (sort_order ASC NULLS LAST, created_at ASC)`,
         sql`CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON community_posts (created_at DESC)`,
         sql`CREATE INDEX IF NOT EXISTS idx_community_comments_post_id ON community_comments (post_id)`,
+        sql`CREATE INDEX IF NOT EXISTS idx_manual_documents_created_at ON manual_documents (created_at DESC)`,
       ]);
 
       // The `users` table predates this file and is managed outside of it,

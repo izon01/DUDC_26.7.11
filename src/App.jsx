@@ -4,6 +4,7 @@ import { useAuth } from "./context/AuthContext";
 import LandingPage from "./pages/LandingPage";
 import Intro from "./pages/Intro";
 import Community from "./pages/Community";
+import ManualBoard from "./pages/ManualBoard";
 
 // WorkManual/CultureManual pull in CKEditor 5 (~1.2MB), which otherwise
 // ships in every route's bundle. Lazy-load just these two so that cost is
@@ -64,6 +65,14 @@ export default function App() {
             <Suspense fallback={<PageLoading />}>
               <CultureManual />
             </Suspense>
+          </RequireAuth>
+        }
+      />
+      <Route
+        path="/manual-board"
+        element={
+          <RequireAuth>
+            <ManualBoard />
           </RequireAuth>
         }
       />
