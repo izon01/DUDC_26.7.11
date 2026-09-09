@@ -363,19 +363,20 @@ export default function ManualBoard() {
           </div>
         </div>
 
+        {isAdmin && (
+          <div className="w-full mt-4 flex justify-end shrink-0">
+            <button
+              onClick={() => setIsUploadModalOpen(true)}
+              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all shadow-sm"
+            >
+              <span className="material-symbols-outlined text-[18px]">add_circle</span>
+              매뉴얼 등록
+            </button>
+          </div>
+        )}
+
         {/* Document List */}
-        <div className="w-full mt-6 bg-white rounded-2xl border border-outline-variant shadow-sm px-6">
-          {isAdmin && (
-            <div className="w-full pt-5 pb-5 flex justify-end border-b border-outline-variant">
-              <button
-                onClick={() => setIsUploadModalOpen(true)}
-                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all shadow-sm"
-              >
-                <span className="material-symbols-outlined text-[18px]">add_circle</span>
-                매뉴얼 등록
-              </button>
-            </div>
-          )}
+        <div className="w-full mt-4 bg-white rounded-2xl border border-outline-variant shadow-sm px-6">
           {isLoading ? (
             <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
           ) : loadError ? (
