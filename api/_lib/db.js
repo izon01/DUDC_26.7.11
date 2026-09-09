@@ -71,16 +71,16 @@ export function ensureSchema() {
       // Section-label rows (type='label') are plain group headers mixed into
       // the same sidebar list/sort order as real content rows (type='page');
       // existing rows default to 'page' so they keep behaving as before.
-      await Promise.all([
-        sql`ALTER TABLE work_manuals ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'page'`,
-        sql`ALTER TABLE culture_posts ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'page'`,
-      ]);
+      // culture_posts still uses this for its free-form label feature.
+      await sql`ALTER TABLE culture_posts ADD COLUMN IF NOT EXISTS type TEXT NOT NULL DEFAULT 'page'`;
 
       // Work manuals now belong to one of 8 fixed chapters (see CHAPTERS in
       // WorkManual.jsx) instead of the free-form label rows above — category
       // is a plain 1-8 integer so sidebar grouping is a cheap filter, not a
-      // position-inference walk over sort_order.
+      // position-inference walk over sort_order. `type` is dropped below
+      // since nothing reads or writes it anymore on this table.
       await sql`ALTER TABLE work_manuals ADD COLUMN IF NOT EXISTS category INTEGER NOT NULL DEFAULT 1`;
+      await sql`ALTER TABLE work_manuals DROP COLUMN IF EXISTS type`;
 
       // One-time backfill for any row inserted before sort_order existed —
       // WHERE ... IS NULL makes this a no-op once every row has a value.
