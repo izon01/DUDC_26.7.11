@@ -348,26 +348,10 @@ export default function ManualBoard() {
           className="mt-4"
         />
 
-        {/* Search — its own full-width row */}
-        <div className="w-full mt-6 shrink-0">
-          <div className="relative">
-            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
-              search
-            </span>
-            <input
-              type="text"
-              value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="매뉴얼 제목이나 내용을 검색해 보세요."
-              className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 bg-white shadow-sm focus:border-primary focus:ring-0 text-body-md transition-all"
-            />
-          </div>
-        </div>
-
         {/* Category filter — two explicit rows (6 + 5) so the second row
             centers on its own 5 items instead of trailing off left-aligned
             under a single flex-wrap run. */}
-        <div className="w-full mt-4 max-w-5xl mx-auto flex flex-col items-center gap-2.5 shrink-0">
+        <div className="w-full mt-6 max-w-5xl mx-auto flex flex-col items-center gap-2.5 shrink-0">
           <div className="flex flex-wrap justify-center gap-2.5">
             {CATEGORY_FILTER_ROW_1.map((cat) => (
               <button
@@ -400,8 +384,30 @@ export default function ManualBoard() {
           </div>
         </div>
 
-        {isAdmin && (
-          <div className="w-full mt-4 flex justify-end shrink-0">
+        {/* Search — its own full-width row */}
+        <div className="w-full mt-4 shrink-0">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+              search
+            </span>
+            <input
+              type="text"
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              placeholder="매뉴얼 제목이나 내용을 검색해 보세요."
+              className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 bg-white shadow-sm focus:border-primary focus:ring-0 text-body-md transition-all"
+            />
+          </div>
+        </div>
+
+        {/* List header — total count on the left (always shown, keeps the
+            row from collapsing when the admin-only button on the right is
+            hidden), 매뉴얼 등록 button on the right. */}
+        <div className="w-full mt-5 mb-3 flex justify-between items-center shrink-0">
+          <p className="text-body-md text-on-surface-variant">
+            총 매뉴얼 <span className="font-bold text-blue-600">{filteredDocuments.length}</span>건
+          </p>
+          {isAdmin && (
             <button
               onClick={() => setIsUploadModalOpen(true)}
               className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all shadow-sm"
@@ -409,11 +415,11 @@ export default function ManualBoard() {
               <span className="material-symbols-outlined text-[18px]">add_circle</span>
               매뉴얼 등록
             </button>
-          </div>
-        )}
+          )}
+        </div>
 
         {/* Document List */}
-        <div className="w-full mt-4 bg-white rounded-2xl border border-outline-variant shadow-sm px-6">
+        <div className="w-full bg-white rounded-2xl border border-outline-variant shadow-sm px-6">
           {isLoading ? (
             <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
           ) : loadError ? (
