@@ -8,88 +8,42 @@ import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
 const CACHE_KEY = "manual-documents";
 
-// Tailwind's JIT scanner needs each class name to appear as a literal
-// substring somewhere in this file — building them as `bg-${color}-500`
-// would silently produce no CSS in production. So every color's classes
-// are spelled out in full here rather than interpolated from `color`.
-// First 6 render as row one, remaining 5 as row two (see the two-row split
-// in the filter bar below).
-const FILTER_CATEGORIES = [
-  {
-    name: "전체",
-    emoji: "🌐",
-    active: "bg-blue-500 border-blue-500 text-white",
-    inactive: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100",
-  },
-  {
-    name: "기획혁신실",
-    emoji: "💡",
-    active: "bg-indigo-500 border-indigo-500 text-white",
-    inactive: "bg-indigo-50 border-indigo-200 text-indigo-700 hover:bg-indigo-100",
-  },
-  {
-    name: "안전관리실",
-    emoji: "🛡️",
-    active: "bg-orange-500 border-orange-500 text-white",
-    inactive: "bg-orange-50 border-orange-200 text-orange-700 hover:bg-orange-100",
-  },
-  {
-    name: "경영지원처",
-    emoji: "🤝",
-    active: "bg-blue-500 border-blue-500 text-white",
-    inactive: "bg-blue-50 border-blue-200 text-blue-700 hover:bg-blue-100",
-  },
-  {
-    name: "미래공간개발처",
-    emoji: "🚀",
-    active: "bg-purple-500 border-purple-500 text-white",
-    inactive: "bg-purple-50 border-purple-200 text-purple-700 hover:bg-purple-100",
-  },
-  {
-    name: "도시개발처",
-    emoji: "🏙️",
-    active: "bg-teal-500 border-teal-500 text-white",
-    inactive: "bg-teal-50 border-teal-200 text-teal-700 hover:bg-teal-100",
-  },
-  {
-    name: "공공건축처",
-    emoji: "🏗️",
-    active: "bg-amber-500 border-amber-500 text-white",
-    inactive: "bg-amber-50 border-amber-200 text-amber-700 hover:bg-amber-100",
-  },
-  {
-    name: "보상판매처",
-    emoji: "💰",
-    active: "bg-green-500 border-green-500 text-white",
-    inactive: "bg-green-50 border-green-200 text-green-700 hover:bg-green-100",
-  },
-  {
-    name: "주거복지처",
-    emoji: "🏠",
-    active: "bg-rose-500 border-rose-500 text-white",
-    inactive: "bg-rose-50 border-rose-200 text-rose-700 hover:bg-rose-100",
-  },
-  {
-    name: "U레포츠센터",
-    emoji: "⚽",
-    active: "bg-sky-500 border-sky-500 text-white",
-    inactive: "bg-sky-50 border-sky-200 text-sky-700 hover:bg-sky-100",
-  },
-  {
-    name: "청렴감사실",
-    emoji: "⚖️",
-    active: "bg-slate-500 border-slate-500 text-white",
-    inactive: "bg-slate-50 border-slate-200 text-slate-700 hover:bg-slate-100",
-  },
+const DEPARTMENTS = [
+  "기획혁신실",
+  "안전관리실",
+  "경영지원처",
+  "미래공간개발처",
+  "도시개발처",
+  "공공건축처",
+  "보상판매처",
+  "주거복지처",
+  "U레포츠센터",
+  "청렴감사실",
 ];
+const FILTER_CATEGORIES = ["전체", ...DEPARTMENTS];
 
+// Split into two explicit rows of 6 and 5 so the second row centers on its
+// own content instead of trailing off left-aligned under one flex-wrap run.
 const CATEGORY_FILTER_ROW_1 = FILTER_CATEGORIES.slice(0, 6);
 const CATEGORY_FILTER_ROW_2 = FILTER_CATEGORIES.slice(6);
 
-// The upload form's department picker doesn't include "전체" (a document
-// must belong to one specific department), and stays plain-styled — only
-// the filter bar above the list gets the color/emoji treatment.
-const DEPARTMENTS = FILTER_CATEGORIES.slice(1).map((c) => c.name);
+// Per-department emoji + badge color for the document list rows only — the
+// filter buttons above stay uniformly styled. Tailwind's JIT scanner needs
+// each class name to appear as a literal substring somewhere in this file,
+// so every color's classes are spelled out in full rather than interpolated
+// from a `color` variable.
+const CATEGORY_BADGE_STYLES = {
+  기획혁신실: { emoji: "💡", className: "bg-indigo-50 text-indigo-700" },
+  안전관리실: { emoji: "🛡️", className: "bg-orange-50 text-orange-700" },
+  경영지원처: { emoji: "🤝", className: "bg-blue-50 text-blue-700" },
+  미래공간개발처: { emoji: "🚀", className: "bg-purple-50 text-purple-700" },
+  도시개발처: { emoji: "🏙️", className: "bg-teal-50 text-teal-700" },
+  공공건축처: { emoji: "🏗️", className: "bg-amber-50 text-amber-700" },
+  보상판매처: { emoji: "💰", className: "bg-green-50 text-green-700" },
+  주거복지처: { emoji: "🏠", className: "bg-rose-50 text-rose-700" },
+  U레포츠센터: { emoji: "⚽", className: "bg-sky-50 text-sky-700" },
+  청렴감사실: { emoji: "⚖️", className: "bg-slate-100 text-slate-700" },
+};
 
 const ALLOWED_EXTENSIONS = ["pdf", "hwp", "docx", "xlsx"];
 const MAX_FILE_BYTES = 1 * 1024 * 1024;
@@ -380,28 +334,30 @@ export default function ManualBoard() {
           <div className="flex flex-wrap justify-center gap-2.5">
             {CATEGORY_FILTER_ROW_1.map((cat) => (
               <button
-                key={cat.name}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-label-sm font-bold border-2 shadow-sm transition-colors ${
-                  cat.name === selectedCategory ? cat.active : cat.inactive
-                }`}
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={
+                  cat === selectedCategory
+                    ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white shadow-sm transition-colors"
+                    : "px-4 py-2 rounded-full text-label-sm font-bold bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                }
               >
-                <span>{cat.emoji}</span>
-                {cat.name}
+                {cat}
               </button>
             ))}
           </div>
           <div className="flex flex-wrap justify-center gap-2.5">
             {CATEGORY_FILTER_ROW_2.map((cat) => (
               <button
-                key={cat.name}
-                onClick={() => setSelectedCategory(cat.name)}
-                className={`flex items-center gap-1.5 px-4 py-2 rounded-full text-label-sm font-bold border-2 shadow-sm transition-colors ${
-                  cat.name === selectedCategory ? cat.active : cat.inactive
-                }`}
+                key={cat}
+                onClick={() => setSelectedCategory(cat)}
+                className={
+                  cat === selectedCategory
+                    ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white shadow-sm transition-colors"
+                    : "px-4 py-2 rounded-full text-label-sm font-bold bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+                }
               >
-                <span>{cat.emoji}</span>
-                {cat.name}
+                {cat}
               </button>
             ))}
           </div>
@@ -435,7 +391,12 @@ export default function ManualBoard() {
                 className={`flex items-center gap-4 py-4 ${idx !== filteredDocuments.length - 1 ? "border-b border-outline-variant" : ""}`}
               >
                 <span className="material-symbols-outlined text-gray-400 text-[24px] shrink-0">description</span>
-                <span className="px-2.5 py-0.5 rounded-full bg-gray-100 text-gray-600 text-[11px] font-bold shrink-0">
+                <span
+                  className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
+                    CATEGORY_BADGE_STYLES[doc.category]?.className ?? "bg-gray-100 text-gray-600"
+                  }`}
+                >
+                  {CATEGORY_BADGE_STYLES[doc.category] ? `${CATEGORY_BADGE_STYLES[doc.category].emoji} ` : ""}
                   {doc.category}
                 </span>
                 <span className="flex-1 min-w-0 font-bold text-on-surface truncate">{doc.title}</span>
