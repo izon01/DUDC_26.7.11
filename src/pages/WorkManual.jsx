@@ -757,7 +757,7 @@ export default function WorkManual() {
                 <div key={chapter.id}>
                   <div
                     onDragOver={(e) => handleDragOverChapterHeader(e, chapter.id)}
-                    className={`px-2.5 pb-1.5 ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
+                    className={`px-1 pb-1.5 ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
                   >
                     <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
                       {chapter.title}
@@ -805,7 +805,7 @@ export default function WorkManual() {
                       <button
                         type="button"
                         onClick={() => toggleChapter(chapter.id)}
-                        className={`w-full flex items-center justify-between gap-2 px-2.5 pb-1.5 cursor-pointer hover:text-primary transition-colors ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
+                        className={`w-full flex items-center justify-between gap-2 px-1 pb-1.5 cursor-pointer hover:text-primary transition-colors ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
                       >
                         <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
                           {chapter.title}
