@@ -390,7 +390,6 @@ export default function ManualBoard() {
                 key={doc.id}
                 className={`flex items-center gap-4 py-4 ${idx !== filteredDocuments.length - 1 ? "border-b border-outline-variant" : ""}`}
               >
-                <span className="material-symbols-outlined text-gray-400 text-[24px] shrink-0">description</span>
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
                     CATEGORY_BADGE_STYLES[doc.category]?.className ?? "bg-gray-100 text-gray-600"
