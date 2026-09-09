@@ -288,51 +288,52 @@ export default function ManualBoard() {
           className="mt-4"
         />
 
-        {/* Search + Category Filter */}
-        <div className="w-full mt-6 flex flex-col md:flex-row md:items-center gap-3 shrink-0">
-          <div className="relative flex-1">
-            <span className="material-symbols-outlined absolute left-3.5 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
+        {/* Search — its own full-width row */}
+        <div className="w-full mt-6 shrink-0">
+          <div className="relative">
+            <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-on-surface-variant text-[20px]">
               search
             </span>
             <input
               type="text"
               value={searchTerm}
               onChange={(e) => setSearchTerm(e.target.value)}
-              placeholder="매뉴얼 제목으로 검색"
-              className="w-full pl-10 pr-4 py-2.5 rounded-full border border-gray-200 bg-white shadow-sm focus:border-primary focus:ring-0 text-body-md transition-all"
+              placeholder="매뉴얼 제목이나 내용을 검색해 보세요."
+              className="w-full pl-11 pr-4 py-3 rounded-full border border-gray-200 bg-white shadow-sm focus:border-primary focus:ring-0 text-body-md transition-all"
             />
-          </div>
-          <div className="flex flex-wrap gap-2 shrink-0">
-            {FILTER_CATEGORIES.map((cat) => (
-              <button
-                key={cat}
-                onClick={() => setSelectedCategory(cat)}
-                className={
-                  cat === selectedCategory
-                    ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white shadow-sm transition-colors"
-                    : "px-4 py-2 rounded-full text-label-sm font-bold bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
-                }
-              >
-                {cat}
-              </button>
-            ))}
           </div>
         </div>
 
-        {isAdmin && (
-          <div className="w-full mt-4 flex justify-end shrink-0">
+        {/* Category filter — wraps to as many rows as it needs below the search */}
+        <div className="w-full mt-4 flex flex-wrap justify-center gap-2 shrink-0">
+          {FILTER_CATEGORIES.map((cat) => (
             <button
-              onClick={() => setIsUploadModalOpen(true)}
-              className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              key={cat}
+              onClick={() => setSelectedCategory(cat)}
+              className={
+                cat === selectedCategory
+                  ? "px-4 py-2 rounded-full text-label-sm font-bold bg-blue-900 text-white shadow-sm transition-colors"
+                  : "px-4 py-2 rounded-full text-label-sm font-bold bg-white text-gray-700 border border-gray-200 shadow-sm hover:bg-gray-50 transition-colors"
+              }
             >
-              <span className="material-symbols-outlined text-[18px]">add_circle</span>
-              매뉴얼 등록
+              {cat}
             </button>
-          </div>
-        )}
+          ))}
+        </div>
 
         {/* Document List */}
-        <div className="w-full mt-4 bg-white rounded-2xl border border-outline-variant shadow-sm px-6">
+        <div className="w-full mt-6 bg-white rounded-2xl border border-outline-variant shadow-sm px-6">
+          {isAdmin && (
+            <div className="w-full pt-5 pb-5 flex justify-end border-b border-outline-variant">
+              <button
+                onClick={() => setIsUploadModalOpen(true)}
+                className="flex items-center gap-2 px-5 py-2.5 bg-primary text-white rounded-full font-bold text-label-sm hover:opacity-90 active:scale-95 transition-all shadow-sm"
+              >
+                <span className="material-symbols-outlined text-[18px]">add_circle</span>
+                매뉴얼 등록
+              </button>
+            </div>
+          )}
           {isLoading ? (
             <p className="text-center text-on-surface-variant py-10">불러오는 중...</p>
           ) : loadError ? (
