@@ -16,9 +16,9 @@ function sanitizeFilename(name) {
   return base.slice(0, 100) || "file";
 }
 
-// PUT/DELETE-by-id isn't needed yet (no edit flow), but DELETE targets a
-// single document via ?id=<uuid> for the same reason as the other content
-// endpoints — see api/work-manuals.js for the fuller explanation.
+// PUT/DELETE target a single document via ?id=<uuid> for the same reason as
+// the other content endpoints — see api/work-manuals.js for the fuller
+// explanation.
 export default async function handler(req, res) {
   if (req.method !== "GET") {
     try {
@@ -91,6 +91,88 @@ export default async function handler(req, res) {
     }
   }
 
+  if (req.method === "PUT") {
+    const admin = requireAdmin(req, res);
+    if (!admin) return;
+
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ message: "id가 필요합니다." });
+
+    const { title, category, filename, dataUrl } = req.body ?? {};
+    if (!title || typeof title !== "string" || !title.trim()) {
+      return res.status(400).json({ message: "제목이 필요합니다." });
+    }
+    if (!category || typeof category !== "string" || !category.trim()) {
+      return res.status(400).json({ message: "부서(카테고리)가 필요합니다." });
+    }
+
+    // Replacing the file is optional — omit filename/dataUrl to just rename
+    // or recategorize an existing document without touching its file.
+    const replacingFile = typeof dataUrl === "string" && dataUrl.length > 0;
+    let newSafeName = null;
+    let newBuffer = null;
+    let newContentType = null;
+
+    if (replacingFile) {
+      const ext = (filename || "").split(".").pop()?.toLowerCase();
+      if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
+        return res.status(400).json({ message: "PDF, HWP, DOCX, XLSX 파일만 업로드할 수 있습니다." });
+      }
+      const match = dataUrl.match(DATA_URL_PATTERN);
+      if (!match) {
+        return res.status(400).json({ message: "파일 데이터가 올바르지 않습니다." });
+      }
+      newBuffer = Buffer.from(match[2], "base64");
+      if (newBuffer.length > MAX_BYTES) {
+        return res.status(413).json({ message: "1MB 이하의 파일만 업로드 가능합니다." });
+      }
+      newSafeName = sanitizeFilename(filename);
+      newContentType = match[1];
+    }
+
+    try {
+      const existing = await sql`SELECT file_url AS "fileUrl" FROM manual_documents WHERE id = ${id}`;
+      if (existing.rows.length === 0) {
+        return res.status(404).json({ message: "매뉴얼을 찾을 수 없습니다." });
+      }
+
+      let result;
+      if (replacingFile) {
+        const blob = await put(`manual-documents/${id}-${Date.now()}-${newSafeName}`, newBuffer, {
+          access: "public",
+          contentType: newContentType,
+        });
+        // Best-effort — see the DELETE handler below for why this doesn't
+        // block the update if it fails.
+        try {
+          await del(existing.rows[0].fileUrl);
+        } catch (blobError) {
+          console.error("manual-documents blob replace-delete error:", blobError);
+        }
+        result = await sql`
+          UPDATE manual_documents
+          SET title = ${title.trim()}, category = ${category}, filename = ${newSafeName},
+              file_url = ${blob.url}, file_size = ${newBuffer.length}
+          WHERE id = ${id}
+          RETURNING id, title, category, filename, file_url AS "fileUrl", file_size AS "fileSize",
+                    created_at AS "createdAt"
+        `;
+      } else {
+        result = await sql`
+          UPDATE manual_documents
+          SET title = ${title.trim()}, category = ${category}
+          WHERE id = ${id}
+          RETURNING id, title, category, filename, file_url AS "fileUrl", file_size AS "fileSize",
+                    created_at AS "createdAt"
+        `;
+      }
+      return res.status(200).json({ document: result.rows[0] });
+    } catch (error) {
+      console.error("manual-documents PUT error:", error);
+      return res.status(500).json({ message: "매뉴얼 수정 중 오류가 발생했습니다." });
+    }
+  }
+
   if (req.method === "DELETE") {
     const admin = requireAdmin(req, res);
     if (!admin) return;
@@ -118,6 +200,6 @@ export default async function handler(req, res) {
     }
   }
 
-  res.setHeader("Allow", "GET, POST, DELETE");
+  res.setHeader("Allow", "GET, POST, PUT, DELETE");
   return res.status(405).json({ message: "Method Not Allowed" });
 }

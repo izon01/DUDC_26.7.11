@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useRef, useState } from "react";
+import { Pencil } from "lucide-react";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import { useAuth } from "../context/AuthContext";
@@ -65,11 +66,15 @@ function readFileAsDataUrl(file) {
   });
 }
 
-function UploadDocumentModal({ isSubmitting, onClose, onSubmit }) {
-  const [title, setTitle] = useState("");
-  const [category, setCategory] = useState(DEPARTMENTS[0]);
+// Shared by both create and edit — in edit mode `initialValues` pre-fills
+// title/category and a new file is optional (omit it to just rename or
+// recategorize without touching the existing file).
+function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmit }) {
+  const [title, setTitle] = useState(initialValues?.title ?? "");
+  const [category, setCategory] = useState(initialValues?.category ?? DEPARTMENTS[0]);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
+  const isEdit = mode === "edit";
 
   function handleFileChange(e) {
     const selected = e.target.files?.[0];
@@ -95,7 +100,8 @@ function UploadDocumentModal({ isSubmitting, onClose, onSubmit }) {
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!title.trim() || !file) return;
+    if (!title.trim()) return;
+    if (!isEdit && !file) return;
     onSubmit({ title: title.trim(), category, file });
   }
 
@@ -104,8 +110,8 @@ function UploadDocumentModal({ isSubmitting, onClose, onSubmit }) {
       <div className="w-full max-w-lg bg-white rounded-2xl border-2 border-outline-variant shadow-xl overflow-hidden">
         <div className="px-8 py-6 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
-            <span className="material-symbols-outlined text-primary">upload_file</span>
-            매뉴얼 등록
+            <span className="material-symbols-outlined text-primary">{isEdit ? "edit_note" : "upload_file"}</span>
+            {isEdit ? "매뉴얼 수정" : "매뉴얼 등록"}
           </h2>
           <button
             onClick={onClose}
@@ -154,6 +160,7 @@ function UploadDocumentModal({ isSubmitting, onClose, onSubmit }) {
           <div>
             <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="doc-file">
               파일 (PDF, HWP, DOCX, XLSX / 최대 1MB)
+              {isEdit && <span className="font-normal text-on-surface-variant"> — 비워두면 기존 파일이 유지됩니다</span>}
             </label>
             <input
               id="doc-file"
@@ -162,12 +169,17 @@ function UploadDocumentModal({ isSubmitting, onClose, onSubmit }) {
               accept=".pdf,.hwp,.docx,.xlsx"
               onChange={handleFileChange}
               className="w-full text-body-md text-on-surface-variant file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-primary file:text-white file:font-bold file:text-label-sm file:cursor-pointer"
-              required
+              required={!isEdit}
             />
-            {file && (
+            {file ? (
               <p className="text-[12px] text-on-surface-variant mt-2">
-                {file.name} ({Math.ceil(file.size / 1024)}KB)
+                새 파일: {file.name} ({Math.ceil(file.size / 1024)}KB)
               </p>
+            ) : (
+              isEdit &&
+              initialValues?.filename && (
+                <p className="text-[12px] text-on-surface-variant mt-2">현재 파일: {initialValues.filename}</p>
+              )
             )}
           </div>
 
@@ -182,10 +194,10 @@ function UploadDocumentModal({ isSubmitting, onClose, onSubmit }) {
             </button>
             <button
               type="submit"
-              disabled={isSubmitting || !file}
+              disabled={isSubmitting || (!isEdit && !file)}
               className="px-6 py-2.5 rounded-full bg-primary text-white font-bold text-label-sm hover:bg-primary/90 active:scale-95 transition-all disabled:opacity-60 disabled:cursor-not-allowed"
             >
-              {isSubmitting ? "등록 중..." : "등록"}
+              {isSubmitting ? "저장 중..." : isEdit ? "수정" : "등록"}
             </button>
           </div>
         </form>
@@ -205,6 +217,7 @@ export default function ManualBoard() {
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
+  const [editingDocument, setEditingDocument] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
 
   const setDocuments = useCallback((updater) => {
@@ -263,6 +276,30 @@ export default function ManualBoard() {
       if (!res.ok) throw new Error(data.message || "매뉴얼 등록에 실패했습니다.");
       setDocuments((prev) => [data.document, ...prev]);
       setIsUploadModalOpen(false);
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setIsSubmitting(false);
+    }
+  }
+
+  async function handleEditSave({ title, category, file }) {
+    setIsSubmitting(true);
+    try {
+      const body = { title, category };
+      if (file) {
+        body.filename = file.name;
+        body.dataUrl = await readFileAsDataUrl(file);
+      }
+      const res = await fetch(`/api/manual-documents?id=${editingDocument.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify(body),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "매뉴얼 수정에 실패했습니다.");
+      setDocuments((prev) => prev.map((d) => (d.id === data.document.id ? data.document : d)));
+      setEditingDocument(null);
     } catch (error) {
       window.alert(error.message);
     } finally {
@@ -405,6 +442,15 @@ export default function ManualBoard() {
                 </span>
                 {isAdmin && (
                   <button
+                    onClick={() => setEditingDocument(doc)}
+                    title="매뉴얼 수정"
+                    className="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:text-blue-600 hover:bg-blue-50 transition-colors shrink-0"
+                  >
+                    <Pencil className="w-[18px] h-[18px]" />
+                  </button>
+                )}
+                {isAdmin && (
+                  <button
                     onClick={() => handleDelete(doc.id, doc.title)}
                     title="삭제"
                     className="w-8 h-8 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors shrink-0"
@@ -426,10 +472,21 @@ export default function ManualBoard() {
       </main>
 
       {isUploadModalOpen && (
-        <UploadDocumentModal
+        <DocumentFormModal
+          mode="create"
           isSubmitting={isSubmitting}
           onClose={() => setIsUploadModalOpen(false)}
           onSubmit={handleUpload}
+        />
+      )}
+
+      {editingDocument && (
+        <DocumentFormModal
+          mode="edit"
+          initialValues={editingDocument}
+          isSubmitting={isSubmitting}
+          onClose={() => setEditingDocument(null)}
+          onSubmit={handleEditSave}
         />
       )}
     </div>
