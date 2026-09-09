@@ -48,6 +48,7 @@ const CATEGORY_BADGE_STYLES = {
 
 const ALLOWED_EXTENSIONS = ["pdf", "hwp", "docx", "xlsx"];
 const MAX_FILE_BYTES = 1 * 1024 * 1024;
+const ITEMS_PER_PAGE = 10;
 
 function formatDateDot(iso) {
   const d = new Date(iso);
@@ -219,6 +220,7 @@ export default function ManualBoard() {
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState(null);
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [currentPage, setCurrentPage] = useState(1);
 
   const setDocuments = useCallback((updater) => {
     setDocumentsState((prev) => {
@@ -262,6 +264,19 @@ export default function ManualBoard() {
     const matchesSearch = !query || doc.title.toLowerCase().includes(query);
     return matchesCategory && matchesSearch;
   });
+
+  const totalPages = Math.max(1, Math.ceil(filteredDocuments.length / ITEMS_PER_PAGE));
+  const visibleDocuments = filteredDocuments.slice(
+    (currentPage - 1) * ITEMS_PER_PAGE,
+    currentPage * ITEMS_PER_PAGE
+  );
+
+  // A new search or category changes which documents exist at all, so
+  // whatever page the user was on may no longer make sense — always land
+  // back on page 1 rather than showing an empty page N.
+  useEffect(() => {
+    setCurrentPage(1);
+  }, [debouncedSearchTerm, selectedCategory]);
 
   async function handleUpload({ title, category, file }) {
     setIsSubmitting(true);
@@ -429,10 +444,10 @@ export default function ManualBoard() {
               {documents.length === 0 ? "아직 등록된 매뉴얼이 없습니다." : "검색 결과가 없습니다."}
             </p>
           ) : (
-            filteredDocuments.map((doc, idx) => (
+            visibleDocuments.map((doc, idx) => (
               <div
                 key={doc.id}
-                className={`flex items-center gap-4 py-4 ${idx !== filteredDocuments.length - 1 ? "border-b border-outline-variant" : ""}`}
+                className={`flex items-center gap-4 py-4 ${idx !== visibleDocuments.length - 1 ? "border-b border-outline-variant" : ""}`}
               >
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
@@ -475,6 +490,39 @@ export default function ManualBoard() {
             ))
           )}
         </div>
+
+        {/* Pagination */}
+        {totalPages > 1 && (
+          <div className="w-full flex justify-center items-center mt-6 gap-2">
+            <button
+              onClick={() => setCurrentPage((p) => Math.max(1, p - 1))}
+              disabled={currentPage === 1}
+              className="w-9 h-9 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_left</span>
+            </button>
+            {Array.from({ length: totalPages }, (_, i) => i + 1).map((page) => (
+              <button
+                key={page}
+                onClick={() => setCurrentPage(page)}
+                className={
+                  page === currentPage
+                    ? "w-9 h-9 flex items-center justify-center rounded-md bg-blue-600 text-white font-bold text-label-sm"
+                    : "w-9 h-9 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-gray-100 transition-colors text-label-sm"
+                }
+              >
+                {page}
+              </button>
+            ))}
+            <button
+              onClick={() => setCurrentPage((p) => Math.min(totalPages, p + 1))}
+              disabled={currentPage === totalPages}
+              className="w-9 h-9 flex items-center justify-center rounded-md text-on-surface-variant hover:bg-gray-100 transition-colors disabled:opacity-50 disabled:cursor-not-allowed disabled:hover:bg-transparent"
+            >
+              <span className="material-symbols-outlined text-[20px]">chevron_right</span>
+            </button>
+          </div>
+        )}
       </main>
 
       {isUploadModalOpen && (
