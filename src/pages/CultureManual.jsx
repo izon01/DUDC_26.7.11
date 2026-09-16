@@ -514,7 +514,7 @@ export default function CultureManual() {
                           <button
                             key={guide.id}
                             onClick={() => selectGuide(guide.id)}
-                            className={`block w-full text-left py-1.5 px-2.5 rounded-md text-sm transition ${
+                            className={`block w-full text-left py-2 pl-4 -indent-4 pr-2.5 rounded-md text-sm leading-snug transition ${
                               guide.id === selectedGuideId
                                 ? "bg-primary text-white font-bold"
                                 : "text-gray-700 hover:bg-gray-100"
@@ -538,7 +538,7 @@ export default function CultureManual() {
                           onClick={() => toggleLabel(group.label.id)}
                           className="flex-1 min-w-0 flex items-center justify-between gap-2 text-left cursor-pointer hover:text-primary transition-colors"
                         >
-                          <span className="text-base font-bold text-gray-900 truncate">
+                          <span className="text-sm font-bold text-gray-900 truncate">
                             {highlightText(group.label.title || "(제목 없음)", searchTerm)}
                           </span>
                           <span
@@ -579,7 +579,7 @@ export default function CultureManual() {
                             <button
                               key={guide.id}
                               onClick={() => selectGuide(guide.id)}
-                              className={`block w-full text-left py-1.5 pl-4 pr-2.5 rounded-md text-sm font-normal transition ${
+                              className={`block w-full text-left py-2 pl-8 -indent-4 pr-2.5 rounded-md text-sm leading-snug font-normal transition ${
                                 guide.id === selectedGuideId
                                   ? "bg-primary text-white font-bold"
                                   : "text-gray-700 hover:bg-gray-100"
