@@ -95,6 +95,70 @@ export default function CultureManual() {
     return guides.filter((g) => guideSearchText(g).includes(term));
   }, [guides, debouncedSearchTerm]);
 
+  // Culture posts don't have WorkManual's fixed 8 categories — labels are
+  // free-form rows mixed into the same sort order, so a "chapter" here is
+  // just a label followed by whatever pages sit before the next label. Pages
+  // before the first label land in an unlabeled leading group.
+  const groups = useMemo(() => {
+    const list = [];
+    let current = null;
+    for (const guide of filteredGuides) {
+      if (guide.type === "label") {
+        current = { label: guide, pages: [] };
+        list.push(current);
+      } else {
+        if (!current) {
+          current = { label: null, pages: [] };
+          list.push(current);
+        }
+        current.pages.push(guide);
+      }
+    }
+    return list;
+  }, [filteredGuides]);
+
+  // Which label accordions are expanded — independent per label, mirroring
+  // WorkManual's openChapterIds. Lazily seeded from the label that precedes
+  // the cached initial selection so a cached reload doesn't flash collapsed.
+  const [openLabelIds, setOpenLabelIds] = useState(() => {
+    const cached = getCache(CACHE_KEY);
+    const selected = cached?.find((g) => g.type !== "label")?.id;
+    if (!cached || !selected) return new Set();
+    let labelId = null;
+    for (const g of cached) {
+      if (g.type === "label") labelId = g.id;
+      if (g.id === selected) break;
+    }
+    return labelId ? new Set([labelId]) : new Set();
+  });
+  const didAutoOpenRef = useRef(Boolean(getCache(CACHE_KEY)));
+
+  // Same seeding as above, for the case a fresh fetch (no cache) determines
+  // the initial selection asynchronously. Only ever runs once.
+  useEffect(() => {
+    if (isLoading || didAutoOpenRef.current) return;
+    didAutoOpenRef.current = true;
+    const idx = guides.findIndex((g) => g.id === selectedGuideId);
+    if (idx === -1) return;
+    let labelId = null;
+    for (let i = idx; i >= 0; i--) {
+      if (guides[i].type === "label") {
+        labelId = guides[i].id;
+        break;
+      }
+    }
+    if (labelId) setOpenLabelIds(new Set([labelId]));
+  }, [isLoading, guides, selectedGuideId]);
+
+  function toggleLabel(labelId) {
+    setOpenLabelIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(labelId)) next.delete(labelId);
+      else next.add(labelId);
+      return next;
+    });
+  }
+
   const rawSelectedGuide = guides.find((g) => g.id === selectedGuideId) ?? null;
   const selectedGuide = rawSelectedGuide && rawSelectedGuide.type !== "label" ? rawSelectedGuide : null;
 
@@ -380,109 +444,155 @@ export default function CultureManual() {
             </div>
           )}
 
-          <div className="flex-1 overflow-y-auto custom-scrollbar space-y-3">
+          <div className="flex-1 overflow-y-auto custom-scrollbar">
             {isLoading && <SkeletonList count={4} itemClassName="h-16" />}
             {!isLoading && filteredGuides.length === 0 && (
               <p className="px-2 py-6 text-center text-[12px] text-on-surface-variant">
                 {guides.length === 0 ? "등록된 포스트가 없습니다." : "검색 결과가 없습니다."}
               </p>
             )}
-            {!isLoading && filteredGuides.map((guide, idx) => {
-              if (guide.type === "label") {
-                return (
-                  <div
-                    key={guide.id}
-                    draggable={isReorderMode}
-                    onDragStart={() => handleDragStart(idx)}
-                    onDragOver={(e) => handleDragOver(e, idx)}
-                    onDragEnd={handleDragEnd}
-                    className={`flex items-center gap-1 rounded-xl transition-opacity ${
-                      isReorderMode
-                        ? `p-2 bg-white border border-outline-variant ${dragIndex === idx ? "opacity-40" : "opacity-100"}`
-                        : ""
-                    }`}
-                  >
-                    {isReorderMode && (
+            {!isLoading && isReorderMode
+              ? // Reorder mode: unchanged flat draggable list — labels and pages
+                // are both draggable rows here so any order (including moving a
+                // page across a label boundary) can be expressed by a single drag.
+                filteredGuides.map((guide, idx) => {
+                  if (guide.type === "label") {
+                    return (
+                      <div
+                        key={guide.id}
+                        draggable
+                        onDragStart={() => handleDragStart(idx)}
+                        onDragOver={(e) => handleDragOver(e, idx)}
+                        onDragEnd={handleDragEnd}
+                        className={`flex items-center gap-1 rounded-xl p-2 bg-white border border-outline-variant transition-opacity mb-3 ${
+                          dragIndex === idx ? "opacity-40" : "opacity-100"
+                        }`}
+                      >
+                        <span
+                          className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0"
+                          style={{ fontSize: "18px" }}
+                        >
+                          drag_indicator
+                        </span>
+                        <span className="flex-1 min-w-0 px-1 text-[13px] font-bold text-on-surface-variant tracking-wide truncate">
+                          {highlightText(guide.title || "(제목 없음)", searchTerm)}
+                        </span>
+                      </div>
+                    );
+                  }
+
+                  return (
+                    <div
+                      key={guide.id}
+                      draggable
+                      onDragStart={() => handleDragStart(idx)}
+                      onDragOver={(e) => handleDragOver(e, idx)}
+                      onDragEnd={handleDragEnd}
+                      className={`flex items-center gap-2 rounded-xl p-2 bg-white border border-outline-variant transition-opacity mb-3 ${
+                        dragIndex === idx ? "opacity-40" : "opacity-100"
+                      }`}
+                    >
                       <span
                         className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0"
                         style={{ fontSize: "18px" }}
                       >
                         drag_indicator
                       </span>
-                    )}
-                    <div className="flex-1 min-w-0 px-2.5 pt-4 pb-1.5 flex items-center justify-between gap-2">
-                      <span className="text-[13px] font-bold text-on-surface-variant tracking-wide truncate">
-                        {highlightText(guide.title || "(제목 없음)", searchTerm)}
+                      <span className="flex-1 min-w-0 text-left p-2 text-sm text-on-surface-variant truncate">
+                        {guide.title || "(제목 없음)"}
                       </span>
-                      {isAdmin && !isReorderMode && (
-                        <div className="shrink-0 flex items-center gap-0.5">
-                          <button
-                            onClick={() => handleEditLabel(guide.id, guide.title)}
-                            title="대제목 수정"
-                            className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
-                          >
-                            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-                              edit
-                            </span>
-                          </button>
-                          <button
-                            onClick={() => handleDeleteLabel(guide.id, guide.title)}
-                            title="대제목 삭제"
-                            className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
-                          >
-                            <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
-                              close
-                            </span>
-                          </button>
-                        </div>
-                      )}
                     </div>
-                  </div>
-                );
-              }
+                  );
+                })
+              : // Normal mode: Notion-style hierarchy — bold label headers as
+                // collapsible accordions, plain indented page rows underneath.
+                groups.map((group, groupIdx) => {
+                  if (!group.label) {
+                    return (
+                      <div key={`orphan-${groupIdx}`} className="space-y-0.5">
+                        {group.pages.map((guide) => (
+                          <button
+                            key={guide.id}
+                            onClick={() => selectGuide(guide.id)}
+                            className={`block w-full text-left py-1.5 px-2.5 rounded-md text-sm transition ${
+                              guide.id === selectedGuideId
+                                ? "bg-primary text-white font-bold"
+                                : "text-gray-700 hover:bg-gray-100"
+                            }`}
+                          >
+                            {highlightText(guide.title, searchTerm)}
+                          </button>
+                        ))}
+                      </div>
+                    );
+                  }
 
-              const isActive = guide.id === selectedGuideId;
-              return (
-                <div
-                  key={guide.id}
-                  draggable={isReorderMode}
-                  onDragStart={() => handleDragStart(idx)}
-                  onDragOver={(e) => handleDragOver(e, idx)}
-                  onDragEnd={handleDragEnd}
-                  onClick={() => selectGuide(guide.id)}
-                  className={`flex items-center gap-2 rounded-xl transition-opacity ${
-                    isReorderMode
-                      ? `p-2 bg-white border border-outline-variant ${dragIndex === idx ? "opacity-40" : "opacity-100"}`
-                      : isActive
-                        ? "p-4 bg-primary-container/10 border border-primary cursor-pointer"
-                        : "p-4 bg-white border border-outline-variant cursor-pointer hover:border-primary transition-colors opacity-70"
-                  }`}
-                >
-                  {isReorderMode && (
-                    <span
-                      className="material-symbols-outlined text-on-surface-variant cursor-grab active:cursor-grabbing shrink-0"
-                      style={{ fontSize: "18px" }}
-                    >
-                      drag_indicator
-                    </span>
-                  )}
-                  <div className="min-w-0 flex-1">
-                    <p
-                      className={
-                        isActive
-                          ? "text-[11px] text-primary font-bold mb-1 uppercase tracking-wider"
-                          : "text-[11px] text-on-surface-variant font-bold mb-1 uppercase tracking-wider"
-                      }
-                    >
-                      {`Guide ${String(idx + 1).padStart(2, "0")}`}
-                    </p>
-                    <h3 className="text-[15px] font-bold text-on-surface truncate">
-                      {highlightText(guide.title, searchTerm)}
-                    </h3>
-                  </div>
-                </div>
-              );
-            })}
+                  const isOpen = debouncedSearchTerm.trim() ? true : openLabelIds.has(group.label.id);
+                  return (
+                    <div key={group.label.id}>
+                      <div
+                        className={`flex items-center justify-between gap-2 px-1 pb-1.5 ${groupIdx === 0 ? "mt-1" : "mt-6"}`}
+                      >
+                        <button
+                          type="button"
+                          onClick={() => toggleLabel(group.label.id)}
+                          className="flex-1 min-w-0 flex items-center justify-between gap-2 text-left cursor-pointer hover:text-primary transition-colors"
+                        >
+                          <span className="text-base font-bold text-gray-900 truncate">
+                            {highlightText(group.label.title || "(제목 없음)", searchTerm)}
+                          </span>
+                          <span
+                            className={`material-symbols-outlined text-gray-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-90" : ""}`}
+                            style={{ fontSize: "18px" }}
+                          >
+                            chevron_right
+                          </span>
+                        </button>
+                        {isAdmin && (
+                          <div className="shrink-0 flex items-center gap-0.5">
+                            <button
+                              onClick={() => handleEditLabel(group.label.id, group.label.title)}
+                              title="대제목 수정"
+                              className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-primary hover:bg-primary/10 transition-colors"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                                edit
+                              </span>
+                            </button>
+                            <button
+                              onClick={() => handleDeleteLabel(group.label.id, group.label.title)}
+                              title="대제목 삭제"
+                              className="w-5 h-5 flex items-center justify-center rounded-full text-on-surface-variant hover:text-error hover:bg-error/10 transition-colors"
+                            >
+                              <span className="material-symbols-outlined" style={{ fontSize: "14px" }}>
+                                close
+                              </span>
+                            </button>
+                          </div>
+                        )}
+                      </div>
+                      <div
+                        className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
+                      >
+                        <div className="min-h-0 space-y-0.5">
+                          {group.pages.map((guide) => (
+                            <button
+                              key={guide.id}
+                              onClick={() => selectGuide(guide.id)}
+                              className={`block w-full text-left py-1.5 pl-4 pr-2.5 rounded-md text-sm font-normal transition ${
+                                guide.id === selectedGuideId
+                                  ? "bg-primary text-white font-bold"
+                                  : "text-gray-700 hover:bg-gray-100"
+                              }`}
+                            >
+                              {highlightText(guide.title, searchTerm)}
+                            </button>
+                          ))}
+                        </div>
+                      </div>
+                    </div>
+                  );
+                })}
           </div>
           <div className="mt-6 p-4 bg-surface-container-low rounded-xl flex items-center gap-3">
             <span className="material-symbols-outlined text-[32px] text-secondary">pest_control_rodent</span>
@@ -510,9 +620,6 @@ export default function CultureManual() {
                 {/* Page Header */}
                 <div className="px-12 py-8 stitch-border-b flex items-center justify-between shrink-0">
                   <div className="flex items-center gap-4 min-w-0">
-                    <span className="bg-primary-fixed text-on-primary-fixed-variant px-3 py-1 rounded-full text-[12px] font-bold shrink-0">
-                      New Joiner Guide
-                    </span>
                     <h2 className="text-[24px] font-bold text-on-surface truncate">
                       {highlightText(selectedGuide.title, searchTerm)}
                     </h2>
