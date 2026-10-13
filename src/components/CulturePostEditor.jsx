@@ -1,7 +1,7 @@
 import { useState } from "react";
 import { CKEditor } from "@ckeditor/ckeditor5-react";
 import { ClassicEditor, createCkeditorConfig } from "../ckeditorConfig";
-import { stripHtml } from "../utils/html";
+import { hasVisibleContent } from "../utils/html";
 
 // Full-width, single-column editor canvas (Naver-blog-style) that replaces the
 // entire reading area while an admin creates or edits a culture post.
@@ -16,8 +16,7 @@ export default function CulturePostEditor({ mode, initialValues, isSaving, onCan
 
   function handleSubmit() {
     const trimmedTitle = title.trim();
-    const isBodyEmpty = stripHtml(bodyHtml).trim().length === 0;
-    if (!trimmedTitle || isBodyEmpty) return;
+    if (!trimmedTitle || !hasVisibleContent(bodyHtml)) return;
 
     const checkPoints = checkPointsText
       .split("\n")

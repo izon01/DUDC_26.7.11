@@ -17,7 +17,7 @@ import { SkeletonList } from "../components/Skeleton";
 import { useAuth } from "../context/AuthContext";
 import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
-import { stripHtml } from "../utils/html";
+import { hasVisibleContent, stripHtml } from "../utils/html";
 import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
@@ -134,7 +134,7 @@ function PageEditorLoading() {
 }
 
 function BookPage({ page, searchTerm, side, totalPages }) {
-  const hasContent = Boolean(stripHtml(page.html || "").trim());
+  const hasContent = hasVisibleContent(page.html);
   return (
     <div className="w-full min-h-full px-14 pt-10 pb-16 relative break-keep">
       <div className="space-y-6">
