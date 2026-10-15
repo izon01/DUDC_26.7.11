@@ -140,7 +140,7 @@ function BookPage({ page, searchTerm, side, totalPages }) {
       <div className="space-y-6">
         {hasContent ? (
           <div
-            className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
+            className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant [&_img]:max-w-full [&_img]:h-auto [&_img]:object-contain"
             dangerouslySetInnerHTML={{ __html: highlightHtml(page.html, searchTerm) }}
           />
         ) : (
@@ -911,7 +911,7 @@ export default function WorkManual() {
             </div>
           )}
 
-          <div className="flex-1 flex items-center justify-center p-8 relative overflow-hidden">
+          <div className="flex-1 min-h-0 flex items-center justify-center px-16 py-4 relative overflow-hidden">
             {isLoading ? (
               <p className="text-on-surface-variant">불러오는 중...</p>
             ) : loadError ? (
@@ -938,7 +938,7 @@ export default function WorkManual() {
                   <span className="material-symbols-outlined text-[32px]">chevron_right</span>
                 </button>
 
-                <div className="relative max-w-[1400px] w-full h-full max-h-[820px]">
+                <div className="relative max-w-[1600px] w-full h-full min-h-[480px]">
                   {/* Layered pages behind the cover — staggered, not concentric, so it
                       reads as loosely stacked paper rather than a single outline */}
                   <div className="absolute -left-4 -right-2 top-4 bottom-1 bg-gray-50 rounded-l-md rounded-r-xl shadow-sm z-0 rotate-[0.3deg]" />
