@@ -133,14 +133,36 @@ function PageEditorLoading() {
   );
 }
 
+// A page whose only content is image(s) — e.g. a chapter cover. These get the
+// whole page to themselves instead of the usual text margins.
+function isImageOnly(html) {
+  const source = html || "";
+  return /<img[\s>]/i.test(source) && stripHtml(source).replace(/&nbsp;/g, " ").trim().length === 0;
+}
+
+// Image height caps are viewport-relative because the book is sized to the
+// viewport (stage minus 2rem padding): image-only pages subtract the tighter
+// page padding, mixed pages leave room for the text around the image.
+const IMAGE_ONLY_CLASS =
+  "[&_.image]:!my-0 [&_img]:max-w-full [&_img]:max-h-[calc(100vh-8rem)] [&_img]:w-auto [&_img]:h-auto [&_img]:mx-auto [&_img]:object-contain";
+const IMAGE_MIXED_CLASS =
+  "[&_img]:max-w-full [&_img]:max-h-[65vh] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain";
+
 function BookPage({ page, searchTerm, side, totalPages }) {
   const hasContent = hasVisibleContent(page.html);
+  const imageOnly = hasContent && isImageOnly(page.html);
   return (
-    <div className="w-full min-h-full px-14 pt-10 pb-16 relative break-keep">
-      <div className="space-y-6">
+    <div
+      className={`w-full min-h-full relative break-keep ${
+        imageOnly ? "px-6 pt-6 pb-12 flex items-center justify-center" : "px-14 pt-10 pb-16"
+      }`}
+    >
+      <div className={imageOnly ? "w-full" : "space-y-6"}>
         {hasContent ? (
           <div
-            className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant [&_img]:max-w-full [&_img]:h-auto [&_img]:object-contain"
+            className={`ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant ${
+              imageOnly ? IMAGE_ONLY_CLASS : IMAGE_MIXED_CLASS
+            }`}
             dangerouslySetInnerHTML={{ __html: highlightHtml(page.html, searchTerm) }}
           />
         ) : (
