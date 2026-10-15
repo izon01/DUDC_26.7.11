@@ -474,7 +474,10 @@ export default function CultureManual() {
                         >
                           drag_indicator
                         </span>
-                        <span className="flex-1 min-w-0 px-1 text-[13px] font-bold text-on-surface-variant tracking-wide truncate">
+                        <span
+                          title={guide.title}
+                          className="flex-1 min-w-0 px-1 text-[13px] font-bold text-on-surface-variant tracking-wide truncate"
+                        >
                           {highlightText(guide.title || "(제목 없음)", searchTerm)}
                         </span>
                       </div>
@@ -498,7 +501,10 @@ export default function CultureManual() {
                       >
                         drag_indicator
                       </span>
-                      <span className="flex-1 min-w-0 text-left p-2 text-sm text-on-surface-variant truncate">
+                      <span
+                        title={guide.title}
+                        className="flex-1 min-w-0 text-left p-2 text-[13px] text-on-surface-variant truncate"
+                      >
                         {guide.title || "(제목 없음)"}
                       </span>
                     </div>
@@ -514,7 +520,8 @@ export default function CultureManual() {
                           <button
                             key={guide.id}
                             onClick={() => selectGuide(guide.id)}
-                            className={`block w-full text-left py-2 pl-4 -indent-4 pr-2.5 rounded-md text-sm leading-snug transition ${
+                            title={guide.title}
+                            className={`block w-full text-left py-2 px-2.5 rounded-md text-[13px] truncate transition ${
                               guide.id === selectedGuideId
                                 ? "bg-primary text-white font-bold"
                                 : "text-gray-700 hover:bg-gray-100"
@@ -536,6 +543,7 @@ export default function CultureManual() {
                         <button
                           type="button"
                           onClick={() => toggleLabel(group.label.id)}
+                          title={group.label.title}
                           className="flex-1 min-w-0 flex items-center justify-between gap-2 text-left cursor-pointer hover:text-primary transition-colors"
                         >
                           <span className="text-sm font-bold text-gray-900 truncate">
@@ -574,12 +582,13 @@ export default function CultureManual() {
                       <div
                         className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
                       >
-                        <div className="min-h-0 space-y-0.5">
+                        <div className="min-h-0 min-w-0 space-y-0.5">
                           {group.pages.map((guide) => (
                             <button
                               key={guide.id}
                               onClick={() => selectGuide(guide.id)}
-                              className={`block w-full text-left py-2 pl-8 -indent-4 pr-2.5 rounded-md text-sm leading-snug font-normal transition ${
+                              title={guide.title}
+                              className={`block w-full text-left py-2 pl-4 pr-2.5 rounded-md text-[13px] truncate font-normal transition ${
                                 guide.id === selectedGuideId
                                   ? "bg-primary text-white font-bold"
                                   : "text-gray-700 hover:bg-gray-100"
