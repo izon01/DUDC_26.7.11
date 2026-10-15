@@ -372,7 +372,7 @@ export default function CultureManual() {
 
       <main className="flex-1 flex flex-col md:flex-row overflow-hidden">
         {/* Narrow Left Sidebar */}
-        <aside className="w-full md:w-[280px] max-h-[40vh] md:max-h-none bg-white border-b md:border-b-0 md:border-r border-outline-variant flex flex-col p-6 overflow-hidden shrink-0">
+        <aside className="w-full md:w-[300px] lg:w-[360px] xl:w-[400px] max-h-[40vh] md:max-h-none bg-white border-b md:border-b-0 md:border-r border-outline-variant flex flex-col p-6 overflow-hidden shrink-0">
           <div className="flex items-center gap-2 mb-4">
             <span className="material-symbols-outlined text-secondary">menu_book</span>
             <h2 className="font-bold text-[17px] text-on-surface">문화 포스트 목록</h2>
