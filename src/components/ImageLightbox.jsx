@@ -1,15 +1,41 @@
-import { useEffect } from "react";
+import { useEffect, useState } from "react";
+
+const VIEWPORT_FILL = 0.9;
+
+// Largest size that fits inside 90% of the viewport at the image's own aspect
+// ratio — scaling up as well as down, so a small screenshot is enlarged to
+// fill the screen. (max-w/max-h alone only ever shrink an image.)
+function fitToViewport(natural) {
+  if (!natural) return null;
+  const scale = Math.min(
+    (window.innerWidth * VIEWPORT_FILL) / natural.width,
+    (window.innerHeight * VIEWPORT_FILL) / natural.height
+  );
+  return { width: Math.round(natural.width * scale), height: Math.round(natural.height * scale) };
+}
 
 // Full-screen image viewer. Closes on the X button, a click on the dark
 // backdrop, or Esc; a click on the image itself does nothing.
 export default function ImageLightbox({ src, alt, onClose }) {
+  const [natural, setNatural] = useState(null);
+  const [, setViewportTick] = useState(0);
+
   useEffect(() => {
     function onKeyDown(e) {
       if (e.key === "Escape") onClose();
     }
+    function onResize() {
+      setViewportTick((n) => n + 1);
+    }
     window.addEventListener("keydown", onKeyDown);
-    return () => window.removeEventListener("keydown", onKeyDown);
+    window.addEventListener("resize", onResize);
+    return () => {
+      window.removeEventListener("keydown", onKeyDown);
+      window.removeEventListener("resize", onResize);
+    };
   }, [onClose]);
+
+  const size = fitToViewport(natural);
 
   return (
     <div
@@ -30,7 +56,11 @@ export default function ImageLightbox({ src, alt, onClose }) {
       <img
         src={src}
         alt={alt || ""}
+        onLoad={(e) => setNatural({ width: e.target.naturalWidth, height: e.target.naturalHeight })}
         onClick={(e) => e.stopPropagation()}
+        style={size ?? undefined}
+        // Until the image loads there's no size to fit to, so fall back to
+        // the shrink-only caps; afterwards the explicit size wins.
         className="max-w-[90vw] max-h-[90vh] object-contain rounded shadow-2xl cursor-default"
       />
     </div>
