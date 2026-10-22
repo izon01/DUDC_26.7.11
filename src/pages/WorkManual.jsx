@@ -12,6 +12,7 @@ import {
 import "ckeditor5/ckeditor5.css";
 import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
+import ImageLightbox from "../components/ImageLightbox";
 import HeroBanner from "../components/HeroBanner";
 import Toast from "../components/Toast";
 import { SkeletonList } from "../components/Skeleton";
@@ -149,7 +150,7 @@ const IMAGE_ONLY_CLASS =
 const IMAGE_MIXED_CLASS =
   "[&_img]:max-w-full [&_img]:max-h-[65vh] [&_img]:w-auto [&_img]:h-auto [&_img]:object-contain";
 
-function BookPage({ page, searchTerm, side, totalPages }) {
+function BookPage({ page, searchTerm, side, totalPages, onImageClick }) {
   const hasContent = hasVisibleContent(page.html);
   const imageOnly = hasContent && isImageOnly(page.html);
   return (
@@ -161,9 +162,17 @@ function BookPage({ page, searchTerm, side, totalPages }) {
       <div className={imageOnly ? "w-full" : "space-y-6"}>
         {hasContent ? (
           <div
-            className={`ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant ${
+            className={`ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant [&_img]:cursor-zoom-in ${
               imageOnly ? IMAGE_ONLY_CLASS : IMAGE_MIXED_CLASS
             }`}
+            // The HTML is injected, so images can't take their own onClick —
+            // one delegated handler opens the lightbox for whichever <img>
+            // was clicked.
+            onClick={(e) => {
+              if (e.target instanceof HTMLImageElement) {
+                onImageClick?.({ src: e.target.currentSrc || e.target.src, alt: e.target.alt });
+              }
+            }}
             dangerouslySetInnerHTML={{ __html: highlightHtml(page.html, searchTerm) }}
           />
         ) : (
@@ -336,6 +345,8 @@ export default function WorkManual() {
   const [editSessionKey, setEditSessionKey] = useState(0);
   const editSnapshotRef = useRef(null);
 
+  const [lightboxImage, setLightboxImage] = useState(null);
+  const closeLightbox = useCallback(() => setLightboxImage(null), []);
   const [isReorderMode, setIsReorderMode] = useState(false);
   const [isSavingOrder, setIsSavingOrder] = useState(false);
   const [dragManualId, setDragManualId] = useState(null);
@@ -997,7 +1008,7 @@ export default function WorkManual() {
                           />
                         </Suspense>
                       ) : (
-                        <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" totalPages={totalPages} />
+                        <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" totalPages={totalPages} onImageClick={setLightboxImage} />
                       )}
                     </div>
                     <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
@@ -1014,7 +1025,7 @@ export default function WorkManual() {
                           />
                         </Suspense>
                       ) : (
-                        <BookPage page={currentSpread.right} searchTerm={searchTerm} side="right" totalPages={totalPages} />
+                        <BookPage page={currentSpread.right} searchTerm={searchTerm} side="right" totalPages={totalPages} onImageClick={setLightboxImage} />
                       )}
                     </div>
                   </div>
@@ -1038,6 +1049,10 @@ export default function WorkManual() {
       )}
 
       {toastMessage && <Toast message={toastMessage} onDone={() => setToastMessage("")} />}
+
+      {lightboxImage && (
+        <ImageLightbox src={lightboxImage.src} alt={lightboxImage.alt} onClose={closeLightbox} />
+      )}
     </div>
   );
 }
