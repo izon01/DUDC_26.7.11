@@ -1,4 +1,4 @@
-import { useEffect, useState } from "react";
+import { useCallback, useEffect, useState } from "react";
 import { Link } from "react-router-dom";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
@@ -68,6 +68,92 @@ function Avatar({ name }) {
   );
 }
 
+function StatusSelect({ feedback, onChange, disabled }) {
+  const status = FEEDBACK_STATUSES.find((s) => s.key === feedback.status) ?? FEEDBACK_STATUSES[0];
+  return (
+    <select
+      value={feedback.status}
+      onChange={(e) => onChange(feedback, e.target.value)}
+      disabled={disabled}
+      aria-label="처리 상태 변경"
+      className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs font-bold focus:ring-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${status.style}`}
+    >
+      {FEEDBACK_STATUSES.map((s) => (
+        <option key={s.key} value={s.key}>
+          {s.label}
+        </option>
+      ))}
+    </select>
+  );
+}
+
+function FeedbackDetailModal({ feedback, onClose, onStatusChange, isPending }) {
+  useEffect(() => {
+    function onKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => window.removeEventListener("keydown", onKeyDown);
+  }, [onClose]);
+
+  const type = getFeedbackType(feedback.type);
+  const details = [
+    ["작성자", `${feedback.authorName} (${feedback.authorEmail})`],
+    ["등록일시", new Date(feedback.createdAt).toLocaleString("ko-KR")],
+    ["대상 페이지", feedback.pageTitle],
+  ];
+
+  return (
+    <div
+      className="fixed inset-0 z-[70] flex items-center justify-center bg-black/30 backdrop-blur-sm px-4"
+      onMouseDown={(e) => {
+        if (e.target === e.currentTarget) onClose();
+      }}
+    >
+      <div
+        role="dialog"
+        aria-label="의견 상세 보기"
+        className="w-full max-w-lg max-h-[90vh] flex flex-col bg-white rounded-2xl shadow-lg overflow-hidden"
+      >
+        <div className="px-8 pt-6 pb-4 flex items-center justify-between shrink-0">
+          <h2 className="text-xl font-bold text-gray-900">의견 상세 보기</h2>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="닫기"
+            className="w-8 h-8 flex items-center justify-center rounded-full hover:bg-gray-100 transition-colors"
+          >
+            <span className="material-symbols-outlined text-gray-500">close</span>
+          </button>
+        </div>
+
+        <div className="px-8 pb-8 space-y-5 overflow-y-auto">
+          <div className="flex items-center justify-between gap-3">
+            <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${type.badge}`}>{type.label}</span>
+            <StatusSelect feedback={feedback} onChange={onStatusChange} disabled={isPending} />
+          </div>
+
+          <dl className="space-y-3 text-sm">
+            {details.map(([label, value]) => (
+              <div key={label} className="flex gap-4">
+                <dt className="w-20 shrink-0 text-gray-500">{label}</dt>
+                <dd className="min-w-0 flex-1 text-gray-900 break-words">{value}</dd>
+              </div>
+            ))}
+          </dl>
+
+          <div>
+            <p className="text-sm text-gray-500 mb-1.5">의견 내용</p>
+            <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 whitespace-pre-wrap break-words max-h-[40vh] overflow-y-auto">
+              {feedback.content}
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+  );
+}
+
 export default function Admin() {
   const { user: currentUser, token } = useAuth();
   const [activeTab, setActiveTab] = useState("dashboard");
@@ -87,6 +173,11 @@ export default function Admin() {
   const [feedbackError, setFeedbackError] = useState("");
   const [pendingFeedbackId, setPendingFeedbackId] = useState(null);
   const [feedbackFilter, setFeedbackFilter] = useState("all");
+  // Id only (not the object) so the modal always reflects the latest status
+  // after a change made from inside it.
+  const [detailFeedbackId, setDetailFeedbackId] = useState(null);
+  const detailFeedback = feedbacks.find((f) => f.id === detailFeedbackId) ?? null;
+  const closeDetail = useCallback(() => setDetailFeedbackId(null), []);
 
   useEffect(() => {
     let cancelled = false;
@@ -474,9 +565,12 @@ export default function Admin() {
                           .filter((f) => feedbackFilter === "all" || f.status === feedbackFilter)
                           .map((f) => {
                             const type = getFeedbackType(f.type);
-                            const status = FEEDBACK_STATUSES.find((s) => s.key === f.status) ?? FEEDBACK_STATUSES[0];
                             return (
-                              <tr key={f.id} className="border-b border-gray-50 last:border-0 align-top hover:bg-gray-50/50">
+                              <tr
+                                key={f.id}
+                                onClick={() => setDetailFeedbackId(f.id)}
+                                className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50"
+                              >
                                 <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{formatDate(f.createdAt)}</td>
                                 <td className="px-6 py-3 whitespace-nowrap">
                                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${type.badge}`}>
@@ -487,24 +581,22 @@ export default function Admin() {
                                   <p className="font-medium text-gray-900">{f.authorName}</p>
                                   <p className="text-xs text-gray-500">{f.authorEmail}</p>
                                 </td>
-                                <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{f.pagePath}</td>
-                                <td className="px-6 py-3 text-gray-800 min-w-[280px] max-w-[420px] whitespace-pre-wrap break-words">
-                                  {f.content}
+                                <td className="px-6 py-3 text-gray-600">
+                                  <div className="max-w-[240px] truncate" title={f.pageTitle}>
+                                    {f.pageTitle}
+                                  </div>
                                 </td>
-                                <td className="px-6 py-3 whitespace-nowrap">
-                                  <select
-                                    value={f.status}
-                                    onChange={(e) => updateFeedbackStatus(f, e.target.value)}
+                                <td className="px-6 py-3 text-gray-800">
+                                  <div className="max-w-[360px] truncate" title={f.content}>
+                                    {f.content}
+                                  </div>
+                                </td>
+                                <td className="px-6 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                  <StatusSelect
+                                    feedback={f}
+                                    onChange={updateFeedbackStatus}
                                     disabled={pendingFeedbackId === f.id}
-                                    aria-label="처리 상태 변경"
-                                    className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs font-bold focus:ring-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${status.style}`}
-                                  >
-                                    {FEEDBACK_STATUSES.map((s) => (
-                                      <option key={s.key} value={s.key}>
-                                        {s.label}
-                                      </option>
-                                    ))}
-                                  </select>
+                                  />
                                 </td>
                               </tr>
                             );
@@ -521,6 +613,15 @@ export default function Admin() {
           )}
         </div>
       </main>
+
+      {detailFeedback && (
+        <FeedbackDetailModal
+          feedback={detailFeedback}
+          onClose={closeDetail}
+          onStatusChange={updateFeedbackStatus}
+          isPending={pendingFeedbackId === detailFeedback.id}
+        />
+      )}
     </div>
   );
 }

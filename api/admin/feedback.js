@@ -21,7 +21,7 @@ export default async function handler(req, res) {
   if (req.method === "GET") {
     try {
       const result = await sql`
-        SELECT id, page_path AS "pagePath", type, content, status,
+        SELECT id, page_path AS "pageTitle", type, content, status,
                author_name AS "authorName", author_email AS "authorEmail", created_at AS "createdAt"
         FROM feedbacks
         ORDER BY created_at DESC
@@ -45,7 +45,7 @@ export default async function handler(req, res) {
     try {
       const result = await sql`
         UPDATE feedbacks SET status = ${status} WHERE id = ${id}
-        RETURNING id, page_path AS "pagePath", type, content, status,
+        RETURNING id, page_path AS "pageTitle", type, content, status,
                   author_name AS "authorName", author_email AS "authorEmail", created_at AS "createdAt"
       `;
       if (result.rows.length === 0) {

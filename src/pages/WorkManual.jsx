@@ -868,7 +868,9 @@ export default function WorkManual() {
             )}
           </div>
           <div className="shrink-0 p-4 border-t border-outline-variant">
-            <FeedbackButton />
+            <FeedbackButton
+              pageTitle={selectedManual ? `업무 매뉴얼 > ${selectedManual.title || "(제목 없음)"}` : "업무 매뉴얼"}
+            />
           </div>
         </aside>
 

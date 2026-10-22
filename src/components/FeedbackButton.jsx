@@ -1,5 +1,4 @@
 import { useCallback, useState } from "react";
-import { useLocation } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { FEEDBACK_TYPES } from "../utils/feedback";
 import { parseJsonSafely } from "../utils/http";
@@ -7,7 +6,7 @@ import Toast from "./Toast";
 
 const MAX_LENGTH = 2000;
 
-function FeedbackModal({ pagePath, onClose, onSubmitted }) {
+function FeedbackModal({ pageTitle, onClose, onSubmitted }) {
   const { token } = useAuth();
   const [type, setType] = useState(FEEDBACK_TYPES[0].key);
   const [content, setContent] = useState("");
@@ -28,7 +27,7 @@ function FeedbackModal({ pagePath, onClose, onSubmitted }) {
       const res = await fetch("/api/feedback", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ pagePath, type, content: content.trim() }),
+        body: JSON.stringify({ pageTitle, type, content: content.trim() }),
       });
       const data = await parseJsonSafely(res);
       if (!res.ok) throw new Error(data.message || "의견 등록에 실패했습니다.");
@@ -72,7 +71,7 @@ function FeedbackModal({ pagePath, onClose, onSubmitted }) {
             <input
               id="feedback-page"
               type="text"
-              value={pagePath}
+              value={pageTitle}
               readOnly
               className="w-full bg-gray-100 border border-gray-200 rounded-lg text-sm px-4 py-2.5 text-gray-500 cursor-default focus:ring-0 focus:border-gray-200"
             />
@@ -132,10 +131,10 @@ function FeedbackModal({ pagePath, onClose, onSubmitted }) {
 }
 
 // Square call-to-action pinned to the bottom of the manual sidebars. The
-// target page is read from the current route — no text-selection coupling,
-// just a plain form.
-export default function FeedbackButton() {
-  const location = useLocation();
+// target page is the human-readable breadcrumb ("업무 매뉴얼 > 서무의 정의")
+// passed in by the host page, since only it knows which manual is open — no
+// text-selection coupling, just a plain form.
+export default function FeedbackButton({ pageTitle }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const hideToast = useCallback(() => setShowToast(false), []);
@@ -153,7 +152,7 @@ export default function FeedbackButton() {
 
       {isOpen && (
         <FeedbackModal
-          pagePath={location.pathname}
+          pageTitle={pageTitle}
           onClose={() => setIsOpen(false)}
           onSubmitted={() => {
             setIsOpen(false);

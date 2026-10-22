@@ -605,7 +605,7 @@ export default function CultureManual() {
                 })}
           </div>
           <div className="shrink-0 pt-4 mt-2 border-t border-outline-variant">
-            <FeedbackButton />
+            <FeedbackButton pageTitle={selectedGuide ? `DUDC문화 > ${selectedGuide.title}` : "DUDC문화"} />
           </div>
         </aside>
 

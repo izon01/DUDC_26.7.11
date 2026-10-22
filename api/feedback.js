@@ -17,11 +17,13 @@ export default async function handler(req, res) {
   const user = requireAuth(req, res);
   if (!user) return;
 
-  const { pagePath, type, content } = req.body ?? {};
+  const { pageTitle, type, content } = req.body ?? {};
   const trimmedContent = typeof content === "string" ? content.trim() : "";
-  const trimmedPath = typeof pagePath === "string" ? pagePath.trim().slice(0, 500) : "";
+  // Stored in the legacy-named `page_path` column: newer rows hold a Korean
+  // breadcrumb title, older ones a raw URL path.
+  const trimmedTitle = typeof pageTitle === "string" ? pageTitle.trim().slice(0, 500) : "";
 
-  if (!trimmedPath || !trimmedContent || !FEEDBACK_TYPES.includes(type)) {
+  if (!trimmedTitle || !trimmedContent || !FEEDBACK_TYPES.includes(type)) {
     return res.status(400).json({ message: "대상 페이지, 의견 유형, 의견 내용이 필요합니다." });
   }
   if (trimmedContent.length > MAX_CONTENT_LENGTH) {
@@ -34,7 +36,7 @@ export default async function handler(req, res) {
     const authorName = user.name || user.email;
     await sql`
       INSERT INTO feedbacks (id, page_path, type, content, author_name, author_email)
-      VALUES (${id}, ${trimmedPath}, ${type}, ${trimmedContent}, ${authorName}, ${user.email})
+      VALUES (${id}, ${trimmedTitle}, ${type}, ${trimmedContent}, ${authorName}, ${user.email})
     `;
     return res.status(201).json({ id });
   } catch (error) {
