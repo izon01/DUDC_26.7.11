@@ -552,12 +552,12 @@ export default function Admin() {
                     <table className="w-full text-sm">
                       <thead>
                         <tr className="bg-gray-50 border-b border-gray-100">
-                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">등록일</th>
-                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">유형</th>
-                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">작성자</th>
-                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">대상 페이지</th>
-                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">의견 내용</th>
-                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">상태</th>
+                          <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">등록일</th>
+                          <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">유형</th>
+                          <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">작성자</th>
+                          <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">대상 페이지</th>
+                          <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap w-full max-w-[400px]">의견 내용</th>
+                          <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">상태</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -571,27 +571,27 @@ export default function Admin() {
                                 onClick={() => setDetailFeedbackId(f.id)}
                                 className="border-b border-gray-50 last:border-0 cursor-pointer hover:bg-gray-50"
                               >
-                                <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{formatDate(f.createdAt)}</td>
-                                <td className="px-6 py-3 whitespace-nowrap">
+                                <td className="px-4 py-3 text-gray-500 whitespace-nowrap">{formatDate(f.createdAt)}</td>
+                                <td className="px-4 py-3 whitespace-nowrap">
                                   <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${type.badge}`}>
                                     {type.label}
                                   </span>
                                 </td>
-                                <td className="px-6 py-3 whitespace-nowrap">
+                                <td className="px-4 py-3 whitespace-nowrap">
                                   <p className="font-medium text-gray-900">{f.authorName}</p>
                                   <p className="text-xs text-gray-500">{f.authorEmail}</p>
                                 </td>
-                                <td className="px-6 py-3 text-gray-600">
-                                  <div className="max-w-[240px] truncate" title={f.pageTitle}>
+                                <td className="px-4 py-3 text-gray-600">
+                                  <div className="max-w-[200px] truncate" title={f.pageTitle}>
                                     {f.pageTitle}
                                   </div>
                                 </td>
-                                <td className="px-6 py-3 text-gray-800">
-                                  <div className="max-w-[360px] truncate" title={f.content}>
+                                <td className="px-4 py-3 text-gray-800 w-full max-w-0">
+                                  <div className="max-w-[400px] truncate" title={f.content}>
                                     {f.content}
                                   </div>
                                 </td>
-                                <td className="px-6 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                <td className="px-4 py-3 whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
                                   <StatusSelect
                                     feedback={f}
                                     onChange={updateFeedbackStatus}
