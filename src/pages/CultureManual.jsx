@@ -1,5 +1,6 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import "ckeditor5/ckeditor5.css";
+import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
 import Toast from "../components/Toast";
 import { SkeletonList } from "../components/Skeleton";
@@ -602,6 +603,9 @@ export default function CultureManual() {
                     </div>
                   );
                 })}
+          </div>
+          <div className="shrink-0 pt-4 mt-2 border-t border-outline-variant">
+            <FeedbackButton />
           </div>
         </aside>
 

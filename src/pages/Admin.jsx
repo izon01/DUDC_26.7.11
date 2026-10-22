@@ -4,10 +4,12 @@ import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import { useAuth } from "../context/AuthContext";
 import { parseJsonSafely } from "../utils/http";
+import { FEEDBACK_STATUSES, getFeedbackType } from "../utils/feedback";
 
 const TABS = [
   { key: "dashboard", label: "대시보드" },
   { key: "users", label: "유저 관리" },
+  { key: "feedback", label: "의견 관리" },
 ];
 
 const ROLE_LABELS = { admin: "관리자", user: "일반 유저" };
@@ -79,6 +81,13 @@ export default function Admin() {
   const [usersError, setUsersError] = useState("");
   const [pendingUserId, setPendingUserId] = useState(null);
 
+  const [feedbacks, setFeedbacks] = useState([]);
+  const [feedbackLoaded, setFeedbackLoaded] = useState(false);
+  const [isLoadingFeedback, setIsLoadingFeedback] = useState(true);
+  const [feedbackError, setFeedbackError] = useState("");
+  const [pendingFeedbackId, setPendingFeedbackId] = useState(null);
+  const [feedbackFilter, setFeedbackFilter] = useState("all");
+
   useEffect(() => {
     let cancelled = false;
 
@@ -122,6 +131,53 @@ export default function Admin() {
       cancelled = true;
     };
   }, [token]);
+
+  // Loaded the first time the tab is opened, not on page mount — most admin
+  // visits never look at it, and the first request may create the table.
+  useEffect(() => {
+    if (activeTab !== "feedback" || feedbackLoaded) return;
+    let cancelled = false;
+
+    async function loadFeedbacks() {
+      try {
+        const res = await fetch("/api/admin/feedback", { headers: { Authorization: `Bearer ${token}` } });
+        const data = await parseJsonSafely(res);
+        if (!res.ok) throw new Error(data.message || "의견 목록을 불러오지 못했습니다.");
+        if (!cancelled) {
+          setFeedbacks(data.feedbacks);
+          setFeedbackLoaded(true);
+        }
+      } catch (error) {
+        if (!cancelled) setFeedbackError(error.message);
+      } finally {
+        if (!cancelled) setIsLoadingFeedback(false);
+      }
+    }
+
+    loadFeedbacks();
+    return () => {
+      cancelled = true;
+    };
+  }, [activeTab, feedbackLoaded, token]);
+
+  async function updateFeedbackStatus(target, nextStatus) {
+    if (nextStatus === target.status) return;
+    setPendingFeedbackId(target.id);
+    try {
+      const res = await fetch(`/api/admin/feedback?id=${target.id}`, {
+        method: "PUT",
+        headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+        body: JSON.stringify({ status: nextStatus }),
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "상태 변경에 실패했습니다.");
+      setFeedbacks((prev) => prev.map((f) => (f.id === target.id ? data.feedback : f)));
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setPendingFeedbackId(null);
+    }
+  }
 
   async function updateRole(targetUser, nextRole) {
     setPendingUserId(targetUser.id);
@@ -294,7 +350,7 @@ export default function Admin() {
                 </>
               )}
             </section>
-          ) : (
+          ) : activeTab === "users" ? (
             <section className="mt-12">
               {isLoadingUsers ? (
                 <p className="text-center text-gray-500 py-10">불러오는 중...</p>
@@ -371,6 +427,95 @@ export default function Admin() {
                     </tbody>
                   </table>
                 </div>
+              )}
+            </section>
+          ) : (
+            <section className="mt-12">
+              {isLoadingFeedback ? (
+                <p className="text-center text-gray-500 py-10">불러오는 중...</p>
+              ) : feedbackError ? (
+                <p className="text-center text-error py-10">{feedbackError}</p>
+              ) : (
+                <>
+                  <div className="flex flex-wrap items-center gap-2 mb-4">
+                    {[{ key: "all", label: "전체" }, ...FEEDBACK_STATUSES].map((s) => {
+                      const count = s.key === "all" ? feedbacks.length : feedbacks.filter((f) => f.status === s.key).length;
+                      return (
+                        <button
+                          key={s.key}
+                          type="button"
+                          onClick={() => setFeedbackFilter(s.key)}
+                          className={
+                            feedbackFilter === s.key
+                              ? "px-4 py-1.5 rounded-full bg-gray-900 text-white text-sm font-bold"
+                              : "px-4 py-1.5 rounded-full bg-white border border-gray-200 text-gray-600 text-sm font-bold hover:bg-gray-50"
+                          }
+                        >
+                          {s.label} {count}
+                        </button>
+                      );
+                    })}
+                  </div>
+
+                  <div className="bg-white border border-gray-100 rounded-xl shadow-sm overflow-x-auto">
+                    <table className="w-full text-sm">
+                      <thead>
+                        <tr className="bg-gray-50 border-b border-gray-100">
+                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">등록일</th>
+                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">유형</th>
+                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">작성자</th>
+                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">대상 페이지</th>
+                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">의견 내용</th>
+                          <th className="text-left px-6 py-3 font-bold text-gray-700 whitespace-nowrap">상태</th>
+                        </tr>
+                      </thead>
+                      <tbody>
+                        {feedbacks
+                          .filter((f) => feedbackFilter === "all" || f.status === feedbackFilter)
+                          .map((f) => {
+                            const type = getFeedbackType(f.type);
+                            const status = FEEDBACK_STATUSES.find((s) => s.key === f.status) ?? FEEDBACK_STATUSES[0];
+                            return (
+                              <tr key={f.id} className="border-b border-gray-50 last:border-0 align-top hover:bg-gray-50/50">
+                                <td className="px-6 py-3 text-gray-500 whitespace-nowrap">{formatDate(f.createdAt)}</td>
+                                <td className="px-6 py-3 whitespace-nowrap">
+                                  <span className={`px-2.5 py-0.5 rounded-full text-xs font-bold ${type.badge}`}>
+                                    {type.label}
+                                  </span>
+                                </td>
+                                <td className="px-6 py-3 whitespace-nowrap">
+                                  <p className="font-medium text-gray-900">{f.authorName}</p>
+                                  <p className="text-xs text-gray-500">{f.authorEmail}</p>
+                                </td>
+                                <td className="px-6 py-3 text-gray-600 whitespace-nowrap">{f.pagePath}</td>
+                                <td className="px-6 py-3 text-gray-800 min-w-[280px] max-w-[420px] whitespace-pre-wrap break-words">
+                                  {f.content}
+                                </td>
+                                <td className="px-6 py-3 whitespace-nowrap">
+                                  <select
+                                    value={f.status}
+                                    onChange={(e) => updateFeedbackStatus(f, e.target.value)}
+                                    disabled={pendingFeedbackId === f.id}
+                                    aria-label="처리 상태 변경"
+                                    className={`pl-3 pr-8 py-1.5 rounded-lg border text-xs font-bold focus:ring-0 cursor-pointer disabled:opacity-50 disabled:cursor-not-allowed ${status.style}`}
+                                  >
+                                    {FEEDBACK_STATUSES.map((s) => (
+                                      <option key={s.key} value={s.key}>
+                                        {s.label}
+                                      </option>
+                                    ))}
+                                  </select>
+                                </td>
+                              </tr>
+                            );
+                          })}
+                      </tbody>
+                    </table>
+                    {feedbacks.length === 0 && (
+                      <p className="text-center text-gray-500 text-sm py-10">아직 등록된 의견이 없습니다.</p>
+                    )}
+                  </div>
+                </>
               )}
             </section>
           )}

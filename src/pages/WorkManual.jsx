@@ -10,6 +10,7 @@ import {
   LayoutGrid,
 } from "lucide-react";
 import "ckeditor5/ckeditor5.css";
+import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import Toast from "../components/Toast";
@@ -865,6 +866,9 @@ export default function WorkManual() {
                 })}
               </>
             )}
+          </div>
+          <div className="shrink-0 p-4 border-t border-outline-variant">
+            <FeedbackButton />
           </div>
         </aside>
 

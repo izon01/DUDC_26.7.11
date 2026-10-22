@@ -57,6 +57,18 @@ export function ensureSchema() {
             created_at TIMESTAMPTZ NOT NULL DEFAULT now()
           )
         `,
+        sql`
+          CREATE TABLE IF NOT EXISTS feedbacks (
+            id TEXT PRIMARY KEY,
+            page_path TEXT NOT NULL,
+            type TEXT NOT NULL,
+            content TEXT NOT NULL,
+            status TEXT NOT NULL DEFAULT 'received',
+            author_name TEXT NOT NULL,
+            author_email TEXT NOT NULL,
+            created_at TIMESTAMPTZ NOT NULL DEFAULT now()
+          )
+        `,
       ]);
 
       // Admin-managed sidebar reorder feature: both lists need a persisted
@@ -109,6 +121,7 @@ export function ensureSchema() {
         sql`CREATE INDEX IF NOT EXISTS idx_community_posts_created_at ON community_posts (created_at DESC)`,
         sql`CREATE INDEX IF NOT EXISTS idx_community_comments_post_id ON community_comments (post_id)`,
         sql`CREATE INDEX IF NOT EXISTS idx_manual_documents_created_at ON manual_documents (created_at DESC)`,
+        sql`CREATE INDEX IF NOT EXISTS idx_feedbacks_created_at ON feedbacks (created_at DESC)`,
       ]);
 
       // The `users` table predates this file and is managed outside of it,
