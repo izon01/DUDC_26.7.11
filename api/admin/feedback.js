@@ -58,6 +58,22 @@ export default async function handler(req, res) {
     }
   }
 
-  res.setHeader("Allow", "GET, PUT");
+  if (req.method === "DELETE") {
+    const { id } = req.query;
+    if (!id) return res.status(400).json({ message: "id가 필요합니다." });
+
+    try {
+      const result = await sql`DELETE FROM feedbacks WHERE id = ${id} RETURNING id`;
+      if (result.rows.length === 0) {
+        return res.status(404).json({ message: "의견을 찾을 수 없습니다." });
+      }
+      return res.status(200).json({ id });
+    } catch (error) {
+      console.error("admin/feedback DELETE error:", error);
+      return res.status(500).json({ message: "의견 삭제 중 오류가 발생했습니다." });
+    }
+  }
+
+  res.setHeader("Allow", "GET, PUT, DELETE");
   return res.status(405).json({ message: "Method Not Allowed" });
 }

@@ -87,7 +87,7 @@ function StatusSelect({ feedback, onChange, disabled }) {
   );
 }
 
-function FeedbackDetailModal({ feedback, onClose, onStatusChange, isPending }) {
+function FeedbackDetailModal({ feedback, onClose, onStatusChange, onDelete, isPending }) {
   useEffect(() => {
     function onKeyDown(e) {
       if (e.key === "Escape") onClose();
@@ -147,6 +147,17 @@ function FeedbackDetailModal({ feedback, onClose, onStatusChange, isPending }) {
             <div className="bg-gray-50 border border-gray-200 rounded-lg px-4 py-3 text-sm text-gray-900 whitespace-pre-wrap break-words max-h-[40vh] overflow-y-auto">
               {feedback.content}
             </div>
+          </div>
+
+          <div className="flex justify-end">
+            <button
+              type="button"
+              onClick={() => onDelete(feedback)}
+              disabled={isPending}
+              className="px-4 py-2 rounded-lg border border-red-200 text-red-600 text-sm font-bold hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+            >
+              삭제
+            </button>
           </div>
         </div>
       </div>
@@ -263,6 +274,26 @@ export default function Admin() {
       const data = await parseJsonSafely(res);
       if (!res.ok) throw new Error(data.message || "상태 변경에 실패했습니다.");
       setFeedbacks((prev) => prev.map((f) => (f.id === target.id ? data.feedback : f)));
+    } catch (error) {
+      window.alert(error.message);
+    } finally {
+      setPendingFeedbackId(null);
+    }
+  }
+
+  async function deleteFeedback(target) {
+    const confirmed = window.confirm("이 의견을 삭제하시겠습니까?\n이 작업은 되돌릴 수 없습니다.");
+    if (!confirmed) return;
+
+    setPendingFeedbackId(target.id);
+    try {
+      const res = await fetch(`/api/admin/feedback?id=${target.id}`, {
+        method: "DELETE",
+        headers: { Authorization: `Bearer ${token}` },
+      });
+      const data = await parseJsonSafely(res);
+      if (!res.ok) throw new Error(data.message || "의견 삭제에 실패했습니다.");
+      setFeedbacks((prev) => prev.filter((f) => f.id !== target.id));
     } catch (error) {
       window.alert(error.message);
     } finally {
@@ -558,6 +589,7 @@ export default function Admin() {
                           <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">대상 페이지</th>
                           <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap w-full max-w-[400px]">의견 내용</th>
                           <th className="text-left px-4 py-3 font-bold text-gray-700 whitespace-nowrap">상태</th>
+                          <th className="text-right px-4 py-3 font-bold text-gray-700 whitespace-nowrap">관리</th>
                         </tr>
                       </thead>
                       <tbody>
@@ -598,6 +630,15 @@ export default function Admin() {
                                     disabled={pendingFeedbackId === f.id}
                                   />
                                 </td>
+                                <td className="px-4 py-3 text-right whitespace-nowrap" onClick={(e) => e.stopPropagation()}>
+                                  <button
+                                    onClick={() => deleteFeedback(f)}
+                                    disabled={pendingFeedbackId === f.id}
+                                    className="px-3 py-1.5 rounded-lg border border-red-200 text-red-600 text-xs font-bold hover:bg-red-50 transition-colors disabled:opacity-40 disabled:cursor-not-allowed"
+                                  >
+                                    삭제
+                                  </button>
+                                </td>
                               </tr>
                             );
                           })}
@@ -619,6 +660,7 @@ export default function Admin() {
           feedback={detailFeedback}
           onClose={closeDetail}
           onStatusChange={updateFeedbackStatus}
+          onDelete={deleteFeedback}
           isPending={pendingFeedbackId === detailFeedback.id}
         />
       )}
