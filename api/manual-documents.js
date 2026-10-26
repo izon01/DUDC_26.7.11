@@ -8,7 +8,7 @@ import { requireAdmin } from "./_lib/auth.js";
 // data URL; this is the hard server-side ceiling so a modified client can't
 // push larger files to Blob storage.
 const MAX_BYTES = 1 * 1024 * 1024;
-const ALLOWED_EXTENSIONS = new Set(["pdf", "hwp", "docx", "xlsx"]);
+const ALLOWED_EXTENSIONS = new Set(["pdf", "hwp", "hwpx", "docx", "xlsx"]);
 const DATA_URL_PATTERN = /^data:([^;]+);base64,(.+)$/;
 
 const REVISION_TYPES = new Set(["신설", "개정"]);
@@ -80,7 +80,7 @@ export default async function handler(req, res) {
 
     const ext = (filename || "").split(".").pop()?.toLowerCase();
     if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
-      return res.status(400).json({ message: "PDF, HWP, DOCX, XLSX 파일만 업로드할 수 있습니다." });
+      return res.status(400).json({ message: "PDF, HWP, HWPX, DOCX, XLSX 파일만 업로드할 수 있습니다." });
     }
 
     const match = typeof dataUrl === "string" ? dataUrl.match(DATA_URL_PATTERN) : null;
@@ -142,7 +142,7 @@ export default async function handler(req, res) {
     if (replacingFile) {
       const ext = (filename || "").split(".").pop()?.toLowerCase();
       if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
-        return res.status(400).json({ message: "PDF, HWP, DOCX, XLSX 파일만 업로드할 수 있습니다." });
+        return res.status(400).json({ message: "PDF, HWP, HWPX, DOCX, XLSX 파일만 업로드할 수 있습니다." });
       }
       const match = dataUrl.match(DATA_URL_PATTERN);
       if (!match) {

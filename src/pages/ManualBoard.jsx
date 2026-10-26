@@ -47,16 +47,18 @@ const CATEGORY_BADGE_STYLES = {
 };
 
 const REVISION_TYPES = ["신설", "개정"];
-const ALLOWED_EXTENSIONS = ["pdf", "hwp", "docx", "xlsx"];
+const ALLOWED_EXTENSIONS = ["pdf", "hwp", "hwpx", "docx", "xlsx"];
 // Extensions plus MIME types for the file picker: some browsers/OSes filter
-// the dialog by MIME type, and HWP has two in the wild (the registered
-// application/x-hwp and Hancom's application/haansofthwp). Validation below
-// still goes by extension only — browsers often report an empty type for .hwp.
+// the dialog by MIME type. HWP has two in the wild (the registered
+// application/x-hwp and Hancom's application/haansofthwp); HWPX is
+// application/hwp+zip. Validation below still goes by extension only —
+// browsers often report an empty type for these.
 const FILE_INPUT_ACCEPT = [
   ...ALLOWED_EXTENSIONS.map((ext) => `.${ext}`),
   "application/pdf",
   "application/x-hwp",
   "application/haansofthwp",
+  "application/hwp+zip",
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ].join(",");
@@ -106,7 +108,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
     }
     const ext = selected.name.split(".").pop()?.toLowerCase();
     if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
-      window.alert("PDF, HWP, DOCX, XLSX 파일만 업로드할 수 있습니다.");
+      window.alert("PDF, HWP, HWPX, DOCX, XLSX 파일만 업로드할 수 있습니다.");
       e.target.value = "";
       setFile(null);
       return;
@@ -212,7 +214,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
 
           <div>
             <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="doc-file">
-              파일 (PDF, HWP, DOCX, XLSX / 최대 1MB)
+              파일 (PDF, HWP, HWPX, DOCX, XLSX / 최대 1MB)
               {isEdit && <span className="font-normal text-on-surface-variant"> — 비워두면 기존 파일이 유지됩니다</span>}
             </label>
             <input
