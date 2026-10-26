@@ -20,6 +20,23 @@ function makeSnippet(text, index, length) {
   return `${start > 0 ? "…" : ""}${text.slice(start, end)}${end < text.length ? "…" : ""}`;
 }
 
+// Culture posts are a single page (body HTML plus a list of check points)
+// rather than a book. Returns { snippet } for the first place `term` appears —
+// body first, then the check points — or null when only the title matches.
+export function findFirstPostMatch(post, term) {
+  const trimmed = term?.trim();
+  if (!trimmed) return null;
+
+  const re = new RegExp(escapeRegExp(trimmed), "i");
+  const sources = [pagePlainText({ html: post.bodyHtml }), ...(post.checkPoints || []).map((p) => String(p))];
+
+  for (const text of sources) {
+    const match = re.exec(text);
+    if (match) return { snippet: makeSnippet(text, match.index, match[0].length) };
+  }
+  return null;
+}
+
 // Finds where `term` first appears in a manual's body, in reading order.
 // Returns { spreadIndex, pageNum, snippet } for that page, or null when the
 // term is only in the title (or absent). spreadIndex is relative to the

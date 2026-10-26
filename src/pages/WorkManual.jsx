@@ -23,6 +23,7 @@ import { getCache, setCache } from "../utils/resourceCache";
 import { hasVisibleContent, stripHtml } from "../utils/html";
 import { normalizeSpreads } from "../utils/manualPages";
 import { findFirstMatch } from "../utils/manualSearch";
+import { scrollFirstMarkIntoView } from "../utils/scrollToMark";
 import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
@@ -321,41 +322,6 @@ function Bookshelf({ onSelect }) {
   );
 }
 
-// Centers a highlighted match inside the book page that contains it. Scrolls
-// the page's own container directly rather than calling scrollIntoView, which
-// would also scroll the overflow-hidden ancestors (the book stage) and
-// shift the whole layout.
-function centerMarkInPage(mark, behavior) {
-  const container = mark.closest("[data-page-scroll]");
-  if (!container) return;
-  const containerRect = container.getBoundingClientRect();
-  const markRect = mark.getBoundingClientRect();
-  const top = markRect.top - containerRect.top + container.scrollTop - container.clientHeight / 2 + markRect.height / 2;
-  container.scrollTo({ top: Math.max(0, top), behavior });
-}
-
-function scrollFirstMarkIntoView() {
-  const mark = document.querySelector("[data-book-stage] mark");
-  if (!mark) return;
-  centerMarkInPage(mark, "smooth");
-
-  // Images above the match that finish loading after we scrolled would push
-  // it off-center, so re-center once each late image arrives (for a few
-  // seconds only — never fight a reader who has started scrolling).
-  const container = mark.closest("[data-page-scroll]");
-  const deadline = Date.now() + 4000;
-  container?.querySelectorAll("img").forEach((img) => {
-    if (img.complete) return;
-    img.addEventListener(
-      "load",
-      () => {
-        if (mark.isConnected && Date.now() < deadline) centerMarkInPage(mark, "auto");
-      },
-      { once: true }
-    );
-  });
-}
-
 export default function WorkManual() {
   const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
@@ -502,7 +468,9 @@ export default function WorkManual() {
   // scrolls again too.
   useEffect(() => {
     if (scrollRequest === 0 || isEditMode) return;
-    const frame = requestAnimationFrame(scrollFirstMarkIntoView);
+    const frame = requestAnimationFrame(() =>
+      scrollFirstMarkIntoView({ scopeSelector: "[data-book-stage]", scrollerSelector: "[data-page-scroll]" })
+    );
     return () => cancelAnimationFrame(frame);
   }, [scrollRequest]);
 

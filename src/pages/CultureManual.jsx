@@ -1,4 +1,5 @@
 import { lazy, Suspense, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import "ckeditor5/ckeditor5.css";
 import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
@@ -8,6 +9,8 @@ import { useAuth } from "../context/AuthContext";
 import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
 import { stripHtml } from "../utils/html";
+import { findFirstPostMatch } from "../utils/manualSearch";
+import { scrollFirstMarkIntoView } from "../utils/scrollToMark";
 import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
@@ -38,8 +41,22 @@ export default function CultureManual() {
   const [isLoading, setIsLoading] = useState(() => !getCache(CACHE_KEY));
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  // `?post=<id>&keyword=<term>` deep-links to a post with the term
+  // highlighted; the URL is the single source of truth for that jump (result
+  // clicks, reloads and the back button all go through it).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlPostId = searchParams.get("post");
+  const urlKeyword = searchParams.get("keyword") ?? "";
+
+  const [searchTerm, setSearchTerm] = useState(urlKeyword);
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  const isSearching = debouncedSearchTerm.trim() !== "";
+  // While searching, groups are open by default; this tracks the ones the
+  // reader collapsed by hand (reset whenever the search term changes).
+  const [searchCollapsedIds, setSearchCollapsedIds] = useState(() => new Set());
+  // Bumped to ask the reader to scroll to the first highlighted match once
+  // the post has rendered.
+  const [scrollRequest, setScrollRequest] = useState(0);
   const [selectedGuideId, setSelectedGuideId] = useState(
     () => getCache(CACHE_KEY)?.find((g) => g.type !== "label")?.id ?? null
   );
@@ -100,23 +117,38 @@ export default function CultureManual() {
   // free-form rows mixed into the same sort order, so a "chapter" here is
   // just a label followed by whatever pages sit before the next label. Pages
   // before the first label land in an unlabeled leading group.
+  //
+  // Groups are always built from the full list and filtered afterwards: if a
+  // search dropped a label first, the pages under it would otherwise attach to
+  // whichever label happened to come before (or the unlabeled leading group).
+  // While searching, a group shows its matching pages — or all of its pages
+  // when only its label matched — and groups with nothing to show are hidden.
   const groups = useMemo(() => {
-    const list = [];
+    const all = [];
     let current = null;
-    for (const guide of filteredGuides) {
+    for (const guide of guides) {
       if (guide.type === "label") {
         current = { label: guide, pages: [] };
-        list.push(current);
+        all.push(current);
       } else {
         if (!current) {
           current = { label: null, pages: [] };
-          list.push(current);
+          all.push(current);
         }
         current.pages.push(guide);
       }
     }
-    return list;
-  }, [filteredGuides]);
+    if (!isSearching) return all;
+
+    const matchedIds = new Set(filteredGuides.map((g) => g.id));
+    return all
+      .map((group) => {
+        const labelMatched = group.label && matchedIds.has(group.label.id);
+        const pages = labelMatched ? group.pages : group.pages.filter((g) => matchedIds.has(g.id));
+        return { ...group, pages };
+      })
+      .filter((group) => group.pages.length > 0);
+  }, [guides, filteredGuides, isSearching]);
 
   // Which label accordions are expanded — independent per label, mirroring
   // WorkManual's openChapterIds. Lazily seeded from the label that precedes
@@ -151,8 +183,80 @@ export default function CultureManual() {
     if (labelId) setOpenLabelIds(new Set([labelId]));
   }, [isLoading, guides, selectedGuideId]);
 
+  // Per matching post: a snippet of text around the first match (null when
+  // only the title matched). Cheap enough to recompute per debounced search.
+  const searchHits = useMemo(() => {
+    const term = debouncedSearchTerm.trim();
+    const hits = new Map();
+    if (!term) return hits;
+    for (const guide of filteredGuides) {
+      if (guide.type !== "label") hits.set(guide.id, findFirstPostMatch(guide, term));
+    }
+    return hits;
+  }, [filteredGuides, debouncedSearchTerm]);
+
+  useEffect(() => {
+    setSearchCollapsedIds(new Set());
+  }, [debouncedSearchTerm]);
+
+  // Opens a post with `keyword` highlighted and asks for a scroll to the
+  // first match. Also opens the post's label group so it's still expanded
+  // after the search is cleared.
+  const applyDeepLink = useCallback(
+    (post, keyword) => {
+      setSearchTerm(keyword);
+      setSelectedGuideId(post.id);
+      const idx = guides.findIndex((g) => g.id === post.id);
+      for (let i = idx; i >= 0; i--) {
+        if (guides[i].type === "label") {
+          const labelId = guides[i].id;
+          setOpenLabelIds((prev) => (prev.has(labelId) ? prev : new Set(prev).add(labelId)));
+          break;
+        }
+      }
+      if (keyword) setScrollRequest((n) => n + 1);
+    },
+    [guides]
+  );
+
+  // URL -> state: runs on first load (once posts are available), on the
+  // back/forward buttons and on every search-result click that changes the URL.
+  useEffect(() => {
+    if (!urlPostId || isLoading || isEditorOpen || isReorderMode) return;
+    const post = guides.find((g) => g.id === urlPostId && g.type !== "label");
+    if (post) applyDeepLink(post, urlKeyword);
+  }, [urlPostId, urlKeyword, isLoading]);
+
+  // Scrolls to the first highlighted match after the post has been painted:
+  // waiting a frame keeps this off the render path, and the request counter
+  // (not the selection) triggers it so re-clicking the same result scrolls
+  // again too.
+  useEffect(() => {
+    if (scrollRequest === 0 || isEditorOpen) return;
+    const frame = requestAnimationFrame(() =>
+      scrollFirstMarkIntoView({ scopeSelector: "[data-post-scroll]", scrollerSelector: "[data-post-scroll]" })
+    );
+    return () => cancelAnimationFrame(frame);
+  }, [scrollRequest]);
+
+  function clearDeepLinkParams() {
+    if (searchParams.has("post") || searchParams.has("keyword")) setSearchParams({}, { replace: true });
+  }
+
+  function handleSelectSearchResult(post) {
+    if (isReorderMode) return;
+    const keyword = debouncedSearchTerm.trim();
+    if (urlPostId === post.id && urlKeyword === keyword) {
+      // URL wouldn't change, so nothing would trigger the effect above.
+      applyDeepLink(post, keyword);
+    } else {
+      setSearchParams({ post: post.id, keyword });
+    }
+  }
+
   function toggleLabel(labelId) {
-    setOpenLabelIds((prev) => {
+    const setIds = isSearching ? setSearchCollapsedIds : setOpenLabelIds;
+    setIds((prev) => {
       const next = new Set(prev);
       if (next.has(labelId)) next.delete(labelId);
       else next.add(labelId);
@@ -165,6 +269,7 @@ export default function CultureManual() {
 
   function selectGuide(id) {
     if (isReorderMode) return;
+    clearDeepLinkParams();
     setSelectedGuideId(id);
   }
 
@@ -341,6 +446,34 @@ export default function CultureManual() {
     }
   }
 
+  // One sidebar row for a post. While searching it also shows a snippet of
+  // text around the first match (two lines max) under the title.
+  function renderGuideButton(guide, className) {
+    const isSelected = guide.id === selectedGuideId;
+    const hit = isSearching ? searchHits.get(guide.id) : null;
+    return (
+      <button
+        key={guide.id}
+        onClick={() => (isSearching ? handleSelectSearchResult(guide) : selectGuide(guide.id))}
+        title={guide.title}
+        className={`block w-full text-left rounded-md text-[13px] transition ${className} ${
+          isSelected ? "bg-primary text-white font-bold" : "text-gray-700 hover:bg-gray-100"
+        }`}
+      >
+        <span className="block truncate">{highlightText(guide.title, searchTerm)}</span>
+        {hit && (
+          <span
+            className={`mt-0.5 block text-[12px] font-normal leading-snug break-keep line-clamp-2 ${
+              isSelected ? "text-white/80" : "text-gray-500"
+            }`}
+          >
+            {highlightText(hit.snippet, searchTerm)}
+          </span>
+        )}
+      </button>
+    );
+  }
+
   if (isAdmin && isEditorOpen) {
     return (
       <div className="h-screen w-full flex flex-col bg-surface overflow-hidden">
@@ -386,7 +519,10 @@ export default function CultureManual() {
             <input
               type="text"
               value={searchTerm}
-              onChange={(e) => setSearchTerm(e.target.value)}
+              onChange={(e) => {
+                setSearchTerm(e.target.value);
+                if (!e.target.value.trim()) clearDeepLinkParams();
+              }}
               placeholder="제목, 내용으로 검색..."
               disabled={isReorderMode}
               className="w-full bg-white border border-outline-variant rounded-lg pl-9 pr-3 py-2 text-sm focus:border-primary focus:ring-0 transition-all disabled:opacity-40 disabled:cursor-not-allowed"
@@ -517,25 +653,12 @@ export default function CultureManual() {
                   if (!group.label) {
                     return (
                       <div key={`orphan-${groupIdx}`} className="space-y-0.5">
-                        {group.pages.map((guide) => (
-                          <button
-                            key={guide.id}
-                            onClick={() => selectGuide(guide.id)}
-                            title={guide.title}
-                            className={`block w-full text-left py-2 px-2.5 rounded-md text-[13px] truncate transition ${
-                              guide.id === selectedGuideId
-                                ? "bg-primary text-white font-bold"
-                                : "text-gray-700 hover:bg-gray-100"
-                            }`}
-                          >
-                            {highlightText(guide.title, searchTerm)}
-                          </button>
-                        ))}
+                        {group.pages.map((guide) => renderGuideButton(guide, "py-2 px-2.5"))}
                       </div>
                     );
                   }
 
-                  const isOpen = debouncedSearchTerm.trim() ? true : openLabelIds.has(group.label.id);
+                  const isOpen = isSearching ? !searchCollapsedIds.has(group.label.id) : openLabelIds.has(group.label.id);
                   return (
                     <div key={group.label.id}>
                       <div
@@ -550,11 +673,18 @@ export default function CultureManual() {
                           <span className="text-sm font-bold text-gray-900 truncate">
                             {highlightText(group.label.title || "(제목 없음)", searchTerm)}
                           </span>
-                          <span
-                            className={`material-symbols-outlined text-gray-400 transition-transform duration-300 shrink-0 ${isOpen ? "rotate-90" : ""}`}
-                            style={{ fontSize: "18px" }}
-                          >
-                            chevron_right
+                          <span className="flex items-center gap-1.5 shrink-0">
+                            {isSearching && (
+                              <span className="min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-[11px] font-bold">
+                                {group.pages.length}
+                              </span>
+                            )}
+                            <span
+                              className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`}
+                              style={{ fontSize: "18px" }}
+                            >
+                              chevron_right
+                            </span>
                           </span>
                         </button>
                         {isAdmin && (
@@ -584,20 +714,7 @@ export default function CultureManual() {
                         className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
                       >
                         <div className="min-h-0 min-w-0 space-y-0.5">
-                          {group.pages.map((guide) => (
-                            <button
-                              key={guide.id}
-                              onClick={() => selectGuide(guide.id)}
-                              title={guide.title}
-                              className={`block w-full text-left py-2 pl-4 pr-2.5 rounded-md text-[13px] truncate font-normal transition ${
-                                guide.id === selectedGuideId
-                                  ? "bg-primary text-white font-bold"
-                                  : "text-gray-700 hover:bg-gray-100"
-                              }`}
-                            >
-                              {highlightText(guide.title, searchTerm)}
-                            </button>
-                          ))}
+                          {group.pages.map((guide) => renderGuideButton(guide, "py-2 pl-4 pr-2.5 font-normal"))}
                         </div>
                       </div>
                     </div>
@@ -651,7 +768,7 @@ export default function CultureManual() {
                 </div>
 
                 {/* Page Content */}
-                <div className="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
+                <div data-post-scroll className="flex-1 px-12 py-10 overflow-y-auto custom-scrollbar">
                   <div className="max-w-2xl mx-auto space-y-10">
                     <div
                       className="ck-content !text-[16px] !leading-[1.8] break-keep text-on-surface-variant"
@@ -665,7 +782,7 @@ export default function CultureManual() {
                           {selectedGuide.checkPoints.map((point) => (
                             <li key={point} className="flex items-center gap-3">
                               <span className="material-symbols-outlined text-primary">check_circle</span>
-                              <span className="text-[15px] text-on-surface-variant">{point}</span>
+                              <span className="text-[15px] text-on-surface-variant">{highlightText(point, searchTerm)}</span>
                             </li>
                           ))}
                         </ul>
