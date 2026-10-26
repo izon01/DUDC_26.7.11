@@ -2,6 +2,7 @@ import { sql } from "@vercel/postgres";
 import { randomUUID } from "node:crypto";
 import { batchUpdateWorkManualOrder, ensureSchema } from "./_lib/db.js";
 import { requireAdmin } from "./_lib/auth.js";
+import { normalizeSpreads } from "./_lib/spreads.js";
 
 const CHAPTER_COUNT = 8;
 
@@ -56,7 +57,7 @@ export default async function handler(req, res) {
       const result = await sql`
         INSERT INTO work_manuals (id, title, spreads, category, sort_order)
         VALUES (
-          ${id}, ${title}, ${JSON.stringify(spreads)}::jsonb, ${clampCategory(category)},
+          ${id}, ${title}, ${JSON.stringify(normalizeSpreads(spreads))}::jsonb, ${clampCategory(category)},
           COALESCE((SELECT MAX(sort_order) FROM work_manuals), -1) + 1
         )
         RETURNING id, title, spreads, category, created_at AS "createdAt"
@@ -97,7 +98,7 @@ export default async function handler(req, res) {
     try {
       const result = await sql`
         UPDATE work_manuals
-        SET title = ${title}, spreads = ${JSON.stringify(spreads)}::jsonb, category = ${clampCategory(category)}
+        SET title = ${title}, spreads = ${JSON.stringify(normalizeSpreads(spreads))}::jsonb, category = ${clampCategory(category)}
         WHERE id = ${id}
         RETURNING id, title, spreads, category, created_at AS "createdAt"
       `;

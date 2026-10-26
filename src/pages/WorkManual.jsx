@@ -20,6 +20,7 @@ import { useAuth } from "../context/AuthContext";
 import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
 import { hasVisibleContent, stripHtml } from "../utils/html";
+import { normalizeSpreads } from "../utils/manualPages";
 import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
@@ -411,8 +412,17 @@ export default function WorkManual() {
   }, [filteredManuals]);
 
   const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
-  const currentSpread = selectedManual ? selectedManual.spreads[spreadIndex] ?? selectedManual.spreads[0] : null;
-  const totalPages = selectedManual ? selectedManual.spreads.length * 2 : 0;
+  // Reading mode always lays out the cleaned-up pages (trailing blanks dropped,
+  // at most one blank page to even out the last spread), so manuals saved
+  // before that cleanup existed no longer render dozens of empty pages. Edit
+  // mode works on the raw spreads so the admin can still page forward and
+  // write into a fresh spread; saving normalizes them.
+  const viewSpreads = useMemo(
+    () => (!selectedManual ? [] : isEditMode ? selectedManual.spreads : normalizeSpreads(selectedManual.spreads)),
+    [selectedManual, isEditMode]
+  );
+  const currentSpread = viewSpreads[spreadIndex] ?? viewSpreads[0] ?? null;
+  const totalPages = viewSpreads.length * 2;
   const progressPercent = totalPages ? Math.round(((spreadIndex + 1) * 2 * 100) / totalPages) : 0;
 
   // Expands the chapter the active manual lives in — once the sidebar is
@@ -457,11 +467,11 @@ export default function WorkManual() {
   function goNext() {
     if (!selectedManual) return;
     const target = spreadIndex + 1;
-    if (target >= selectedManual.spreads.length) {
+    if (target >= viewSpreads.length) {
       if (!isEditMode) return;
       // In edit mode, paging past the last spread extends the manual with a
       // fresh blank spread so the next two pages can be written immediately.
-      const nextPageNum = selectedManual.spreads.length * 2 + 1;
+      const nextPageNum = viewSpreads.length * 2 + 1;
       setManuals((prev) =>
         prev.map((manual) =>
           manual.id !== selectedManualId
@@ -507,6 +517,13 @@ export default function WorkManual() {
 
   function beginEdit() {
     editSnapshotRef.current = { manuals, selectedManualId, spreadIndex };
+    // Start from the cleaned-up pages so old trailing blanks aren't carried
+    // into the editor (and saved straight back). Cancel restores the snapshot.
+    setManuals((prev) =>
+      prev.map((manual) =>
+        manual.id === selectedManualId ? { ...manual, spreads: normalizeSpreads(manual.spreads) } : manual
+      )
+    );
     setEditSessionKey((k) => k + 1);
     setIsEditMode(true);
   }
@@ -537,7 +554,7 @@ export default function WorkManual() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             title: selectedManual.title,
-            spreads: selectedManual.spreads,
+            spreads: normalizeSpreads(selectedManual.spreads),
             category: selectedManual.category,
           }),
         });
@@ -551,7 +568,7 @@ export default function WorkManual() {
           headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
           body: JSON.stringify({
             title: selectedManual.title,
-            spreads: selectedManual.spreads,
+            spreads: normalizeSpreads(selectedManual.spreads),
             category: selectedManual.category,
           }),
         });
@@ -559,6 +576,10 @@ export default function WorkManual() {
         if (!res.ok) throw new Error(data.message || "매뉴얼 수정에 실패했습니다.");
         setManuals((prev) => prev.map((manual) => (manual.id === selectedManualId ? data.manual : manual)));
       }
+      // The admin may have been on a blank trailing spread that the save just
+      // trimmed away — pull the reader back to the last one that still exists.
+      const savedSpreadCount = normalizeSpreads(selectedManual.spreads).length;
+      setSpreadIndex((idx) => Math.min(idx, savedSpreadCount - 1));
       editSnapshotRef.current = null;
       setIsEditMode(false);
     } catch (error) {
@@ -971,7 +992,7 @@ export default function WorkManual() {
                 </button>
                 <button
                   onClick={goNext}
-                  disabled={!isEditMode && spreadIndex === selectedManual.spreads.length - 1}
+                  disabled={!isEditMode && spreadIndex === viewSpreads.length - 1}
                   className="absolute right-6 w-12 h-12 rounded-full border border-primary text-primary flex items-center justify-center hover:bg-primary-fixed bg-surface-container-lowest/50 backdrop-blur-sm transition-colors z-30 disabled:opacity-30 disabled:cursor-not-allowed"
                 >
                   <span className="material-symbols-outlined text-[32px]">chevron_right</span>
