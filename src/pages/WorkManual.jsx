@@ -9,6 +9,7 @@ import {
   ShieldCheck,
   LayoutGrid,
 } from "lucide-react";
+import { useSearchParams } from "react-router-dom";
 import "ckeditor5/ckeditor5.css";
 import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
@@ -21,6 +22,7 @@ import { highlightHtml, highlightText } from "../searchHighlight";
 import { getCache, setCache } from "../utils/resourceCache";
 import { hasVisibleContent, stripHtml } from "../utils/html";
 import { normalizeSpreads } from "../utils/manualPages";
+import { findFirstMatch } from "../utils/manualSearch";
 import { parseJsonSafely } from "../utils/http";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
@@ -319,9 +321,51 @@ function Bookshelf({ onSelect }) {
   );
 }
 
+// Centers a highlighted match inside the book page that contains it. Scrolls
+// the page's own container directly rather than calling scrollIntoView, which
+// would also scroll the overflow-hidden ancestors (the book stage) and
+// shift the whole layout.
+function centerMarkInPage(mark, behavior) {
+  const container = mark.closest("[data-page-scroll]");
+  if (!container) return;
+  const containerRect = container.getBoundingClientRect();
+  const markRect = mark.getBoundingClientRect();
+  const top = markRect.top - containerRect.top + container.scrollTop - container.clientHeight / 2 + markRect.height / 2;
+  container.scrollTo({ top: Math.max(0, top), behavior });
+}
+
+function scrollFirstMarkIntoView() {
+  const mark = document.querySelector("[data-book-stage] mark");
+  if (!mark) return;
+  centerMarkInPage(mark, "smooth");
+
+  // Images above the match that finish loading after we scrolled would push
+  // it off-center, so re-center once each late image arrives (for a few
+  // seconds only — never fight a reader who has started scrolling).
+  const container = mark.closest("[data-page-scroll]");
+  const deadline = Date.now() + 4000;
+  container?.querySelectorAll("img").forEach((img) => {
+    if (img.complete) return;
+    img.addEventListener(
+      "load",
+      () => {
+        if (mark.isConnected && Date.now() < deadline) centerMarkInPage(mark, "auto");
+      },
+      { once: true }
+    );
+  });
+}
+
 export default function WorkManual() {
   const { user, token } = useAuth();
   const isAdmin = user?.role === "admin";
+
+  // `?manual=<id>&keyword=<term>` deep-links to a manual and the spread where
+  // the term first appears; the URL is the single source of truth for that
+  // jump (results clicks, reloads and the back button all go through it).
+  const [searchParams, setSearchParams] = useSearchParams();
+  const urlManualId = searchParams.get("manual");
+  const urlKeyword = searchParams.get("keyword") ?? "";
 
   const [selectedPartId, setSelectedPartId] = useState(null);
 
@@ -329,8 +373,15 @@ export default function WorkManual() {
   const [isLoading, setIsLoading] = useState(() => !getCache(CACHE_KEY));
   const [loadError, setLoadError] = useState("");
   const [isSaving, setIsSaving] = useState(false);
-  const [searchTerm, setSearchTerm] = useState("");
+  const [searchTerm, setSearchTerm] = useState(urlKeyword);
   const debouncedSearchTerm = useDebouncedValue(searchTerm, 500);
+  const isSearching = debouncedSearchTerm.trim() !== "";
+  // While searching, chapters are open by default; this tracks the ones the
+  // reader collapsed by hand (reset whenever the search term changes).
+  const [searchCollapsedIds, setSearchCollapsedIds] = useState(() => new Set());
+  // Bumped to ask the reader to scroll to the first highlighted match once
+  // the target spread has rendered.
+  const [scrollRequest, setScrollRequest] = useState(0);
   const [selectedManualId, setSelectedManualId] = useState(() => getCache(CACHE_KEY)?.[0]?.id ?? null);
   const [spreadIndex, setSpreadIndex] = useState(0);
 
@@ -411,6 +462,65 @@ export default function WorkManual() {
     return map;
   }, [filteredManuals]);
 
+  // Per matching manual: the page where the term first appears and a snippet
+  // of text around it (null when only the title matched). Cheap enough to
+  // recompute per debounced search — a few dozen manuals of a few pages.
+  const searchHits = useMemo(() => {
+    const term = debouncedSearchTerm.trim();
+    const hits = new Map();
+    if (!term) return hits;
+    for (const manual of filteredManuals) hits.set(manual.id, findFirstMatch(manual, term));
+    return hits;
+  }, [filteredManuals, debouncedSearchTerm]);
+
+  useEffect(() => {
+    setSearchCollapsedIds(new Set());
+  }, [debouncedSearchTerm]);
+
+  // Opens a manual at the spread where `keyword` first appears and asks for
+  // a scroll to the highlighted match.
+  const applyDeepLink = useCallback((manual, keyword) => {
+    const hit = keyword ? findFirstMatch(manual, keyword) : null;
+    setSearchTerm(keyword);
+    setSelectedManualId(manual.id);
+    setSelectedPartId(manual.category);
+    setSpreadIndex(hit?.spreadIndex ?? 0);
+    if (hit) setScrollRequest((n) => n + 1);
+  }, []);
+
+  // URL -> state: runs on first load (once manuals are available), on the
+  // back/forward buttons and on every search-result click that changes the URL.
+  useEffect(() => {
+    if (!urlManualId || isLoading || isEditMode) return;
+    const manual = manuals.find((m) => m.id === urlManualId);
+    if (manual) applyDeepLink(manual, urlKeyword);
+  }, [urlManualId, urlKeyword, isLoading]);
+
+  // Scrolls to the first highlighted match after the target spread has been
+  // painted: waiting a frame keeps this off the render path, and the request
+  // counter (not the selection) triggers it so re-clicking the same result
+  // scrolls again too.
+  useEffect(() => {
+    if (scrollRequest === 0 || isEditMode) return;
+    const frame = requestAnimationFrame(scrollFirstMarkIntoView);
+    return () => cancelAnimationFrame(frame);
+  }, [scrollRequest]);
+
+  function clearDeepLinkParams() {
+    if (searchParams.has("manual") || searchParams.has("keyword")) setSearchParams({}, { replace: true });
+  }
+
+  function handleSelectSearchResult(manual) {
+    if (isEditMode || isReorderMode) return;
+    const keyword = debouncedSearchTerm.trim();
+    if (urlManualId === manual.id && urlKeyword === keyword) {
+      // URL wouldn't change, so nothing would trigger the effect above.
+      applyDeepLink(manual, keyword);
+    } else {
+      setSearchParams({ manual: manual.id, keyword });
+    }
+  }
+
   const selectedManual = manuals.find((m) => m.id === selectedManualId) ?? null;
   // Reading mode always lays out the cleaned-up pages (trailing blanks dropped,
   // at most one blank page to even out the last spread), so manuals saved
@@ -437,7 +547,8 @@ export default function WorkManual() {
   }, [selectedPartId, selectedManual?.category]);
 
   function toggleChapter(chapterId) {
-    setOpenChapterIds((prev) => {
+    const setIds = isSearching ? setSearchCollapsedIds : setOpenChapterIds;
+    setIds((prev) => {
       const next = new Set(prev);
       if (next.has(chapterId)) next.delete(chapterId);
       else next.add(chapterId);
@@ -447,6 +558,7 @@ export default function WorkManual() {
 
   function handleSelectManual(id) {
     if (isEditMode || isReorderMode) return;
+    clearDeepLinkParams();
     setSelectedManualId(id);
     setSpreadIndex(0);
   }
@@ -750,7 +862,10 @@ export default function WorkManual() {
                 placeholder="제목, 본문 내용으로 검색..."
                 type="text"
                 value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
+                onChange={(e) => {
+                  setSearchTerm(e.target.value);
+                  if (!e.target.value.trim()) clearDeepLinkParams();
+                }}
                 disabled={isReorderMode}
               />
               <span className="absolute right-2 flex items-center justify-center w-8 h-8 bg-primary text-on-primary rounded-md">
@@ -850,11 +965,15 @@ export default function WorkManual() {
                 {manuals.length > 0 && filteredManuals.length === 0 && (
                   <p className="px-2 py-4 text-center text-label-sm text-on-surface-variant">검색 결과가 없습니다.</p>
                 )}
-                {CHAPTERS.map((chapter, chapterIdx) => {
-                  // A search in progress bypasses collapse state entirely —
-                  // a match hidden inside a closed chapter would defeat the
-                  // point of searching.
-                  const isOpen = debouncedSearchTerm.trim() ? true : openChapterIds.has(chapter.id);
+                {/* While searching, only chapters with matches are listed, each
+                    with a result-count badge; every chapter starts open (a
+                    match hidden in a closed chapter would defeat the search)
+                    but can still be collapsed by hand. */}
+                {(isSearching
+                  ? CHAPTERS.filter((c) => (manualsByChapter.get(c.id)?.length ?? 0) > 0)
+                  : CHAPTERS
+                ).map((chapter, chapterIdx) => {
+                  const isOpen = isSearching ? !searchCollapsedIds.has(chapter.id) : openChapterIds.has(chapter.id);
                   return (
                     <div key={chapter.id}>
                       <button
@@ -865,32 +984,52 @@ export default function WorkManual() {
                         <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
                           {chapter.title}
                         </span>
-                        <span
-                          className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`}
-                          style={{ fontSize: "18px" }}
-                        >
-                          chevron_right
+                        <span className="flex items-center gap-1.5 shrink-0">
+                          {isSearching && (
+                            <span className="min-w-[20px] h-5 px-1.5 inline-flex items-center justify-center rounded-full bg-primary/10 text-primary text-[11px] font-bold">
+                              {manualsByChapter.get(chapter.id)?.length ?? 0}
+                            </span>
+                          )}
+                          <span
+                            className={`material-symbols-outlined text-gray-400 transition-transform duration-300 ${isOpen ? "rotate-90" : ""}`}
+                            style={{ fontSize: "18px" }}
+                          >
+                            chevron_right
+                          </span>
                         </span>
                       </button>
                       <div
                         className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
                       >
                         <div className="min-h-0 space-y-0.5">
-                          {(manualsByChapter.get(chapter.id) ?? []).map((manual) => (
-                            <button
-                              key={manual.id}
-                              data-manual-id={manual.id}
-                              onClick={() => handleSelectManual(manual.id)}
-                              disabled={isEditMode}
-                              className={`block w-full text-left py-1.5 pl-6 pr-2.5 rounded-md text-sm transition disabled:cursor-not-allowed ${
-                                manual.id === selectedManualId
-                                  ? "bg-primary text-white font-bold"
-                                  : "text-gray-700 hover:bg-gray-100"
-                              } ${isEditMode ? "opacity-40" : ""}`}
-                            >
-                              {highlightText(manual.title || "(제목 없음)", searchTerm)}
-                            </button>
-                          ))}
+                          {(manualsByChapter.get(chapter.id) ?? []).map((manual) => {
+                            const isSelected = manual.id === selectedManualId;
+                            const hit = isSearching ? searchHits.get(manual.id) : null;
+                            return (
+                              <button
+                                key={manual.id}
+                                data-manual-id={manual.id}
+                                onClick={() =>
+                                  isSearching ? handleSelectSearchResult(manual) : handleSelectManual(manual.id)
+                                }
+                                disabled={isEditMode}
+                                className={`block w-full text-left py-1.5 pl-6 pr-2.5 rounded-md text-sm transition disabled:cursor-not-allowed ${
+                                  isSelected ? "bg-primary text-white font-bold" : "text-gray-700 hover:bg-gray-100"
+                                } ${isEditMode ? "opacity-40" : ""}`}
+                              >
+                                {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                                {hit && (
+                                  <span
+                                    className={`mt-0.5 block text-[12px] font-normal leading-snug break-keep line-clamp-2 ${
+                                      isSelected ? "text-white/80" : "text-gray-500"
+                                    }`}
+                                  >
+                                    <span className="font-bold">{hit.pageNum}쪽</span> · {highlightText(hit.snippet, searchTerm)}
+                                  </span>
+                                )}
+                              </button>
+                            );
+                          })}
                         </div>
                       </div>
                     </div>
@@ -1005,7 +1144,7 @@ export default function WorkManual() {
                   <div className="absolute -left-2.5 -right-3.5 top-2.5 bottom-2.5 bg-gray-50 rounded-l-md rounded-r-xl shadow-sm z-[1] -rotate-[0.2deg]" />
                   <div className="absolute -left-1 -right-1.5 top-1 bottom-1.5 bg-white rounded-l-md rounded-r-xl shadow-sm z-[2]" />
 
-                  <div className="relative z-10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-l-md rounded-r-xl overflow-hidden flex bg-white h-full">
+                  <div data-book-stage className="relative z-10 shadow-[0_10px_40px_-10px_rgba(0,0,0,0.05)] rounded-l-md rounded-r-xl overflow-hidden flex bg-white h-full">
                     {/* Outer edge shadows — the spread reads as gently convex/curved */}
                     <div className="absolute left-0 top-0 bottom-0 w-6 z-20 pointer-events-none bg-gradient-to-r from-black/[0.02] to-transparent" />
                     <div className="absolute right-0 top-0 bottom-0 w-6 z-20 pointer-events-none bg-gradient-to-l from-black/[0.02] to-transparent" />
@@ -1015,7 +1154,7 @@ export default function WorkManual() {
                       <div className="w-1/2 h-full bg-gradient-to-l from-transparent to-black/[0.02]" />
                     </div>
                     <div className="absolute left-1/2 top-0 bottom-0 w-px -ml-px z-20 pointer-events-none bg-gray-100" />
-                    <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
+                    <div data-page-scroll className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
                         <Suspense fallback={<PageEditorLoading />}>
                           <BookPageEditor
@@ -1032,7 +1171,7 @@ export default function WorkManual() {
                         <BookPage page={currentSpread.left} searchTerm={searchTerm} side="left" totalPages={totalPages} onImageClick={setLightboxImage} />
                       )}
                     </div>
-                    <div className="w-1/2 relative overflow-y-auto custom-scrollbar">
+                    <div data-page-scroll className="w-1/2 relative overflow-y-auto custom-scrollbar">
                       {isEditMode ? (
                         <Suspense fallback={<PageEditorLoading />}>
                           <BookPageEditor
