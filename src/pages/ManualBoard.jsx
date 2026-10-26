@@ -1,5 +1,6 @@
 import { useCallback, useEffect, useRef, useState } from "react";
 import { Pencil } from "lucide-react";
+import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import { useAuth } from "../context/AuthContext";
@@ -602,6 +603,13 @@ export default function ManualBoard() {
           </div>
         )}
       </main>
+
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <FeedbackButton
+          variant="fab"
+          pageTitle={selectedCategory === "전체" ? "개별업무매뉴얼" : `개별업무매뉴얼 > ${selectedCategory}`}
+        />
+      </div>
 
       {isUploadModalOpen && (
         <DocumentFormModal

@@ -1,4 +1,5 @@
 import { useCallback, useEffect, useState } from "react";
+import FeedbackButton from "../components/FeedbackButton";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
 import { SkeletonGrid } from "../components/Skeleton";
@@ -598,15 +599,23 @@ export default function Community() {
         )}
       </main>
 
-      {/* Floating Write Button */}
-      <button
-        onClick={() => setIsWriteModalOpen(true)}
-        title="글쓰기"
-        className="fixed bottom-10 right-10 z-40 h-14 w-14 md:w-auto md:px-6 flex items-center justify-center gap-2 rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:scale-110 active:scale-95 transition-transform"
-      >
-        <span className="material-symbols-outlined text-[26px]">edit_note</span>
-        <span className="hidden md:inline font-bold text-label-sm">글쓰기</span>
-      </button>
+      {/* Floating action stack: feedback on top, 글쓰기 at the bottom. The
+          write/detail modals are z-50 too but come later in the DOM, so they
+          still cover this stack. */}
+      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+        <FeedbackButton
+          variant="fab"
+          pageTitle={selectedPostId && selectedPostDetail?.post?.title ? `커뮤니티 > ${selectedPostDetail.post.title}` : "커뮤니티"}
+        />
+        <button
+          onClick={() => setIsWriteModalOpen(true)}
+          title="글쓰기"
+          className="h-14 w-14 md:w-auto md:px-6 flex items-center justify-center gap-2 rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:scale-110 active:scale-95 transition-transform"
+        >
+          <span className="material-symbols-outlined text-[26px]">edit_note</span>
+          <span className="hidden md:inline font-bold text-label-sm">글쓰기</span>
+        </button>
+      </div>
 
       {isWriteModalOpen && (
         <WriteModal

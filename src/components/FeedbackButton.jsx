@@ -1,4 +1,5 @@
 import { useCallback, useState } from "react";
+import { createPortal } from "react-dom";
 import { useAuth } from "../context/AuthContext";
 import { FEEDBACK_TYPES } from "../utils/feedback";
 import { parseJsonSafely } from "../utils/http";
@@ -130,37 +131,56 @@ function FeedbackModal({ pageTitle, onClose, onSubmitted }) {
   );
 }
 
-// Square call-to-action pinned to the bottom of the manual sidebars. The
+// Entry point for the feedback form, in two looks: the square sidebar button
+// ("sidebar", default) and a floating pill for pages without a sidebar ("fab",
+// to be placed by the host page — e.g. in a fixed bottom-right stack). The
 // target page is the human-readable breadcrumb ("업무 매뉴얼 > 서무의 정의")
-// passed in by the host page, since only it knows which manual is open — no
+// passed in by the host page, since only it knows what is open — no
 // text-selection coupling, just a plain form.
-export default function FeedbackButton({ pageTitle }) {
+export default function FeedbackButton({ pageTitle, variant = "sidebar" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [showToast, setShowToast] = useState(false);
   const hideToast = useCallback(() => setShowToast(false), []);
 
   return (
     <>
-      <button
-        type="button"
-        onClick={() => setIsOpen(true)}
-        className="w-full flex flex-col items-center gap-1.5 px-4 py-4 rounded-xl bg-blue-800 text-white shadow-sm hover:bg-blue-900 active:scale-[0.98] transition-all"
-      >
-        <span className="material-symbols-outlined text-[24px]">rate_review</span>
-        <span className="text-[13px] font-bold">의견 등록 및 문의하기</span>
-      </button>
-
-      {isOpen && (
-        <FeedbackModal
-          pageTitle={pageTitle}
-          onClose={() => setIsOpen(false)}
-          onSubmitted={() => {
-            setIsOpen(false);
-            setShowToast(true);
-          }}
-        />
+      {variant === "fab" ? (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="flex items-center gap-2 px-5 h-12 rounded-full bg-slate-700 text-white text-[13px] font-bold shadow-lg shadow-slate-900/25 hover:bg-slate-800 hover:scale-105 active:scale-95 transition-all"
+        >
+          <span aria-hidden="true">💡</span>
+          의견 등록 및 문의하기
+        </button>
+      ) : (
+        <button
+          type="button"
+          onClick={() => setIsOpen(true)}
+          className="w-full flex flex-col items-center gap-1.5 px-4 py-4 rounded-xl bg-blue-800 text-white shadow-sm hover:bg-blue-900 active:scale-[0.98] transition-all"
+        >
+          <span className="material-symbols-outlined text-[24px]">rate_review</span>
+          <span className="text-[13px] font-bold">의견 등록 및 문의하기</span>
+        </button>
       )}
-      {showToast && <Toast message="의견이 등록되었습니다. 감사합니다!" onDone={hideToast} />}
+
+      {/* Portaled to <body>: the floating variant lives inside a fixed,
+          z-indexed stack, which would otherwise trap the modal's own z-index
+          inside that stack's stacking context. */}
+      {isOpen &&
+        createPortal(
+          <FeedbackModal
+            pageTitle={pageTitle}
+            onClose={() => setIsOpen(false)}
+            onSubmitted={() => {
+              setIsOpen(false);
+              setShowToast(true);
+            }}
+          />,
+          document.body
+        )}
+      {showToast &&
+        createPortal(<Toast message="의견이 등록되었습니다. 감사합니다!" onDone={hideToast} />, document.body)}
     </>
   );
 }
