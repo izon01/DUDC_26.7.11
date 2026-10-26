@@ -48,6 +48,18 @@ const CATEGORY_BADGE_STYLES = {
 
 const REVISION_TYPES = ["신설", "개정"];
 const ALLOWED_EXTENSIONS = ["pdf", "hwp", "docx", "xlsx"];
+// Extensions plus MIME types for the file picker: some browsers/OSes filter
+// the dialog by MIME type, and HWP has two in the wild (the registered
+// application/x-hwp and Hancom's application/haansofthwp). Validation below
+// still goes by extension only — browsers often report an empty type for .hwp.
+const FILE_INPUT_ACCEPT = [
+  ...ALLOWED_EXTENSIONS.map((ext) => `.${ext}`),
+  "application/pdf",
+  "application/x-hwp",
+  "application/haansofthwp",
+  "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
+  "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
+].join(",");
 const MAX_FILE_BYTES = 1 * 1024 * 1024;
 const ITEMS_PER_PAGE = 10;
 
@@ -87,7 +99,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
       return;
     }
     if (selected.size > MAX_FILE_BYTES) {
-      window.alert("1MB 이하의 파일만 업로드 가능합니다.");
+      window.alert(`1MB 이하의 파일만 업로드 가능합니다. (선택한 파일: ${(selected.size / 1024 / 1024).toFixed(1)}MB)`);
       e.target.value = "";
       setFile(null);
       return;
@@ -207,7 +219,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
               id="doc-file"
               ref={fileInputRef}
               type="file"
-              accept=".pdf,.hwp,.docx,.xlsx"
+              accept={FILE_INPUT_ACCEPT}
               onChange={handleFileChange}
               className="w-full text-body-md text-on-surface-variant file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-primary file:text-white file:font-bold file:text-label-sm file:cursor-pointer"
               required={!isEdit}
