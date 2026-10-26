@@ -11,6 +11,25 @@ const MAX_BYTES = 1 * 1024 * 1024;
 const ALLOWED_EXTENSIONS = new Set(["pdf", "hwp", "docx", "xlsx"]);
 const DATA_URL_PATTERN = /^data:([^;]+);base64,(.+)$/;
 
+const REVISION_TYPES = new Set(["신설", "개정"]);
+
+// Returns an error message for an invalid revision pair, or null when valid.
+// The date is a plain YYYY-MM-DD calendar day; the round-trip through Date
+// rejects impossible dates like 2026-02-31 that the regex alone would allow.
+function validateRevision(revisionDate, revisionType) {
+  if (typeof revisionDate !== "string" || !/^\d{4}-\d{2}-\d{2}$/.test(revisionDate)) {
+    return "신설·개정일을 올바른 날짜로 입력해주세요.";
+  }
+  const parsed = new Date(`${revisionDate}T00:00:00Z`);
+  if (Number.isNaN(parsed.getTime()) || parsed.toISOString().slice(0, 10) !== revisionDate) {
+    return "신설·개정일을 올바른 날짜로 입력해주세요.";
+  }
+  if (!REVISION_TYPES.has(revisionType)) {
+    return "신설 또는 개정을 선택해주세요.";
+  }
+  return null;
+}
+
 function sanitizeFilename(name) {
   const base = (name || "file").normalize("NFC").replace(/[/\\?%*:|"<>]/g, "").trim();
   return base.slice(0, 100) || "file";
@@ -33,7 +52,8 @@ export default async function handler(req, res) {
     try {
       const result = await sql`
         SELECT id, title, category, filename, file_url AS "fileUrl", file_size AS "fileSize",
-               created_at AS "createdAt"
+               created_at AS "createdAt",
+               to_char(revision_date, 'YYYY-MM-DD') AS "revisionDate", revision_type AS "revisionType"
         FROM manual_documents
         ORDER BY created_at DESC
       `;
@@ -48,13 +68,15 @@ export default async function handler(req, res) {
     const admin = requireAdmin(req, res);
     if (!admin) return;
 
-    const { title, category, filename, dataUrl } = req.body ?? {};
+    const { title, category, filename, dataUrl, revisionDate, revisionType } = req.body ?? {};
     if (!title || typeof title !== "string" || !title.trim()) {
       return res.status(400).json({ message: "제목이 필요합니다." });
     }
     if (!category || typeof category !== "string" || !category.trim()) {
       return res.status(400).json({ message: "부서(카테고리)가 필요합니다." });
     }
+    const revisionError = validateRevision(revisionDate, revisionType);
+    if (revisionError) return res.status(400).json({ message: revisionError });
 
     const ext = (filename || "").split(".").pop()?.toLowerCase();
     if (!ext || !ALLOWED_EXTENSIONS.has(ext)) {
@@ -79,10 +101,12 @@ export default async function handler(req, res) {
         contentType: match[1],
       });
       const result = await sql`
-        INSERT INTO manual_documents (id, title, category, filename, file_url, file_size)
-        VALUES (${id}, ${title.trim()}, ${category}, ${safeName}, ${blob.url}, ${buffer.length})
+        INSERT INTO manual_documents (id, title, category, filename, file_url, file_size, revision_date, revision_type)
+        VALUES (${id}, ${title.trim()}, ${category}, ${safeName}, ${blob.url}, ${buffer.length},
+                ${revisionDate}, ${revisionType})
         RETURNING id, title, category, filename, file_url AS "fileUrl", file_size AS "fileSize",
-                  created_at AS "createdAt"
+                  created_at AS "createdAt",
+               to_char(revision_date, 'YYYY-MM-DD') AS "revisionDate", revision_type AS "revisionType"
       `;
       return res.status(201).json({ document: result.rows[0] });
     } catch (error) {
@@ -98,13 +122,15 @@ export default async function handler(req, res) {
     const { id } = req.query;
     if (!id) return res.status(400).json({ message: "id가 필요합니다." });
 
-    const { title, category, filename, dataUrl } = req.body ?? {};
+    const { title, category, filename, dataUrl, revisionDate, revisionType } = req.body ?? {};
     if (!title || typeof title !== "string" || !title.trim()) {
       return res.status(400).json({ message: "제목이 필요합니다." });
     }
     if (!category || typeof category !== "string" || !category.trim()) {
       return res.status(400).json({ message: "부서(카테고리)가 필요합니다." });
     }
+    const revisionError = validateRevision(revisionDate, revisionType);
+    if (revisionError) return res.status(400).json({ message: revisionError });
 
     // Replacing the file is optional — omit filename/dataUrl to just rename
     // or recategorize an existing document without touching its file.
@@ -152,18 +178,22 @@ export default async function handler(req, res) {
         result = await sql`
           UPDATE manual_documents
           SET title = ${title.trim()}, category = ${category}, filename = ${newSafeName},
-              file_url = ${blob.url}, file_size = ${newBuffer.length}
+              file_url = ${blob.url}, file_size = ${newBuffer.length},
+              revision_date = ${revisionDate}, revision_type = ${revisionType}
           WHERE id = ${id}
           RETURNING id, title, category, filename, file_url AS "fileUrl", file_size AS "fileSize",
-                    created_at AS "createdAt"
+                    created_at AS "createdAt",
+               to_char(revision_date, 'YYYY-MM-DD') AS "revisionDate", revision_type AS "revisionType"
         `;
       } else {
         result = await sql`
           UPDATE manual_documents
-          SET title = ${title.trim()}, category = ${category}
+          SET title = ${title.trim()}, category = ${category},
+              revision_date = ${revisionDate}, revision_type = ${revisionType}
           WHERE id = ${id}
           RETURNING id, title, category, filename, file_url AS "fileUrl", file_size AS "fileSize",
-                    created_at AS "createdAt"
+                    created_at AS "createdAt",
+               to_char(revision_date, 'YYYY-MM-DD') AS "revisionDate", revision_type AS "revisionType"
         `;
       }
       return res.status(200).json({ document: result.rows[0] });

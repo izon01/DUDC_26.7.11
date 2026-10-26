@@ -80,6 +80,14 @@ export function ensureSchema() {
         sql`ALTER TABLE culture_posts ADD COLUMN IF NOT EXISTS sort_order INTEGER`,
       ]);
 
+      // 신설/개정 info shown on the manual board. Nullable (and typed DATE, not
+      // TIMESTAMPTZ — it's a calendar day with no time zone) so documents
+      // uploaded before this field existed keep working without a backfill.
+      await Promise.all([
+        sql`ALTER TABLE manual_documents ADD COLUMN IF NOT EXISTS revision_date DATE`,
+        sql`ALTER TABLE manual_documents ADD COLUMN IF NOT EXISTS revision_type TEXT`,
+      ]);
+
       // Section-label rows (type='label') are plain group headers mixed into
       // the same sidebar list/sort order as real content rows (type='page');
       // existing rows default to 'page' so they keep behaving as before.

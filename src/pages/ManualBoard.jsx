@@ -46,6 +46,7 @@ const CATEGORY_BADGE_STYLES = {
   청렴감사실: { emoji: "⚖️", className: "bg-slate-100 text-slate-700" },
 };
 
+const REVISION_TYPES = ["신설", "개정"];
 const ALLOWED_EXTENSIONS = ["pdf", "hwp", "docx", "xlsx"];
 const MAX_FILE_BYTES = 1 * 1024 * 1024;
 const ITEMS_PER_PAGE = 10;
@@ -73,6 +74,8 @@ function readFileAsDataUrl(file) {
 function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmit }) {
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [category, setCategory] = useState(initialValues?.category ?? DEPARTMENTS[0]);
+  const [revisionDate, setRevisionDate] = useState(initialValues?.revisionDate ?? "");
+  const [revisionType, setRevisionType] = useState(initialValues?.revisionType ?? REVISION_TYPES[0]);
   const [file, setFile] = useState(null);
   const fileInputRef = useRef(null);
   const isEdit = mode === "edit";
@@ -101,9 +104,9 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
 
   function handleSubmit(e) {
     e.preventDefault();
-    if (!title.trim()) return;
+    if (!title.trim() || !revisionDate) return;
     if (!isEdit && !file) return;
-    onSubmit({ title: title.trim(), category, file });
+    onSubmit({ title: title.trim(), category, file, revisionDate, revisionType });
   }
 
   return (
@@ -156,6 +159,43 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
               className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md px-3 py-2 transition-all"
               required
             />
+          </div>
+
+          <div className="grid grid-cols-2 gap-4">
+            <div>
+              <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="doc-revision-date">
+                신설·개정일
+              </label>
+              <input
+                id="doc-revision-date"
+                type="date"
+                value={revisionDate}
+                onChange={(e) => setRevisionDate(e.target.value)}
+                className="w-full bg-surface-container-lowest border border-outline-variant rounded-lg focus:border-primary focus:ring-0 text-body-md px-3 py-2 transition-all"
+                required
+              />
+            </div>
+            <div>
+              <span className="text-label-sm font-label-sm text-on-surface-variant mb-2 block">구분</span>
+              <div className="flex gap-2" role="radiogroup" aria-label="신설 또는 개정">
+                {REVISION_TYPES.map((type) => (
+                  <button
+                    type="button"
+                    key={type}
+                    role="radio"
+                    aria-checked={type === revisionType}
+                    onClick={() => setRevisionType(type)}
+                    className={
+                      type === revisionType
+                        ? "flex-1 py-2 rounded-lg text-body-md font-bold border-2 border-primary bg-primary/10 text-primary"
+                        : "flex-1 py-2 rounded-lg text-body-md font-bold border-2 border-outline-variant text-on-surface-variant"
+                    }
+                  >
+                    {type}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
 
           <div>
@@ -278,14 +318,14 @@ export default function ManualBoard() {
     setCurrentPage(1);
   }, [debouncedSearchTerm, selectedCategory]);
 
-  async function handleUpload({ title, category, file }) {
+  async function handleUpload({ title, category, file, revisionDate, revisionType }) {
     setIsSubmitting(true);
     try {
       const dataUrl = await readFileAsDataUrl(file);
       const res = await fetch("/api/manual-documents", {
         method: "POST",
         headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
-        body: JSON.stringify({ title, category, filename: file.name, dataUrl }),
+        body: JSON.stringify({ title, category, filename: file.name, dataUrl, revisionDate, revisionType }),
       });
       const data = await parseJsonSafely(res);
       if (!res.ok) throw new Error(data.message || "매뉴얼 등록에 실패했습니다.");
@@ -298,10 +338,10 @@ export default function ManualBoard() {
     }
   }
 
-  async function handleEditSave({ title, category, file }) {
+  async function handleEditSave({ title, category, file, revisionDate, revisionType }) {
     setIsSubmitting(true);
     try {
-      const body = { title, category };
+      const body = { title, category, revisionDate, revisionType };
       if (file) {
         body.filename = file.name;
         body.dataUrl = await readFileAsDataUrl(file);
@@ -458,9 +498,24 @@ export default function ManualBoard() {
                   {doc.category}
                 </span>
                 <span className="flex-1 min-w-0 font-bold text-on-surface truncate">{doc.title}</span>
-                <span className="text-[12px] text-on-surface-variant shrink-0 hidden sm:inline">
-                  {formatDateDot(doc.createdAt)}
-                </span>
+                {/* Fixed-width two-line date block so every row's dates line up
+                    in a column; documents uploaded before the revision fields
+                    existed just show the second line. */}
+                <div className="shrink-0 hidden sm:flex flex-col justify-center gap-1 w-[216px] text-xs">
+                  {doc.revisionDate && (
+                    <p className="flex items-center gap-1.5 whitespace-nowrap">
+                      <span className="text-gray-500">신설·개정일</span>
+                      <span className="text-gray-800 font-medium">{doc.revisionDate.replaceAll("-", ".")}</span>
+                      <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs font-bold">
+                        [{doc.revisionType}]
+                      </span>
+                    </p>
+                  )}
+                  <p className="flex items-center gap-1.5 whitespace-nowrap">
+                    <span className="text-gray-500">사이트 등록일</span>
+                    <span className="text-gray-800 font-medium">{formatDateDot(doc.createdAt)}</span>
+                  </p>
+                </div>
                 {isAdmin && (
                   <button
                     onClick={() => setEditingDocument(doc)}
