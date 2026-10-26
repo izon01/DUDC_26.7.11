@@ -807,7 +807,7 @@ export default function WorkManual() {
     <div className="h-screen w-full flex flex-col bg-background overflow-hidden font-body-md text-on-surface">
       <div className="flex flex-col md:flex-row flex-1 overflow-hidden">
         {/* Sidebar */}
-        <aside className="w-full md:w-64 max-h-[40vh] md:max-h-none shrink-0 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low flex flex-col">
+        <aside className="w-full md:w-72 max-h-[40vh] md:max-h-none shrink-0 border-b md:border-b-0 md:border-r border-outline-variant bg-surface-container-low flex flex-col">
           <div className="px-4 pt-4">
             <button
               onClick={() => setSelectedPartId(null)}
@@ -897,7 +897,7 @@ export default function WorkManual() {
                     onDragOver={(e) => handleDragOverChapterHeader(e, chapter.id)}
                     className={`px-1 pb-1.5 ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
                   >
-                    <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
+                    <span title={chapter.title} className="block truncate text-[13px] font-extrabold text-gray-900 tracking-wide">
                       {chapter.title}
                     </span>
                   </div>
@@ -918,7 +918,7 @@ export default function WorkManual() {
                       >
                         drag_indicator
                       </span>
-                      <span className="flex-1 min-w-0 text-left p-2.5 text-sm text-on-surface-variant truncate">
+                      <span title={manual.title || "(제목 없음)"} className="flex-1 min-w-0 text-left p-2.5 text-sm text-on-surface-variant truncate">
                         {manual.title || "(제목 없음)"}
                       </span>
                     </div>
@@ -947,9 +947,10 @@ export default function WorkManual() {
                       <button
                         type="button"
                         onClick={() => toggleChapter(chapter.id)}
+                        title={chapter.title}
                         className={`w-full flex items-center justify-between gap-2 px-1 pb-1.5 cursor-pointer hover:text-primary transition-colors ${chapterIdx === 0 ? "mt-1" : "mt-6"}`}
                       >
-                        <span className="text-[13px] font-extrabold text-gray-900 tracking-wide">
+                        <span className="flex-1 min-w-0 text-left truncate text-[13px] font-extrabold text-gray-900 tracking-wide">
                           {chapter.title}
                         </span>
                         <span className="flex items-center gap-1.5 shrink-0">
@@ -969,7 +970,7 @@ export default function WorkManual() {
                       <div
                         className={`grid overflow-hidden transition-[grid-template-rows] duration-300 ease-in-out ${isOpen ? "grid-rows-[1fr]" : "grid-rows-[0fr]"}`}
                       >
-                        <div className="min-h-0 space-y-0.5">
+                        <div className="min-h-0 min-w-0 space-y-0.5">
                           {(manualsByChapter.get(chapter.id) ?? []).map((manual) => {
                             const isSelected = manual.id === selectedManualId;
                             const hit = isSearching ? searchHits.get(manual.id) : null;
@@ -977,6 +978,7 @@ export default function WorkManual() {
                               <button
                                 key={manual.id}
                                 data-manual-id={manual.id}
+                                title={manual.title || "(제목 없음)"}
                                 onClick={() =>
                                   isSearching ? handleSelectSearchResult(manual) : handleSelectManual(manual.id)
                                 }
@@ -985,7 +987,7 @@ export default function WorkManual() {
                                   isSelected ? "bg-primary text-white font-bold" : "text-gray-700 hover:bg-gray-100"
                                 } ${isEditMode ? "opacity-40" : ""}`}
                               >
-                                {highlightText(manual.title || "(제목 없음)", searchTerm)}
+                                <span className="block truncate">{highlightText(manual.title || "(제목 없음)", searchTerm)}</span>
                                 {hit && (
                                   <span
                                     className={`mt-0.5 block text-[12px] font-normal leading-snug break-keep line-clamp-2 ${
