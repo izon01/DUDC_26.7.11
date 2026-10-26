@@ -47,6 +47,11 @@ const CATEGORY_BADGE_STYLES = {
 };
 
 const REVISION_TYPES = ["신설", "개정"];
+// Full class names spelled out so Tailwind's scanner picks them up.
+const REVISION_BADGE_STYLES = {
+  신설: "bg-emerald-100 text-emerald-700",
+  개정: "bg-blue-100 text-blue-600",
+};
 const ALLOWED_EXTENSIONS = ["pdf", "hwp", "hwpx", "docx", "xlsx"];
 // Extensions plus MIME types for the file picker: some browsers/OSes filter
 // the dialog by MIME type. HWP has two in the wild (the registered
@@ -520,7 +525,11 @@ export default function ManualBoard() {
                     <p className="flex items-center gap-1.5 whitespace-nowrap">
                       <span className="text-gray-500">신설·개정일</span>
                       <span className="text-gray-800 font-medium">{doc.revisionDate.replaceAll("-", ".")}</span>
-                      <span className="bg-blue-100 text-blue-600 px-2 py-0.5 rounded text-xs font-bold">
+                      <span
+                        className={`px-2 py-0.5 rounded text-xs font-bold ${
+                          REVISION_BADGE_STYLES[doc.revisionType] ?? "bg-gray-100 text-gray-600"
+                        }`}
+                      >
                         [{doc.revisionType}]
                       </span>
                     </p>
