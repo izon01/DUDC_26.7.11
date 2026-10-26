@@ -180,7 +180,7 @@ function BookPage({ page, searchTerm, side, totalPages, onImageClick }) {
         )}
       </div>
       <div
-        className={`absolute bottom-6 text-[11px] font-light tracking-wide text-outline/60 ${
+        className={`absolute bottom-6 text-[13px] font-bold tracking-wide text-gray-900 ${
           side === "left" ? "left-9" : "right-9"
         }`}
       >

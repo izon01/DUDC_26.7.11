@@ -25,7 +25,7 @@ export default function BookPageEditor({ html, pageNum, onHtmlChange, editorKey,
         </div>
       </div>
       <div
-        className={`absolute bottom-6 text-[11px] font-light tracking-wide text-outline/60 pointer-events-none ${
+        className={`absolute bottom-6 text-[13px] font-bold tracking-wide text-gray-900 pointer-events-none ${
           side === "left" ? "left-9" : "right-9"
         }`}
       >

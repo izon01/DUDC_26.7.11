@@ -144,7 +144,7 @@ export default function FeedbackButton({ pageTitle }) {
       <button
         type="button"
         onClick={() => setIsOpen(true)}
-        className="w-full flex flex-col items-center gap-1.5 px-4 py-4 rounded-xl border border-outline-variant bg-surface-container-low text-on-surface-variant hover:bg-surface-container hover:text-primary hover:border-primary/40 transition-colors"
+        className="w-full flex flex-col items-center gap-1.5 px-4 py-4 rounded-xl bg-blue-800 text-white shadow-sm hover:bg-blue-900 active:scale-[0.98] transition-all"
       >
         <span className="material-symbols-outlined text-[24px]">rate_review</span>
         <span className="text-[13px] font-bold">의견 등록 및 문의하기</span>
