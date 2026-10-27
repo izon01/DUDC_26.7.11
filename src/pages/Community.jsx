@@ -446,7 +446,7 @@ export default function Community() {
     <div className="min-h-screen w-full flex flex-col bg-background font-body-md text-on-surface">
       <Header />
 
-      <main className="flex-1 pt-2 pb-16 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
+      <main className="flex-1 pt-2 pb-24 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
           title={
@@ -477,9 +477,14 @@ export default function Community() {
               <span className="text-[12px] text-on-surface-variant">{formatDateDot(new Date())} 기준</span>
             </div>
           </div>
-          <div className="w-11 h-11 rounded-full bg-white flex items-center justify-center shrink-0">
-            <span className="material-symbols-outlined text-on-surface-variant">forum</span>
-          </div>
+          <button
+            onClick={() => setIsWriteModalOpen(true)}
+            title="글쓰기"
+            className="shrink-0 h-12 px-6 flex items-center justify-center gap-2 rounded-full bg-primary text-white shadow-md shadow-primary/20 hover:opacity-90 active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined text-[22px]">edit_note</span>
+            <span className="font-bold text-label-sm">글쓰기</span>
+          </button>
         </div>
 
         {/* Search + Category Filter */}
@@ -599,22 +604,14 @@ export default function Community() {
         )}
       </main>
 
-      {/* Floating action stack: feedback on top, 글쓰기 at the bottom. The
-          write/detail modals are z-50 too but come later in the DOM, so they
-          still cover this stack. */}
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      {/* Feedback lives bottom-left site-wide (sidebar pages put it at the
+          foot of the sidebar). The write/detail modals are z-50 too but come
+          later in the DOM, so they still cover it. */}
+      <div className="fixed bottom-6 left-6 z-50">
         <FeedbackButton
           variant="fab"
           pageTitle={selectedPostId && selectedPostDetail?.post?.title ? `커뮤니티 > ${selectedPostDetail.post.title}` : "커뮤니티"}
         />
-        <button
-          onClick={() => setIsWriteModalOpen(true)}
-          title="글쓰기"
-          className="h-14 w-14 md:w-auto md:px-6 flex items-center justify-center gap-2 rounded-full bg-primary text-white shadow-lg shadow-primary/30 hover:scale-110 active:scale-95 transition-transform"
-        >
-          <span className="material-symbols-outlined text-[26px]">edit_note</span>
-          <span className="hidden md:inline font-bold text-label-sm">글쓰기</span>
-        </button>
       </div>
 
       {isWriteModalOpen && (

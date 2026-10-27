@@ -401,7 +401,7 @@ export default function ManualBoard() {
     <div className="min-h-screen w-full flex flex-col bg-background font-body-md text-on-surface">
       <Header />
 
-      <main className="flex-1 pt-2 pb-16 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
+      <main className="flex-1 pt-2 pb-24 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
           title={
@@ -604,7 +604,8 @@ export default function ManualBoard() {
         )}
       </main>
 
-      <div className="fixed bottom-6 right-6 z-50 flex flex-col items-end gap-3">
+      {/* Bottom-left, matching the sidebar pages' feedback button. */}
+      <div className="fixed bottom-6 left-6 z-50">
         <FeedbackButton
           variant="fab"
           pageTitle={selectedCategory === "전체" ? "개별업무매뉴얼" : `개별업무매뉴얼 > ${selectedCategory}`}
