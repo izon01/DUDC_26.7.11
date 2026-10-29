@@ -596,7 +596,7 @@ export default function ManualBoard() {
             visibleDocuments.map((doc, idx) => (
               <div
                 key={doc.id}
-                className={`flex items-center gap-4 py-4 ${idx !== visibleDocuments.length - 1 ? "border-b border-outline-variant" : ""}`}
+                className={`flex items-center gap-4 py-3 min-h-[82px] ${idx !== visibleDocuments.length - 1 ? "border-b border-outline-variant" : ""}`}
               >
                 <span
                   className={`px-3 py-1 rounded-full text-xs font-bold shrink-0 ${
@@ -629,24 +629,6 @@ export default function ManualBoard() {
                     <span className="text-gray-800 font-medium">{formatDateDot(doc.createdAt)}</span>
                   </p>
                 </div>
-                {/* PDF preview. Hidden on phones (the row is already tight, and
-                    most mobile browsers can't render PDFs inline anyway — the
-                    download button covers them). Icon-only up to lg; from lg
-                    up it's a labelled button in a fixed-width slot so the date
-                    column lines up whether or not a row has one. */}
-                <div className="shrink-0 hidden sm:flex justify-end lg:w-[84px] sm:empty:hidden lg:empty:flex">
-                  {isPdf(doc) && (
-                    <button
-                      onClick={() => setPreviewDocument(doc)}
-                      title="PDF 미리보기"
-                      aria-label="PDF 미리보기"
-                      className="flex items-center gap-1 px-2.5 lg:px-3.5 py-2 rounded-full border border-primary text-primary text-[12px] font-bold hover:bg-primary-fixed active:scale-95 transition-all"
-                    >
-                      <span className="material-symbols-outlined text-[16px]">visibility</span>
-                      <span className="hidden lg:inline">미리보기</span>
-                    </button>
-                  )}
-                </div>
                 {isAdmin && (
                   <button
                     onClick={() => setEditingDocument(doc)}
@@ -665,13 +647,30 @@ export default function ManualBoard() {
                     <span className="material-symbols-outlined text-[18px]">delete</span>
                   </button>
                 )}
-                <a
-                  href={`${doc.fileUrl}?download=1`}
-                  className="flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-white text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all shrink-0"
-                >
-                  <span className="material-symbols-outlined text-[16px]">download</span>
-                  다운로드
-                </a>
+                {/* Same-width action column: PDF preview stacked above
+                    download, so the buttons stay compact, the title keeps its
+                    room, and every row's download button lines up. Preview is
+                    hidden on phones (most mobile browsers can't render PDFs
+                    inline — download covers them). */}
+                <div className="shrink-0 w-[92px] flex flex-col justify-center gap-0.5">
+                  {isPdf(doc) && (
+                    <button
+                      onClick={() => setPreviewDocument(doc)}
+                      title="PDF 미리보기"
+                      className="hidden sm:flex w-full items-center justify-center gap-1 py-1 rounded-full border border-primary text-primary text-[12px] font-bold whitespace-nowrap hover:bg-primary-fixed active:scale-95 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[15px]">visibility</span>
+                      미리보기
+                    </button>
+                  )}
+                  <a
+                    href={`${doc.fileUrl}?download=1`}
+                    className="flex w-full items-center justify-center gap-1 py-1 rounded-full bg-primary text-white text-[12px] font-bold whitespace-nowrap hover:opacity-90 active:scale-95 transition-all"
+                  >
+                    <span className="material-symbols-outlined text-[15px]">download</span>
+                    다운로드
+                  </a>
+                </div>
               </div>
             ))
           )}
