@@ -88,6 +88,93 @@ function readFileAsDataUrl(file) {
   });
 }
 
+function isPdf(doc) {
+  return doc.filename?.split(".").pop()?.toLowerCase() === "pdf";
+}
+
+// Right-hand slide-over that shows a PDF in the browser's built-in viewer.
+// Only PDFs get one — HWP/DOCX/XLSX have no browser viewer, so those rows
+// keep download as their only action. Closes on the X, a backdrop click or
+// Esc. Browsers that can't render PDFs inline (notably Android Chrome) get a
+// download prompt instead of a blank frame.
+function PdfPreviewPanel({ doc, onClose }) {
+  const [entered, setEntered] = useState(false);
+  const canEmbed = navigator.pdfViewerEnabled !== false;
+
+  useEffect(() => {
+    const frame = requestAnimationFrame(() => setEntered(true));
+    function onKeyDown(e) {
+      if (e.key === "Escape") onClose();
+    }
+    window.addEventListener("keydown", onKeyDown);
+    return () => {
+      cancelAnimationFrame(frame);
+      window.removeEventListener("keydown", onKeyDown);
+    };
+  }, [onClose]);
+
+  return (
+    <div
+      className={`fixed inset-0 z-[60] bg-black/30 transition-opacity duration-200 ${entered ? "opacity-100" : "opacity-0"}`}
+      onClick={onClose}
+    >
+      <aside
+        role="dialog"
+        aria-label={`${doc.title} 미리보기`}
+        onClick={(e) => e.stopPropagation()}
+        className={`absolute top-0 right-0 h-full w-full md:w-[min(900px,70vw)] bg-white shadow-2xl flex flex-col transition-transform duration-200 ease-out ${
+          entered ? "translate-x-0" : "translate-x-full"
+        }`}
+      >
+        <div className="shrink-0 px-5 py-3 border-b border-outline-variant flex items-center gap-3">
+          <span className="material-symbols-outlined text-primary">picture_as_pdf</span>
+          <h2 title={doc.title} className="flex-1 min-w-0 font-bold text-on-surface truncate">
+            {doc.title}
+          </h2>
+          <a
+            href={`${doc.fileUrl}?download=1`}
+            className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-white text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all"
+          >
+            <span className="material-symbols-outlined text-[16px]">download</span>
+            다운로드
+          </a>
+          <button
+            type="button"
+            onClick={onClose}
+            aria-label="닫기"
+            className="shrink-0 w-9 h-9 flex items-center justify-center rounded-full hover:bg-surface-container-low transition-colors"
+          >
+            <span className="material-symbols-outlined text-on-surface-variant">close</span>
+          </button>
+        </div>
+
+        <div className="flex-1 min-h-0 relative bg-surface-container-low">
+          {canEmbed ? (
+            <>
+              <p className="absolute inset-0 flex items-center justify-center text-on-surface-variant text-body-md">
+                문서를 불러오는 중...
+              </p>
+              <iframe title={doc.title} src={doc.fileUrl} className="relative w-full h-full border-0" />
+            </>
+          ) : (
+            <div className="h-full flex flex-col items-center justify-center gap-4 px-6 text-center">
+              <span className="material-symbols-outlined text-[56px] text-on-surface-variant">description</span>
+              <p className="text-on-surface-variant">이 브라우저에서는 PDF 미리보기를 지원하지 않습니다.</p>
+              <a
+                href={`${doc.fileUrl}?download=1`}
+                className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-primary text-white text-[13px] font-bold hover:opacity-90"
+              >
+                <span className="material-symbols-outlined text-[18px]">download</span>
+                다운로드
+              </a>
+            </div>
+          )}
+        </div>
+      </aside>
+    </div>
+  );
+}
+
 // Shared by both create and edit — in edit mode `initialValues` pre-fills
 // title/category and a new file is optional (omit it to just rename or
 // recategorize without touching the existing file).
@@ -279,6 +366,8 @@ export default function ManualBoard() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState(null);
+  const [previewDocument, setPreviewDocument] = useState(null);
+  const closePreview = useCallback(() => setPreviewDocument(null), []);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [currentPage, setCurrentPage] = useState(1);
 
@@ -521,7 +610,7 @@ export default function ManualBoard() {
                 {/* Fixed-width two-line date block so every row's dates line up
                     in a column; documents uploaded before the revision fields
                     existed just show the second line. */}
-                <div className="shrink-0 hidden sm:flex flex-col justify-center gap-1 w-[216px] text-xs">
+                <div className="shrink-0 hidden md:flex flex-col justify-center gap-1 w-[216px] text-xs">
                   {doc.revisionDate && (
                     <p className="flex items-center gap-1.5 whitespace-nowrap">
                       <span className="text-gray-500">신설·개정일</span>
@@ -539,6 +628,24 @@ export default function ManualBoard() {
                     <span className="text-gray-500">사이트 등록일</span>
                     <span className="text-gray-800 font-medium">{formatDateDot(doc.createdAt)}</span>
                   </p>
+                </div>
+                {/* PDF preview. Hidden on phones (the row is already tight, and
+                    most mobile browsers can't render PDFs inline anyway — the
+                    download button covers them). Icon-only up to lg; from lg
+                    up it's a labelled button in a fixed-width slot so the date
+                    column lines up whether or not a row has one. */}
+                <div className="shrink-0 hidden sm:flex justify-end lg:w-[84px] sm:empty:hidden lg:empty:flex">
+                  {isPdf(doc) && (
+                    <button
+                      onClick={() => setPreviewDocument(doc)}
+                      title="PDF 미리보기"
+                      aria-label="PDF 미리보기"
+                      className="flex items-center gap-1 px-2.5 lg:px-3.5 py-2 rounded-full border border-primary text-primary text-[12px] font-bold hover:bg-primary-fixed active:scale-95 transition-all"
+                    >
+                      <span className="material-symbols-outlined text-[16px]">visibility</span>
+                      <span className="hidden lg:inline">미리보기</span>
+                    </button>
+                  )}
                 </div>
                 {isAdmin && (
                   <button
@@ -611,6 +718,8 @@ export default function ManualBoard() {
           pageTitle={selectedCategory === "전체" ? "개별업무매뉴얼" : `개별업무매뉴얼 > ${selectedCategory}`}
         />
       </div>
+
+      {previewDocument && <PdfPreviewPanel doc={previewDocument} onClose={closePreview} />}
 
       {isUploadModalOpen && (
         <DocumentFormModal
