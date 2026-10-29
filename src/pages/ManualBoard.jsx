@@ -6,9 +6,11 @@ import HeroBanner from "../components/HeroBanner";
 import { useAuth } from "../context/AuthContext";
 import { getCache, setCache } from "../utils/resourceCache";
 import { parseJsonSafely } from "../utils/http";
+import { MAX_UPLOAD_BYTES, MAX_UPLOAD_MB } from "../utils/uploadLimits";
 import { useDebouncedValue } from "../hooks/useDebouncedValue";
 
-const CACHE_KEY = "manual-documents";
+// v2: documents now carry a `files` list (original + optional preview PDF).
+const CACHE_KEY = "manual-documents-v2";
 
 const DEPARTMENTS = [
   "기획혁신실",
@@ -68,7 +70,6 @@ const FILE_INPUT_ACCEPT = [
   "application/vnd.openxmlformats-officedocument.wordprocessingml.document",
   "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet",
 ].join(",");
-const MAX_FILE_BYTES = 1 * 1024 * 1024;
 const ITEMS_PER_PAGE = 10;
 
 function formatDateDot(iso) {
@@ -88,8 +89,32 @@ function readFileAsDataUrl(file) {
   });
 }
 
-function isPdf(doc) {
-  return doc.filename?.split(".").pop()?.toLowerCase() === "pdf";
+function extensionOf(filename) {
+  return filename?.split(".").pop()?.toLowerCase() ?? "";
+}
+
+// A document has an 'original' file (what 다운로드 gives you) and optionally a
+// 'preview' PDF. Documents cached before the files list existed only have the
+// flat fileUrl/filename, so fall back to that.
+function getFiles(doc) {
+  if (doc.files) return doc.files;
+  return doc.fileUrl ? [{ role: "original", filename: doc.filename, fileUrl: doc.fileUrl }] : [];
+}
+function getOriginal(doc) {
+  const files = getFiles(doc);
+  return files.find((f) => f.role === "original") ?? files[0] ?? null;
+}
+function getPreviewFile(doc) {
+  return getFiles(doc).find((f) => f.role === "preview") ?? null;
+}
+// What the preview panel should show: the preview PDF if there is one,
+// otherwise the original when it is itself a PDF; null when nothing is
+// previewable (HWP/DOCX/XLSX without a preview PDF).
+function getPreviewTarget(doc) {
+  const preview = getPreviewFile(doc);
+  if (preview) return preview;
+  const original = getOriginal(doc);
+  return original && extensionOf(original.filename) === "pdf" ? original : null;
 }
 
 // Right-hand slide-over that shows a PDF in the browser's built-in viewer.
@@ -97,7 +122,7 @@ function isPdf(doc) {
 // keep download as their only action. Closes on the X, a backdrop click or
 // Esc. Browsers that can't render PDFs inline (notably Android Chrome) get a
 // download prompt instead of a blank frame.
-function PdfPreviewPanel({ doc, onClose }) {
+function PdfPreviewPanel({ title, file, onClose }) {
   const [entered, setEntered] = useState(false);
   const canEmbed = navigator.pdfViewerEnabled !== false;
 
@@ -120,7 +145,7 @@ function PdfPreviewPanel({ doc, onClose }) {
     >
       <aside
         role="dialog"
-        aria-label={`${doc.title} 미리보기`}
+        aria-label={`${title} 미리보기`}
         onClick={(e) => e.stopPropagation()}
         className={`absolute top-0 right-0 h-full w-full md:w-[min(900px,70vw)] bg-white shadow-2xl flex flex-col transition-transform duration-200 ease-out ${
           entered ? "translate-x-0" : "translate-x-full"
@@ -128,11 +153,11 @@ function PdfPreviewPanel({ doc, onClose }) {
       >
         <div className="shrink-0 px-5 py-3 border-b border-outline-variant flex items-center gap-3">
           <span className="material-symbols-outlined text-primary">picture_as_pdf</span>
-          <h2 title={doc.title} className="flex-1 min-w-0 font-bold text-on-surface truncate">
-            {doc.title}
+          <h2 title={title} className="flex-1 min-w-0 font-bold text-on-surface truncate">
+            {title}
           </h2>
           <a
-            href={`${doc.fileUrl}?download=1`}
+            href={`${file.fileUrl}?download=1`}
             className="shrink-0 flex items-center gap-1.5 px-4 py-2 rounded-full bg-primary text-white text-[12px] font-bold hover:opacity-90 active:scale-95 transition-all"
           >
             <span className="material-symbols-outlined text-[16px]">download</span>
@@ -154,14 +179,14 @@ function PdfPreviewPanel({ doc, onClose }) {
               <p className="absolute inset-0 flex items-center justify-center text-on-surface-variant text-body-md">
                 문서를 불러오는 중...
               </p>
-              <iframe title={doc.title} src={doc.fileUrl} className="relative w-full h-full border-0" />
+              <iframe title={title} src={file.fileUrl} className="relative w-full h-full border-0" />
             </>
           ) : (
             <div className="h-full flex flex-col items-center justify-center gap-4 px-6 text-center">
               <span className="material-symbols-outlined text-[56px] text-on-surface-variant">description</span>
               <p className="text-on-surface-variant">이 브라우저에서는 PDF 미리보기를 지원하지 않습니다.</p>
               <a
-                href={`${doc.fileUrl}?download=1`}
+                href={`${file.fileUrl}?download=1`}
                 className="flex items-center gap-1.5 px-5 py-2.5 rounded-full bg-primary text-white text-[13px] font-bold hover:opacity-90"
               >
                 <span className="material-symbols-outlined text-[18px]">download</span>
@@ -175,51 +200,83 @@ function PdfPreviewPanel({ doc, onClose }) {
   );
 }
 
-// Shared by both create and edit — in edit mode `initialValues` pre-fills
-// title/category and a new file is optional (omit it to just rename or
-// recategorize without touching the existing file).
+// Shared by both create and edit — in edit mode `initialValues` pre-fills the
+// fields and every file is optional (leave a slot empty to keep what's there).
+//
+// Two file slots: the required 원본 (what 다운로드 gives users) and an optional
+// 미리보기용 PDF (what 미리보기 shows) for originals a browser can't display.
+// The preview slot is hidden when the original is itself a PDF.
 function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmit }) {
   const [title, setTitle] = useState(initialValues?.title ?? "");
   const [category, setCategory] = useState(initialValues?.category ?? DEPARTMENTS[0]);
   const [revisionDate, setRevisionDate] = useState(initialValues?.revisionDate ?? "");
   const [revisionType, setRevisionType] = useState(initialValues?.revisionType ?? REVISION_TYPES[0]);
   const [file, setFile] = useState(null);
+  const [previewFile, setPreviewFile] = useState(null);
+  const [removePreview, setRemovePreview] = useState(false);
   const fileInputRef = useRef(null);
   const isEdit = mode === "edit";
 
-  function handleFileChange(e) {
+  const existingOriginal = initialValues ? getOriginal(initialValues) : null;
+  const existingPreview = initialValues ? getPreviewFile(initialValues) : null;
+  const originalExt = file ? extensionOf(file.name) : extensionOf(existingOriginal?.filename);
+  const showPreviewSlot = originalExt !== "pdf";
+
+  // Shared size/extension check for both slots; clears the input and returns
+  // null when the file is rejected.
+  function pickFile(e, { pdfOnly }) {
     const selected = e.target.files?.[0];
-    if (!selected) {
-      setFile(null);
-      return;
-    }
-    if (selected.size > MAX_FILE_BYTES) {
-      window.alert(`1MB 이하의 파일만 업로드 가능합니다. (선택한 파일: ${(selected.size / 1024 / 1024).toFixed(1)}MB)`);
+    if (!selected) return null;
+    if (selected.size > MAX_UPLOAD_BYTES) {
+      window.alert(
+        `${MAX_UPLOAD_MB}MB 이하의 파일만 업로드 가능합니다. (선택한 파일: ${(selected.size / 1024 / 1024).toFixed(1)}MB)`
+      );
       e.target.value = "";
-      setFile(null);
-      return;
+      return null;
     }
-    const ext = selected.name.split(".").pop()?.toLowerCase();
-    if (!ext || !ALLOWED_EXTENSIONS.includes(ext)) {
-      window.alert("PDF, HWP, HWPX, DOCX, XLSX 파일만 업로드할 수 있습니다.");
+    const ext = extensionOf(selected.name);
+    if (pdfOnly ? ext !== "pdf" : !ALLOWED_EXTENSIONS.includes(ext)) {
+      window.alert(pdfOnly ? "미리보기용 파일은 PDF만 올릴 수 있습니다." : "PDF, HWP, HWPX, DOCX, XLSX 파일만 업로드할 수 있습니다.");
       e.target.value = "";
-      setFile(null);
-      return;
+      return null;
     }
-    setFile(selected);
+    return selected;
+  }
+
+  function handleFileChange(e) {
+    setFile(pickFile(e, { pdfOnly: false }));
+  }
+
+  function handlePreviewChange(e) {
+    const selected = pickFile(e, { pdfOnly: true });
+    setPreviewFile(selected);
+    if (selected) setRemovePreview(false);
   }
 
   function handleSubmit(e) {
     e.preventDefault();
     if (!title.trim() || !revisionDate) return;
     if (!isEdit && !file) return;
-    onSubmit({ title: title.trim(), category, file, revisionDate, revisionType });
+    onSubmit({
+      title: title.trim(),
+      category,
+      file,
+      // A PDF original is previewed directly, so a preview file only counts
+      // while the original is something else.
+      previewFile: showPreviewSlot ? previewFile : null,
+      removePreview: showPreviewSlot ? removePreview : false,
+      revisionDate,
+      revisionType,
+    });
   }
 
+  const fileInputClass =
+    "w-full text-body-md text-on-surface-variant file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-primary file:text-white file:font-bold file:text-label-sm file:cursor-pointer";
+
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm">
-      <div className="w-full max-w-lg bg-white rounded-2xl border-2 border-outline-variant shadow-xl overflow-hidden">
-        <div className="px-8 py-6 border-b border-outline-variant flex items-center justify-between">
+    <div className="fixed inset-0 z-50 flex items-center justify-center bg-black/30 backdrop-blur-sm px-4">
+      <div className="w-full max-w-lg max-h-[92vh] flex flex-col bg-white rounded-2xl border-2 border-outline-variant shadow-xl overflow-hidden">
+        <div className="shrink-0 px-8 py-6 border-b border-outline-variant flex items-center justify-between">
           <h2 className="text-headline-md font-headline-md text-on-surface flex items-center gap-2">
             <span className="material-symbols-outlined text-primary">{isEdit ? "edit_note" : "upload_file"}</span>
             {isEdit ? "매뉴얼 수정" : "매뉴얼 등록"}
@@ -232,7 +289,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
           </button>
         </div>
 
-        <form onSubmit={handleSubmit} className="px-8 py-6 space-y-5">
+        <form onSubmit={handleSubmit} className="px-8 py-6 space-y-5 overflow-y-auto">
           <div>
             <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block">부서</label>
             <div className="flex flex-wrap gap-2">
@@ -307,7 +364,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
 
           <div>
             <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="doc-file">
-              파일 (PDF, HWP, HWPX, DOCX, XLSX / 최대 1MB)
+              원본 파일 (PDF, HWP, HWPX, DOCX, XLSX / 최대 {MAX_UPLOAD_MB}MB)
               {isEdit && <span className="font-normal text-on-surface-variant"> — 비워두면 기존 파일이 유지됩니다</span>}
             </label>
             <input
@@ -316,7 +373,7 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
               type="file"
               accept={FILE_INPUT_ACCEPT}
               onChange={handleFileChange}
-              className="w-full text-body-md text-on-surface-variant file:mr-3 file:px-4 file:py-2 file:rounded-full file:border-0 file:bg-primary file:text-white file:font-bold file:text-label-sm file:cursor-pointer"
+              className={fileInputClass}
               required={!isEdit}
             />
             {file ? (
@@ -325,11 +382,55 @@ function DocumentFormModal({ mode, initialValues, isSubmitting, onClose, onSubmi
               </p>
             ) : (
               isEdit &&
-              initialValues?.filename && (
-                <p className="text-[12px] text-on-surface-variant mt-2">현재 파일: {initialValues.filename}</p>
+              existingOriginal?.filename && (
+                <p className="text-[12px] text-on-surface-variant mt-2">현재 파일: {existingOriginal.filename}</p>
               )
             )}
+            {isEdit && file && originalExt === "pdf" && existingPreview && (
+              <p className="text-[12px] text-amber-700 mt-1">
+                원본을 PDF로 바꾸면 기존 미리보기용 PDF는 삭제됩니다.
+              </p>
+            )}
           </div>
+
+          {showPreviewSlot && (
+            <div>
+              <label className="text-label-sm font-label-sm text-on-surface-variant mb-2 block" htmlFor="doc-preview-file">
+                미리보기용 PDF (선택 / 최대 {MAX_UPLOAD_MB}MB)
+              </label>
+              <input
+                id="doc-preview-file"
+                type="file"
+                accept=".pdf,application/pdf"
+                onChange={handlePreviewChange}
+                className={fileInputClass}
+              />
+              <p className="text-[12px] text-on-surface-variant mt-2">
+                원본이 한글·워드·엑셀일 때, 목록에서 바로 볼 수 있는 PDF를 함께 올릴 수 있습니다.
+              </p>
+              {previewFile ? (
+                <p className="text-[12px] text-on-surface-variant mt-1">
+                  새 미리보기: {previewFile.name} ({Math.ceil(previewFile.size / 1024)}KB)
+                </p>
+              ) : (
+                isEdit &&
+                existingPreview && (
+                  <p className="text-[12px] mt-1 flex items-center gap-2">
+                    <span className={removePreview ? "text-error line-through" : "text-on-surface-variant"}>
+                      현재 미리보기: {existingPreview.filename}
+                    </span>
+                    <button
+                      type="button"
+                      onClick={() => setRemovePreview((v) => !v)}
+                      className="font-bold text-primary hover:underline"
+                    >
+                      {removePreview ? "되돌리기" : "삭제"}
+                    </button>
+                  </p>
+                )
+              )}
+            </div>
+          )}
 
           <div className="flex justify-end gap-3 pt-2">
             <button
@@ -366,6 +467,7 @@ export default function ManualBoard() {
   const [selectedCategory, setSelectedCategory] = useState("전체");
   const [isUploadModalOpen, setIsUploadModalOpen] = useState(false);
   const [editingDocument, setEditingDocument] = useState(null);
+  // { title, file } — the PDF the preview panel is showing.
   const [previewDocument, setPreviewDocument] = useState(null);
   const closePreview = useCallback(() => setPreviewDocument(null), []);
   const [isSubmitting, setIsSubmitting] = useState(false);
@@ -427,8 +529,39 @@ export default function ManualBoard() {
     setCurrentPage(1);
   }, [debouncedSearchTerm, selectedCategory]);
 
-  async function handleUpload({ title, category, file, revisionDate, revisionType }) {
+  function replaceDocument(updated) {
+    setDocuments((prev) => prev.map((d) => (d.id === updated.id ? updated : d)));
+  }
+
+  // Each request carries a single file (base64 in JSON; see
+  // utils/uploadLimits.js), so the original and the preview PDF are uploaded
+  // one after the other. The preview step is the optional one: if it fails the
+  // document itself is already saved, and the admin is told to retry via edit.
+  async function uploadPreview(documentId, previewFile) {
+    const dataUrl = await readFileAsDataUrl(previewFile);
+    const res = await fetch(`/api/manual-documents?id=${documentId}&file=preview`, {
+      method: "PUT",
+      headers: { "Content-Type": "application/json", Authorization: `Bearer ${token}` },
+      body: JSON.stringify({ filename: previewFile.name, dataUrl }),
+    });
+    const data = await parseJsonSafely(res);
+    if (!res.ok) throw new Error(data.message || "미리보기용 PDF 업로드에 실패했습니다.");
+    return data.document;
+  }
+
+  async function deletePreview(documentId) {
+    const res = await fetch(`/api/manual-documents?id=${documentId}&file=preview`, {
+      method: "DELETE",
+      headers: { Authorization: `Bearer ${token}` },
+    });
+    const data = await parseJsonSafely(res);
+    if (!res.ok) throw new Error(data.message || "미리보기용 PDF 삭제에 실패했습니다.");
+    return data.document;
+  }
+
+  async function handleUpload({ title, category, file, previewFile, revisionDate, revisionType }) {
     setIsSubmitting(true);
+    let created;
     try {
       const dataUrl = await readFileAsDataUrl(file);
       const res = await fetch("/api/manual-documents", {
@@ -438,17 +571,30 @@ export default function ManualBoard() {
       });
       const data = await parseJsonSafely(res);
       if (!res.ok) throw new Error(data.message || "매뉴얼 등록에 실패했습니다.");
-      setDocuments((prev) => [data.document, ...prev]);
-      setIsUploadModalOpen(false);
+      created = data.document;
+      setDocuments((prev) => [created, ...prev]);
     } catch (error) {
       window.alert(error.message);
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+
+    if (previewFile) {
+      try {
+        replaceDocument(await uploadPreview(created.id, previewFile));
+      } catch (error) {
+        window.alert(
+          `매뉴얼은 등록되었지만 미리보기용 PDF 업로드에 실패했습니다.\n${error.message}\n목록의 수정 버튼에서 다시 올려 주세요.`
+        );
+      }
+    }
+    setIsUploadModalOpen(false);
+    setIsSubmitting(false);
   }
 
-  async function handleEditSave({ title, category, file, revisionDate, revisionType }) {
+  async function handleEditSave({ title, category, file, previewFile, removePreview, revisionDate, revisionType }) {
     setIsSubmitting(true);
+    let updated;
     try {
       const body = { title, category, revisionDate, revisionType };
       if (file) {
@@ -462,13 +608,23 @@ export default function ManualBoard() {
       });
       const data = await parseJsonSafely(res);
       if (!res.ok) throw new Error(data.message || "매뉴얼 수정에 실패했습니다.");
-      setDocuments((prev) => prev.map((d) => (d.id === data.document.id ? data.document : d)));
-      setEditingDocument(null);
+      updated = data.document;
+      replaceDocument(updated);
     } catch (error) {
       window.alert(error.message);
-    } finally {
       setIsSubmitting(false);
+      return;
     }
+
+    if (previewFile || removePreview) {
+      try {
+        replaceDocument(previewFile ? await uploadPreview(updated.id, previewFile) : await deletePreview(updated.id));
+      } catch (error) {
+        window.alert(`수정은 저장되었지만 미리보기용 PDF 처리에 실패했습니다.\n${error.message}\n수정 버튼에서 다시 시도해 주세요.`);
+      }
+    }
+    setEditingDocument(null);
+    setIsSubmitting(false);
   }
 
   async function handleDelete(id, title) {
@@ -647,30 +803,41 @@ export default function ManualBoard() {
                     <span className="material-symbols-outlined text-[18px]">delete</span>
                   </button>
                 )}
-                {/* Same-width action column: PDF preview stacked above
-                    download, so the buttons stay compact, the title keeps its
-                    room, and every row's download button lines up. Preview is
-                    hidden on phones (most mobile browsers can't render PDFs
-                    inline — download covers them). */}
-                <div className="shrink-0 w-[92px] flex flex-col justify-center gap-0.5">
-                  {isPdf(doc) && (
-                    <button
-                      onClick={() => setPreviewDocument(doc)}
-                      title="PDF 미리보기"
-                      className="hidden sm:flex w-full items-center justify-center gap-1 py-1 rounded-full border border-primary text-primary text-[12px] font-bold whitespace-nowrap hover:bg-primary-fixed active:scale-95 transition-all"
-                    >
-                      <span className="material-symbols-outlined text-[15px]">visibility</span>
-                      미리보기
-                    </button>
-                  )}
-                  <a
-                    href={`${doc.fileUrl}?download=1`}
-                    className="flex w-full items-center justify-center gap-1 py-1 rounded-full bg-primary text-white text-[12px] font-bold whitespace-nowrap hover:opacity-90 active:scale-95 transition-all"
-                  >
-                    <span className="material-symbols-outlined text-[15px]">download</span>
-                    다운로드
-                  </a>
-                </div>
+                {/* Same-width action column: 미리보기 stacked above 다운로드 so the
+                    buttons stay compact, the title keeps its room, and every
+                    row's download button lines up. 다운로드 always gives the
+                    original file; 미리보기 opens the preview PDF (or the
+                    original when that is itself a PDF) — shown on phones too,
+                    since the panel falls back to a download prompt in browsers
+                    that can't render PDFs inline. */}
+                {(() => {
+                  const original = getOriginal(doc);
+                  const previewTarget = getPreviewTarget(doc);
+                  if (!original) return null;
+                  const ext = extensionOf(original.filename).toUpperCase();
+                  return (
+                    <div className="shrink-0 w-[92px] flex flex-col justify-center gap-0.5">
+                      {previewTarget && (
+                        <button
+                          onClick={() => setPreviewDocument({ title: doc.title, file: previewTarget })}
+                          title="PDF 미리보기"
+                          className="flex w-full items-center justify-center gap-1 py-1 rounded-full border border-primary text-primary text-[12px] font-bold whitespace-nowrap hover:bg-primary-fixed active:scale-95 transition-all"
+                        >
+                          <span className="material-symbols-outlined text-[15px]">visibility</span>
+                          미리보기
+                        </button>
+                      )}
+                      <a
+                        href={`${original.fileUrl}?download=1`}
+                        title={getPreviewFile(doc) ? `${ext} 원본 다운로드` : `${ext} 다운로드`}
+                        className="flex w-full items-center justify-center gap-1 py-1 rounded-full bg-primary text-white text-[12px] font-bold whitespace-nowrap hover:opacity-90 active:scale-95 transition-all"
+                      >
+                        <span className="material-symbols-outlined text-[15px]">download</span>
+                        다운로드
+                      </a>
+                    </div>
+                  );
+                })()}
               </div>
             ))
           )}
@@ -718,7 +885,9 @@ export default function ManualBoard() {
         />
       </div>
 
-      {previewDocument && <PdfPreviewPanel doc={previewDocument} onClose={closePreview} />}
+      {previewDocument && (
+        <PdfPreviewPanel title={previewDocument.title} file={previewDocument.file} onClose={closePreview} />
+      )}
 
       {isUploadModalOpen && (
         <DocumentFormModal

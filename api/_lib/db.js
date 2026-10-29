@@ -88,6 +88,36 @@ export function ensureSchema() {
         sql`ALTER TABLE manual_documents ADD COLUMN IF NOT EXISTS revision_type TEXT`,
       ]);
 
+      // A manual document can carry up to two files: its 'original' (what the
+      // download button gives you) and an optional 'preview' PDF (what the
+      // preview panel shows). Files live in their own table; the old
+      // filename/file_url/file_size columns on manual_documents are legacy —
+      // still mirrored with the original so a rollback keeps working, but no
+      // longer required. Existing documents are backfilled as 'original' files.
+      await sql`
+        CREATE TABLE IF NOT EXISTS manual_document_files (
+          id TEXT PRIMARY KEY,
+          document_id TEXT NOT NULL REFERENCES manual_documents(id) ON DELETE CASCADE,
+          role TEXT NOT NULL,
+          filename TEXT NOT NULL,
+          file_url TEXT NOT NULL,
+          file_size INTEGER NOT NULL DEFAULT 0,
+          created_at TIMESTAMPTZ NOT NULL DEFAULT now(),
+          UNIQUE (document_id, role)
+        )
+      `;
+      await sql`ALTER TABLE manual_documents ALTER COLUMN filename DROP NOT NULL`;
+      await sql`ALTER TABLE manual_documents ALTER COLUMN file_url DROP NOT NULL`;
+      await sql`
+        INSERT INTO manual_document_files (id, document_id, role, filename, file_url, file_size)
+        SELECT gen_random_uuid()::text, d.id, 'original', d.filename, d.file_url, d.file_size
+        FROM manual_documents d
+        WHERE d.file_url IS NOT NULL
+          AND NOT EXISTS (
+            SELECT 1 FROM manual_document_files f WHERE f.document_id = d.id AND f.role = 'original'
+          )
+      `;
+
       // Section-label rows (type='label') are plain group headers mixed into
       // the same sidebar list/sort order as real content rows (type='page');
       // existing rows default to 'page' so they keep behaving as before.
