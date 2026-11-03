@@ -75,16 +75,8 @@ export default function Intro() {
         <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-8 pb-16">
           {/* Hero Banner */}
           <HeroBanner
-            title={
-              <>
-                <span className="text-primary">DUDC</span>와 함께,
-                <br />
-                새로운 시작을
-                <br />
-                더 큰 성장으로 이어가세요.
-              </>
-            }
-            subtitle="당신의 첫걸음부터 업무 적응까지, DUDC가 함께하겠습니다."
+            title="일의 기본부터 노하우까지, 필요한 모든 것을 한 곳에서"
+            subtitle="함께 알아야 할 공통업무, 선배에게 배우는 노하우, 개별업무 매뉴얼을 담았습니다. 처음 시작하는 업무도, 더 깊이 알고 싶은 업무도 이곳에서 확인하세요."
             imageSrc="/img3.png"
             imageAlt="Welcome"
           />

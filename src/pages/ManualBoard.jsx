@@ -649,20 +649,8 @@ export default function ManualBoard() {
       <main className="flex-1 pt-2 pb-24 flex flex-col items-center px-4 md:px-8 lg:px-16 max-w-container_max_width mx-auto w-full">
         {/* Hero Banner */}
         <HeroBanner
-          title={
-            <>
-              필요한 자료를
-              <br />
-              한 번에 찾아보세요.
-            </>
-          }
-          subtitle={
-            <>
-              부서별 업무 매뉴얼과 서식을
-              <br />
-              내려받아 바로 확인해 보세요.
-            </>
-          }
+          title="내 업무의 모든 것, 필요한 순간 바로 확인"
+          subtitle="담당 업무별 세부 절차와 처리 방법을 상세히 안내합니다. 내 업무에 딱 맞는 개별 업무매뉴얼을 빠르게 찾아 바로 적용해 보세요."
           imageSrc="/img4.png"
           imageAlt="업무매뉴얼"
           className="mt-4"

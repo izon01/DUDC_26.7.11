@@ -280,20 +280,8 @@ function Bookshelf({ onSelect }) {
       <div className="max-w-container_max_width mx-auto px-4 md:px-8 lg:px-16 py-6">
         {/* Champion Hero Banner — same component/regs as every other page */}
         <HeroBanner
-          title={
-            <>
-              하나씩 배우고,
-              <br />
-              자신 있게 시작하세요.
-            </>
-          }
-          subtitle={
-            <>
-              첫 업무부터 실무 적응까지,
-              <br />
-              필요한 정보를 한곳에서 찾아보세요.
-            </>
-          }
+          title="모두가 같은 기준으로 일합니다"
+          subtitle="DUDC인이라면 알아야 할 공통업무의 기준과 표준 절차를 담았습니다. 생소한 업무도 어렵게 느껴지지 않도록, 하나씩 차근차근 따라 해 보세요."
           imageSrc="/img2.png"
           imageAlt="업무 첫걸음 서재"
         />
