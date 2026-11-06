@@ -282,8 +282,8 @@ function Bookshelf({ onSelect }) {
         <HeroBanner
           title="모두가 같은 기준으로 일합니다"
           subtitle="DUDC인이라면 알아야 할 공통업무의 기준과 표준 절차를 담았습니다. 생소한 업무도 어렵게 느껴지지 않도록, 하나씩 차근차근 따라 해 보세요."
-          imageSrc="/img2.png"
-          imageAlt="업무 첫걸음 서재"
+          imageSrc="/img7.png"
+          imageAlt="Welcome"
         />
 
         {/* Two shelves, 4 books each */}
