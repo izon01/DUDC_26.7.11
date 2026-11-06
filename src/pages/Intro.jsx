@@ -129,30 +129,32 @@ export default function Intro() {
           {activeTab === "home" ? (
             <IntroHome />
           ) : activeTab === "ceo" ? (
-            /* 사장님 말씀: 편지 형식 카드 */
-            <section className="mt-12 max-w-3xl mx-auto">
-              <article className="bg-white border border-gray-100 rounded-2xl shadow-sm px-6 py-10 sm:px-12 sm:py-14 break-keep">
-                <p className="text-sm font-bold text-primary mb-4">사장님 말씀</p>
-                <h2 className="text-2xl sm:text-[28px] font-extrabold text-gray-900 leading-snug">
-                  {CEO_MESSAGE.greeting[0]}
-                </h2>
-                <p className="mt-2 text-base sm:text-lg font-semibold text-gray-700">{CEO_MESSAGE.greeting[1]}</p>
+            /* 사장님 말씀: 히어로 배너와 같은 너비의 카드, 글은 읽기 좋은 폭으로 안쪽 가운데 정렬 */
+            <section className="mt-12">
+              <article className="bg-white border border-gray-100 rounded-[2rem] shadow-sm px-6 py-10 sm:px-12 sm:py-14 break-keep">
+                <div className="max-w-3xl mx-auto">
+                  <p className="text-sm font-bold text-primary mb-4">사장님 말씀</p>
+                  <h2 className="text-2xl sm:text-[28px] font-extrabold text-gray-900 leading-snug">
+                    {CEO_MESSAGE.greeting[0]}
+                  </h2>
+                  <p className="mt-2 text-base sm:text-lg font-semibold text-gray-700">{CEO_MESSAGE.greeting[1]}</p>
 
-                <div className="mt-8 pt-8 border-t border-gray-100 space-y-6">
-                  {CEO_MESSAGE.paragraphs.map((text) => (
-                    <p key={text} className="text-[15px] sm:text-base text-gray-700 leading-8">
-                      {text}
-                    </p>
-                  ))}
-                  <p className="text-[15px] sm:text-base text-gray-700 leading-8">{CEO_MESSAGE.closing}</p>
+                  <div className="mt-8 pt-8 border-t border-gray-100 space-y-6">
+                    {CEO_MESSAGE.paragraphs.map((text) => (
+                      <p key={text} className="text-[15px] sm:text-base text-gray-700 leading-8">
+                        {text}
+                      </p>
+                    ))}
+                    <p className="text-[15px] sm:text-base text-gray-700 leading-8">{CEO_MESSAGE.closing}</p>
+                  </div>
+
+                  <p className="mt-10 text-right text-gray-700">
+                    <span className="text-sm sm:text-base">{CEO_MESSAGE.signature.role}</span>{" "}
+                    <span className="text-lg sm:text-xl font-extrabold text-gray-900 ml-1">
+                      {CEO_MESSAGE.signature.name}
+                    </span>
+                  </p>
                 </div>
-
-                <p className="mt-10 text-right text-gray-700">
-                  <span className="text-sm sm:text-base">{CEO_MESSAGE.signature.role}</span>{" "}
-                  <span className="text-lg sm:text-xl font-extrabold text-gray-900 ml-1">
-                    {CEO_MESSAGE.signature.name}
-                  </span>
-                </p>
               </article>
             </section>
           ) : activeTab === "mission" ? (
