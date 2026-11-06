@@ -3,7 +3,7 @@ import AuthModal from "../components/AuthModal";
 
 const MASCOTS = [
   {
-    image: "/img3.png",
+    image: "/img7.png",
     nameKo: "청키",
     nameEn: "chungky",
     details: [

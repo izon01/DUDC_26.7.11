@@ -103,7 +103,7 @@ export default function Intro() {
           <HeroBanner
             title="일의 기본부터 노하우까지, 필요한 모든 것을 한 곳에서"
             subtitle="함께 알아야 할 공통업무, 선배에게 배우는 노하우, 개별업무 매뉴얼을 담았습니다. 처음 시작하는 업무도, 더 깊이 알고 싶은 업무도 이곳에서 확인하세요."
-            imageSrc="/img3.png"
+            imageSrc="/img7.png"
             imageAlt="Welcome"
           />
 
