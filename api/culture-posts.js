@@ -23,6 +23,20 @@ export default async function handler(req, res) {
 
   if (req.method === "GET") {
     try {
+      // `?latest=<n>` is the home page's light read: just the newest n pages
+      // (id/title/date, no body HTML) instead of the whole ordered tree.
+      if (req.query.latest) {
+        const limit = Math.min(Math.max(parseInt(req.query.latest, 10) || 5, 1), 20);
+        const latest = await sql`
+          SELECT id, title, created_at AS "createdAt"
+          FROM culture_posts
+          WHERE type = 'page'
+          ORDER BY created_at DESC
+          LIMIT ${limit}
+        `;
+        return res.status(200).json({ posts: latest.rows });
+      }
+
       const result = await sql`
         SELECT id, title, body_html AS "bodyHtml", check_points AS "checkPoints", type, created_at AS "createdAt"
         FROM culture_posts

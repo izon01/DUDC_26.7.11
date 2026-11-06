@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useSearchParams } from "react-router-dom";
 import Header from "../components/Header";
 import HeroBanner from "../components/HeroBanner";
+import IntroHome from "../components/IntroHome";
 
 const CORE_VALUE_PILLS = [
   { label: "전문성", desc: "도시개발의 미래를 이루는", color: "bg-blue-900" },
@@ -59,13 +60,38 @@ const BUSINESS_UNITS = [
   },
 ];
 
+// 사장님 말씀 — kept as data so a change of president is a one-place edit.
+const CEO_MESSAGE = {
+  greeting: ["임직원 여러분, 반갑습니다.", "대구도시개발공사 사장 이재용입니다."],
+  paragraphs: [
+    "우리 공사를 움직이는 힘은 각자의 자리에서 책임을 다하는 임직원 여러분에게 있습니다. 여러분이 업무를 수행하며 쌓아 온 지식과 경험은 공사의 소중한 자산이자, 동료의 성장을 돕는 든든한 밑거름입니다.",
+    "이번 업무매뉴얼 웹페이지는 이러한 자산을 함께 나누고 활용하기 위해 마련되었습니다. 직원 모두가 알아야 할 공통업무의 기준과 절차, 선배들이 직접 익힌 노하우, 개별업무의 구체적인 수행 방법을 한곳에 담았습니다.",
+    "처음 맡는 업무 앞에서는 든든한 길잡이가 되고, 익숙한 업무에서는 더 나은 방법을 찾는 계기가 되기를 바랍니다. 부서와 세대를 넘어 서로의 경험을 나누며 함께 배우는 공간으로 활용해 주시기 바랍니다.",
+    "업무매뉴얼은 여러분의 참여로 더욱 충실해집니다. 변화한 업무 절차를 보완하고 자신만의 실무 지혜를 더해, 함께 만들어 가는 살아 있는 매뉴얼로 발전시켜 주십시오.",
+    "바쁜 업무 중에도 매뉴얼 작성에 힘써 주신 임직원 여러분께 감사드립니다. 서로의 성장을 돕는 협력과 배움이 대구의 미래 성장동력 창출과 시민에게 더 나은 삶을 제공하는 힘으로 이어지기를 기대합니다.",
+  ],
+  closing: "감사합니다.",
+  signature: { role: "대구도시개발공사 사장", name: "이재용" },
+};
+
 const TABS = [
+  { key: "home", label: "대구도시개발공사" },
   { key: "mission", label: "미션 및 비전" },
   { key: "business", label: "사업부 안내" },
+  { key: "ceo", label: "사장님 말씀" },
 ];
+const DEFAULT_TAB = "home";
 
 export default function Intro() {
-  const [activeTab, setActiveTab] = useState("mission");
+  // The tab lives in the URL (?tab=ceo) so reloads, the back button and shared
+  // links land on the same tab; the default tab keeps a clean /intro.
+  const [searchParams, setSearchParams] = useSearchParams();
+  const requestedTab = searchParams.get("tab");
+  const activeTab = TABS.some((tab) => tab.key === requestedTab) ? requestedTab : DEFAULT_TAB;
+
+  function selectTab(key) {
+    setSearchParams(key === DEFAULT_TAB ? {} : { tab: key });
+  }
 
   return (
     <div className="min-h-screen w-full flex flex-col bg-background text-on-surface">
@@ -82,17 +108,17 @@ export default function Intro() {
           />
 
           {/* 탭 토글 */}
+          {/* One pill row from sm up; a 2x2 grid on phones, where four labels
+              don't fit in a row and a scrolling row would hide the last tabs. */}
           <div className="mt-16 md:mt-20 flex justify-center">
-            <div className="inline-flex bg-gray-100 rounded-full p-1 gap-1">
+            <div className="grid grid-cols-2 w-full sm:w-auto sm:inline-flex bg-gray-100 rounded-3xl sm:rounded-full p-1 gap-1">
               {TABS.map((tab) => (
                 <button
                   key={tab.key}
-                  onClick={() => setActiveTab(tab.key)}
-                  className={
-                    tab.key === activeTab
-                      ? "px-8 py-3 rounded-full bg-primary text-white font-bold text-base transition-all"
-                      : "px-8 py-3 rounded-full text-gray-500 font-bold text-base hover:text-gray-700 transition-all"
-                  }
+                  onClick={() => selectTab(tab.key)}
+                  className={`whitespace-nowrap px-3 sm:px-7 py-2.5 sm:py-3 rounded-full font-bold text-sm sm:text-base transition-all ${
+                    tab.key === activeTab ? "bg-primary text-white" : "text-gray-500 hover:text-gray-700"
+                  }`}
                 >
                   {tab.label}
                 </button>
@@ -100,7 +126,36 @@ export default function Intro() {
             </div>
           </div>
 
-          {activeTab === "mission" ? (
+          {activeTab === "home" ? (
+            <IntroHome />
+          ) : activeTab === "ceo" ? (
+            /* 사장님 말씀: 편지 형식 카드 */
+            <section className="mt-12 max-w-3xl mx-auto">
+              <article className="bg-white border border-gray-100 rounded-2xl shadow-sm px-6 py-10 sm:px-12 sm:py-14 break-keep">
+                <p className="text-sm font-bold text-primary mb-4">사장님 말씀</p>
+                <h2 className="text-2xl sm:text-[28px] font-extrabold text-gray-900 leading-snug">
+                  {CEO_MESSAGE.greeting[0]}
+                </h2>
+                <p className="mt-2 text-base sm:text-lg font-semibold text-gray-700">{CEO_MESSAGE.greeting[1]}</p>
+
+                <div className="mt-8 pt-8 border-t border-gray-100 space-y-6">
+                  {CEO_MESSAGE.paragraphs.map((text) => (
+                    <p key={text} className="text-[15px] sm:text-base text-gray-700 leading-8">
+                      {text}
+                    </p>
+                  ))}
+                  <p className="text-[15px] sm:text-base text-gray-700 leading-8">{CEO_MESSAGE.closing}</p>
+                </div>
+
+                <p className="mt-10 text-right text-gray-700">
+                  <span className="text-sm sm:text-base">{CEO_MESSAGE.signature.role}</span>{" "}
+                  <span className="text-lg sm:text-xl font-extrabold text-gray-900 ml-1">
+                    {CEO_MESSAGE.signature.name}
+                  </span>
+                </p>
+              </article>
+            </section>
+          ) : activeTab === "mission" ? (
             /* 미션 및 비전: 전체 너비 */
             <section className="mt-12 max-w-5xl mx-auto">
               {/* Mission & Vision text boxes */}
