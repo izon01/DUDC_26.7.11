@@ -121,13 +121,53 @@ function LatestCard({ icon, title, description, moreTo, moreLabel, state, emptyT
   );
 }
 
+// Entry point for new hires: HQ photo on the right fading into white under the
+// copy (on phones the photo sits behind the text under a heavier white wash).
+function WorkStartBanner() {
+  return (
+    <section className="relative overflow-hidden rounded-[2rem] border border-blue-100/60 bg-white shadow-sm min-h-[220px] flex items-center">
+      <img
+        src="/dudc-building.jpg"
+        alt=""
+        aria-hidden="true"
+        decoding="async"
+        className="absolute inset-0 w-full h-full object-cover object-[70%_45%] md:left-auto md:right-0 md:w-[68%]"
+      />
+      <div className="absolute inset-0 bg-gradient-to-b from-white/95 via-white/85 to-white/45 md:bg-gradient-to-r md:from-white md:from-35% md:via-white/75 md:to-transparent" />
+
+      <div className="relative px-6 py-8 sm:px-10 md:px-12 break-keep">
+        <span className="inline-block px-4 py-1.5 rounded-full bg-blue-50 text-primary text-[13px] font-bold">
+          업무첫걸음
+        </span>
+        <h2 className="mt-4 text-2xl sm:text-[28px] font-extrabold text-gray-900 leading-snug">
+          처음 맡는 업무,
+          <br />
+          <span className="text-primary">여기서부터 시작하세요.</span>
+        </h2>
+        <p className="mt-3 text-[15px] text-gray-600 leading-relaxed max-w-md">
+          신입직원이 꼭 알아야 할 공통업무를 차근차근 안내합니다.
+        </p>
+        <Link
+          to="/work-manual"
+          className="mt-6 inline-flex items-center gap-2 h-12 px-6 rounded-full bg-white border border-gray-200 shadow-md text-[15px] font-bold text-gray-900 hover:bg-gray-50 active:scale-95 transition-all"
+        >
+          업무첫걸음 바로가기
+          <span className="material-symbols-outlined text-[20px]">arrow_forward</span>
+        </Link>
+      </div>
+    </section>
+  );
+}
+
 export default function IntroHome() {
   const manuals = useLatestList(MANUALS_CACHE_KEY, fetchManuals);
   const culturePosts = useLatestList(CULTURE_LATEST_CACHE_KEY, fetchLatestCulturePosts);
 
   return (
     <section className="mt-12">
-      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+      <WorkStartBanner />
+
+      <div className="mt-6 grid grid-cols-1 lg:grid-cols-2 gap-6">
         <LatestCard
           icon="folder_open"
           title="업무매뉴얼"
